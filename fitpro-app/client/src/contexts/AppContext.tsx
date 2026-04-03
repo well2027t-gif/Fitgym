@@ -126,6 +126,12 @@ export interface OneRMCalculation {
   date: string;
 }
 
+export interface StepEntry {
+  date: string; // YYYY-MM-DD
+  steps: number;
+  updatedAt?: string;
+}
+
 export interface NotificationReminder {
   id: string;
   type: 'workout' | 'meal' | 'water' | 'weight_check';
@@ -140,6 +146,8 @@ export interface UserPreferences {
   theme: ThemeColor;
   notifications: NotificationReminder[];
   offlineMode: boolean;
+  stepTrackingEnabled: boolean;
+  dailyStepGoal: number;
   lastSyncTime?: string;
 }
 
@@ -176,6 +184,7 @@ export interface AppState {
   workoutSessions: WorkoutSession[];
   stats: UserStats;
   workoutPlans: WorkoutPlan[];
+  stepEntries: StepEntry[];
   preferences: UserPreferences;
 }
 
@@ -277,6 +286,13 @@ const defaultState: AppState = {
     volumeHistory: [],
   },
   workoutPlans: [],
+  stepEntries: [
+    {
+      date: new Date().toISOString().split('T')[0],
+      steps: 0,
+      updatedAt: new Date().toISOString(),
+    },
+  ],
   preferences: {
     theme: 'green',
     notifications: [
@@ -285,6 +301,8 @@ const defaultState: AppState = {
       { id: nanoid(), type: 'water', enabled: false, time: '09:00', frequency: 'daily' },
     ],
     offlineMode: false,
+    stepTrackingEnabled: true,
+    dailyStepGoal: 8000,
   },
 };
 
@@ -316,6 +334,9 @@ interface AppContextValue {
   calculateOneRM: (exerciseName: string, weight: number, reps: number) => number;
   addOneRMRecord: (record: Omit<OneRMCalculation, 'id'>) => void;
   updatePreferences: (prefs: Partial<UserPreferences>) => void;
+  getTodaySteps: () => number;
+  setTodaySteps: (steps: number) => void;
+  incrementTodaySteps: (steps: number) => void;
   getVolumeHistory: (exerciseName?: string, days?: number) => Array<{ date: string; volume: number }>;
   getWorkoutHistory: (days?: number) => WorkoutSession[];
 }
@@ -350,6 +371,7 @@ function loadState(): AppState {
           ...parsed.preferences,
           notifications: parsed.preferences?.notifications ?? defaultState.preferences.notifications,
         },
+        stepEntries: parsed.stepEntries ?? defaultState.stepEntries,
       };
       
       // Ensure today's diet exists
@@ -599,6 +621,36 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setState(s => ({ ...s, preferences: { ...s.preferences, ...prefs } }));
   }, []);
 
+  const getTodaySteps = useCallback(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return state.stepEntries.find(entry => entry.date === today)?.steps ?? 0;
+  }, [state.stepEntries]);
+
+  const setTodaySteps = useCallback((steps: number) => {
+    const nextSteps = Math.max(0, Math.round(steps));
+    const today = new Date().toISOString().split('T')[0];
+    setState(s => {
+      const existing = s.stepEntries.find(entry => entry.date === today);
+      const stepEntries = existing
+        ? s.stepEntries.map(entry => entry.date === today ? { ...entry, steps: nextSteps, updatedAt: new Date().toISOString() } : entry)
+        : [...s.stepEntries, { date: today, steps: nextSteps, updatedAt: new Date().toISOString() }];
+      return { ...s, stepEntries };
+    });
+  }, []);
+
+  const incrementTodaySteps = useCallback((steps: number) => {
+    const today = new Date().toISOString().split('T')[0];
+    setState(s => {
+      const existing = s.stepEntries.find(entry => entry.date === today);
+      const currentSteps = existing?.steps ?? 0;
+      const nextSteps = Math.max(0, currentSteps + Math.round(steps));
+      const stepEntries = existing
+        ? s.stepEntries.map(entry => entry.date === today ? { ...entry, steps: nextSteps, updatedAt: new Date().toISOString() } : entry)
+        : [...s.stepEntries, { date: today, steps: nextSteps, updatedAt: new Date().toISOString() }];
+      return { ...s, stepEntries };
+    });
+  }, []);
+
   const getVolumeHistory = useCallback((exerciseName?: string, days: number = 30) => {
     const cutoffDate = new Date(Date.now() - days * 86400000).toISOString().split('T')[0];
     let history = state.stats.volumeHistory.filter(v => v.date >= cutoffDate);
@@ -640,6 +692,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       calculateOneRM,
       addOneRMRecord,
       updatePreferences,
+      getTodaySteps,
+      setTodaySteps,
+      incrementTodaySteps,
       getVolumeHistory,
       getWorkoutHistory,
     }}>

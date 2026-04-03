@@ -9,7 +9,7 @@ import { useApp, Goal } from '@/contexts/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Edit3, Check, X, Scale, Ruler, Calendar,
-  Target, Dumbbell, Award, Info, ChevronRight, Zap, Percent
+  Target, Dumbbell, Award, Info, ChevronRight, Zap, Percent, Activity, Minus, Plus
 } from 'lucide-react';
 import { toast } from 'sonner';
 import ThemeSelector from '@/components/ThemeSelector';
@@ -84,7 +84,7 @@ function EditableField({
 }
 
 export default function Profile() {
-  const { state, updateProfile } = useApp();
+  const { state, updateProfile, updatePreferences, getTodaySteps, setTodaySteps } = useApp();
   const { profile, workouts, workoutSessions, weightEntries } = state;
   const [showGoalPicker, setShowGoalPicker] = useState(false);
   const [showBodyFatModal, setShowBodyFatModal] = useState(false);
@@ -93,6 +93,8 @@ export default function Profile() {
   const [bodyFatResult, setBodyFatResult] = useState<number | null>(null);
 
   const selectedGoal = GOAL_OPTIONS.find(g => g.value === profile.goal);
+  const todaySteps = getTodaySteps();
+  const stepsGoalPct = Math.min((todaySteps / state.preferences.dailyStepGoal) * 100, 100);
 
   // BMI calculation
   const bmi = profile.weight / Math.pow(profile.height / 100, 2);
@@ -264,6 +266,128 @@ export default function Profile() {
         </div>
 
 
+
+        {/* Marcador de Passos */}
+        <div className="fitpro-card overflow-hidden">
+          <div className="px-4 py-3 flex items-center gap-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+            <Activity size={14} style={{ color: 'var(--theme-accent)' }} />
+            <span className="text-sm font-semibold text-white" style={{ fontFamily: 'Space Grotesk' }}>Marcador de Passos</span>
+          </div>
+
+          <div className="px-4 py-4 space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-medium mb-0.5" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>STATUS</p>
+                <p className="text-sm font-semibold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                  {state.preferences.stepTrackingEnabled ? 'Ativado' : 'Desativado'}
+                </p>
+                <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>
+                  Quando ativado, o contador diário aparece na tela inicial.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <motion.button
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => { updatePreferences({ stepTrackingEnabled: true }); toast.success('Marcador de passos ativado!'); }}
+                  className="px-3 py-2 rounded-xl text-xs font-semibold"
+                  style={{
+                    background: state.preferences.stepTrackingEnabled ? 'var(--theme-accent)' : 'rgba(255,255,255,0.06)',
+                    color: state.preferences.stepTrackingEnabled ? '#0d0d0f' : 'rgba(255,255,255,0.5)',
+                    fontFamily: 'Space Grotesk',
+                  }}
+                >
+                  Ativar
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => { updatePreferences({ stepTrackingEnabled: false }); toast.success('Marcador de passos desativado!'); }}
+                  className="px-3 py-2 rounded-xl text-xs font-semibold"
+                  style={{
+                    background: !state.preferences.stepTrackingEnabled ? '#ef4444' : 'rgba(255,255,255,0.06)',
+                    color: !state.preferences.stepTrackingEnabled ? '#fff' : 'rgba(255,255,255,0.5)',
+                    fontFamily: 'Space Grotesk',
+                  }}
+                >
+                  Desativar
+                </motion.button>
+              </div>
+            </div>
+
+            <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <div>
+                  <p className="text-[10px] font-medium mb-0.5" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>META DIÁRIA</p>
+                  <p className="text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>{state.preferences.dailyStepGoal.toLocaleString('pt-BR')} passos</p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      const nextGoal = Math.max(1000, state.preferences.dailyStepGoal - 1000);
+                      updatePreferences({ dailyStepGoal: nextGoal });
+                    }}
+                    className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    style={{ background: 'rgba(255,255,255,0.06)' }}
+                  >
+                    <Minus size={16} style={{ color: 'rgba(255,255,255,0.7)' }} />
+                  </button>
+                  <button
+                    onClick={() => updatePreferences({ dailyStepGoal: state.preferences.dailyStepGoal + 1000 })}
+                    className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    style={{ background: 'rgba(var(--theme-accent-rgb), 0.18)' }}
+                  >
+                    <Plus size={16} style={{ color: 'var(--theme-accent)' }} />
+                  </button>
+                </div>
+              </div>
+              <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                <div
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{ width: `${stepsGoalPct}%`, background: 'var(--theme-accent)' }}
+                />
+              </div>
+              <p className="text-[11px] mt-2" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>
+                Você já completou {Math.round(stepsGoalPct)}% da meta de passos de hoje.
+              </p>
+            </div>
+
+            <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <div>
+                  <p className="text-[10px] font-medium mb-0.5" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>PASSOS DE HOJE</p>
+                  <p className="text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>{todaySteps.toLocaleString('pt-BR')}</p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setTodaySteps(Math.max(0, todaySteps - 500))}
+                    className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    style={{ background: 'rgba(255,255,255,0.06)' }}
+                  >
+                    <Minus size={16} style={{ color: 'rgba(255,255,255,0.7)' }} />
+                  </button>
+                  <button
+                    onClick={() => setTodaySteps(todaySteps + 500)}
+                    className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    style={{ background: 'rgba(var(--theme-accent-rgb), 0.18)' }}
+                  >
+                    <Plus size={16} style={{ color: 'var(--theme-accent)' }} />
+                  </button>
+                </div>
+              </div>
+              <input
+                type="number"
+                min={0}
+                step={100}
+                value={todaySteps}
+                onChange={e => setTodaySteps(Number(e.target.value) || 0)}
+                className="w-full px-3 py-2.5 rounded-xl text-sm text-white outline-none"
+                style={{ background: 'rgba(255,255,255,0.06)', fontFamily: 'Outfit' }}
+              />
+              <p className="text-[11px] mt-2" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>
+                Você pode ajustar manualmente a quantidade de passos até integrar um sensor nativo do celular.
+              </p>
+            </div>
+          </div>
+        </div>
 
         {/* Tema */}
         <ThemeSelector />

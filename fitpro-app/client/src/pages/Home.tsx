@@ -9,10 +9,9 @@ import { useApp } from '@/contexts/AppContext';
 import { useLocation } from 'wouter';
 import { motion } from 'framer-motion';
 import GamificationCard from '@/components/GamificationCard';
-import ThemeMenu from '@/components/ThemeMenu';
 import {
   Flame, Dumbbell, Apple, TrendingUp, ChevronRight,
-  Zap, Target, Award, Play, Camera
+  Zap, Target, Award, Play, Camera, Activity
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip
@@ -34,6 +33,27 @@ function getGreeting() {
   if (h < 12) return 'Bom dia';
   if (h < 18) return 'Boa tarde';
   return 'Boa noite';
+}
+
+function getMotivationalMessage(goal: string) {
+  switch (goal) {
+    case 'ganhar_massa':
+      return 'Hoje é dia de construir força, volume e consistência em cada série.';
+    case 'perder_gordura':
+      return 'Cada escolha de hoje te aproxima de um físico mais leve, forte e definido.';
+    case 'manter_peso':
+      return 'Seu foco agora é equilíbrio, constância e performance inteligente ao longo do dia.';
+    case 'definicao':
+      return 'Mantenha intensidade, controle e disciplina para lapidar seus resultados.';
+    case 'resistencia':
+      return 'Respiração, ritmo e regularidade: o seu progresso nasce da repetição bem feita.';
+    default:
+      return 'Seu plano está pronto para mais um dia forte, consistente e focado.';
+  }
+}
+
+function getUserLevel(totalPoints: number) {
+  return Math.max(1, Math.floor(totalPoints / 250) + 1);
 }
 
 function CircularProgress({ value, max, size = 96 }: { value: number; max: number; size?: number }) {
@@ -70,10 +90,13 @@ const cardVariants = {
 };
 
 export default function Home() {
-  const { state, getTodayCalories } = useApp();
+  const { state, getTodayCalories, getTodaySteps } = useApp();
   const [, navigate] = useLocation();
   const { profile, workouts, todayWorkoutId, weightEntries, progressPhotos, workoutSessions } = state;
   const todayMacros = getTodayCalories();
+  const todaySteps = getTodaySteps();
+  const stepGoal = state.preferences.dailyStepGoal;
+  const stepPct = Math.min((todaySteps / stepGoal) * 100, 100);
   const todayWorkout = workouts.find(w => w.id === todayWorkoutId);
   const recentPhotos = progressPhotos.slice(-3).reverse();
 
@@ -91,6 +114,9 @@ export default function Home() {
 
   const currentStreak = Math.min(workoutSessions.length, 30);
   const totalPoints = (workoutSessions.length * 100) + (progressPhotos.length * 50) + (badges.filter(b => b.unlocked).length * 200);
+  const unlockedBadges = badges.filter(b => b.unlocked).length;
+  const userLevel = getUserLevel(totalPoints);
+  const motivationalMessage = getMotivationalMessage(profile.goal);
 
   // Weekly weight data for chart
   const weekData = weightEntries.slice(-7).map(e => ({
@@ -104,60 +130,253 @@ export default function Home() {
   return (
     <div className="min-h-screen" style={{ background: '#0d0d0f' }}>
       {/* ── Hero Section ── */}
-      <div className="relative overflow-hidden" style={{ height: 220 }}>
+      <div className="relative overflow-hidden" style={{ minHeight: 278 }}>
         <img
           src={HERO_BG}
           alt="background"
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ opacity: 0.35 }}
+          style={{ opacity: 0.24 }}
         />
         <div
           className="absolute inset-0"
-          style={{ background: 'linear-gradient(to bottom, rgba(13,13,15,0.2) 0%, rgba(13,13,15,0.95) 100%)' }}
+          style={{
+            background: 'linear-gradient(180deg, rgba(10,10,12,0.18) 0%, rgba(13,13,15,0.78) 52%, rgba(13,13,15,0.98) 100%)',
+          }}
         />
-        <div className="relative z-10 px-5 pt-8 pb-4 flex items-start justify-between h-full">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <p className="text-sm font-medium mb-0.5" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Outfit' }}>
-              {getGreeting()},
-            </p>
-            <h1
-              className="text-2xl font-bold text-white leading-tight"
-              style={{ fontFamily: 'Space Grotesk' }}
+        <div
+          className="absolute -top-10 -right-10 w-44 h-44 rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(var(--theme-accent-rgb),0.22) 0%, rgba(var(--theme-accent-rgb),0) 72%)' }}
+        />
+        <div
+          className="absolute top-16 -left-10 w-36 h-36 rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%)' }}
+        />
+
+        <div className="relative z-10 px-5 pt-7 pb-5">
+          <div className="flex items-start justify-between gap-4">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              className="flex-1 pt-1"
             >
-              {profile.name} 👋
-            </h1>
-            <div className="flex items-center gap-2 mt-1.5">
-              <span
-                className="text-xs px-2.5 py-0.5 rounded-full font-medium"
-                style={{ background: 'rgba(var(--theme-accent-rgb), 0.2)', color: 'var(--theme-accent)', fontFamily: 'Outfit' }}
+              <div
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-3"
+                style={{
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  backdropFilter: 'blur(10px)',
+                }}
               >
-                <Zap size={10} className="inline mr-1" />
-                {GOAL_LABELS[profile.goal]}
-              </span>
-              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Outfit' }}>
-                {profile.weight} kg
-              </span>
-            </div>
-          </motion.div>
+                <Activity size={12} style={{ color: 'var(--theme-accent)' }} />
+                <span className="text-[11px] font-medium uppercase tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.62)', fontFamily: 'Outfit' }}>
+                  Painel de hoje
+                </span>
+              </div>
+
+              <p className="text-sm font-medium mb-1" style={{ color: 'rgba(255,255,255,0.52)', fontFamily: 'Outfit' }}>
+                {getGreeting()},
+              </p>
+              <h1
+                className="text-[28px] font-bold text-white leading-tight tracking-[-0.03em]"
+                style={{ fontFamily: 'Space Grotesk' }}
+              >
+                {profile.name} <span style={{ color: 'var(--theme-accent)' }}>👋</span>
+              </h1>
+              <p className="text-sm leading-relaxed mt-2 max-w-[240px]" style={{ color: 'rgba(255,255,255,0.62)', fontFamily: 'Outfit' }}>
+                {motivationalMessage}
+              </p>
+
+              <div className="flex flex-wrap items-center gap-2 mt-3">
+                <span
+                  className="text-xs px-3 py-1 rounded-full font-medium inline-flex items-center gap-1.5"
+                  style={{
+                    background: 'rgba(var(--theme-accent-rgb), 0.18)',
+                    color: 'var(--theme-accent)',
+                    border: '1px solid rgba(var(--theme-accent-rgb), 0.25)',
+                    fontFamily: 'Outfit',
+                  }}
+                >
+                  <Zap size={11} />
+                  {GOAL_LABELS[profile.goal]}
+                </span>
+                <span
+                  className="text-xs px-3 py-1 rounded-full font-medium inline-flex items-center gap-1.5"
+                  style={{
+                    background: 'rgba(255,255,255,0.06)',
+                    color: 'rgba(255,255,255,0.78)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    fontFamily: 'Outfit',
+                  }}
+                >
+                  <Award size={11} />
+                  {profile.weight} kg atuais
+                </span>
+                <span
+                  className="text-xs px-3 py-1 rounded-full font-medium inline-flex items-center gap-1.5"
+                  style={{
+                    background: 'rgba(255,215,64,0.10)',
+                    color: '#ffd84d',
+                    border: '1px solid rgba(255,215,64,0.18)',
+                    fontFamily: 'Outfit',
+                  }}
+                >
+                  <Award size={11} />
+                  Nível {userLevel}
+                </span>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85, y: -6 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: 0.1 }}
+              className="relative shrink-0"
+            >
+              <div
+                className="absolute inset-0 rounded-[28px] blur-2xl"
+                style={{ background: 'rgba(var(--theme-accent-rgb), 0.20)' }}
+              />
+              <div
+                className="relative w-[74px] h-[74px] rounded-[26px] overflow-hidden"
+                style={{
+                  border: '1.5px solid rgba(var(--theme-accent-rgb), 0.42)',
+                  boxShadow: '0 12px 36px rgba(0,0,0,0.35), 0 0 22px rgba(var(--theme-accent-rgb), 0.16)',
+                }}
+              >
+                <img src={AVATAR_IMG} alt="avatar" className="w-full h-full object-cover" />
+              </div>
+              <div
+                className="absolute -bottom-2 -right-2 px-2.5 py-1 rounded-full text-[10px] font-semibold"
+                style={{
+                  background: 'rgba(10,10,12,0.86)',
+                  border: '1px solid rgba(var(--theme-accent-rgb), 0.35)',
+                  color: 'var(--theme-accent)',
+                  fontFamily: 'Outfit',
+                  backdropFilter: 'blur(10px)',
+                }}
+              >
+                online
+              </div>
+            </motion.div>
+          </div>
+
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            className="flex gap-2 items-start"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.12 }}
+            className="grid grid-cols-3 gap-2 mt-5"
           >
-            <ThemeMenu />
             <div
-              className="w-14 h-14 rounded-2xl overflow-hidden"
+              className="rounded-2xl px-3 py-3"
               style={{
-                border: '2px solid rgba(var(--theme-accent-rgb), 0.5)',
-                boxShadow: '0 0 20px rgba(var(--theme-accent-rgb), 0.3)',
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                backdropFilter: 'blur(14px)',
               }}
             >
-              <img src={AVATAR_IMG} alt="avatar" className="w-full h-full object-cover" />
+              <p className="text-[10px] uppercase tracking-[0.18em] mb-1" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Outfit' }}>
+                Nível
+              </p>
+              <p className="text-base font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                {userLevel}
+              </p>
+              <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.52)', fontFamily: 'Outfit' }}>
+                {totalPoints} pts
+              </p>
+            </div>
+
+            <div
+              className="rounded-2xl px-3 py-3"
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                backdropFilter: 'blur(14px)',
+              }}
+            >
+              <p className="text-[10px] uppercase tracking-[0.18em] mb-1" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Outfit' }}>
+                Badges
+              </p>
+              <p className="text-base font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                {unlockedBadges}/{badges.length}
+              </p>
+              <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.52)', fontFamily: 'Outfit' }}>
+                liberadas
+              </p>
+            </div>
+
+            <div
+              className="rounded-2xl px-3 py-3"
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                backdropFilter: 'blur(14px)',
+              }}
+            >
+              <p className="text-[10px] uppercase tracking-[0.18em] mb-1" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Outfit' }}>
+                Hoje
+              </p>
+              <p className="text-base font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                {todayWorkout ? 'Treino' : 'Livre'}
+              </p>
+              <p className="text-[11px] mt-1 truncate" style={{ color: 'rgba(255,255,255,0.52)', fontFamily: 'Outfit' }}>
+                {todaySteps.toLocaleString('pt-BR')} passos
+              </p>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+            className="grid grid-cols-2 gap-3 mt-3"
+          >
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                backdropFilter: 'blur(14px)',
+              }}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(var(--theme-accent-rgb), 0.16)' }}>
+                  <Target size={15} style={{ color: 'var(--theme-accent)' }} />
+                </div>
+                <span className="text-[11px] uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.46)', fontFamily: 'Outfit' }}>
+                  Meta atual
+                </span>
+              </div>
+              <p className="text-sm font-semibold text-white leading-snug" style={{ fontFamily: 'Space Grotesk' }}>
+                {GOAL_LABELS[profile.goal]}
+              </p>
+              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.52)', fontFamily: 'Outfit' }}>
+                foco principal do seu plano
+              </p>
+            </div>
+
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{
+                background: 'linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.16) 0%, rgba(255,255,255,0.04) 100%)',
+                border: '1px solid rgba(var(--theme-accent-rgb), 0.20)',
+                backdropFilter: 'blur(14px)',
+              }}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(10,10,12,0.24)' }}>
+                  <Flame size={15} style={{ color: 'var(--theme-accent)' }} />
+                </div>
+                <span className="text-[11px] uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.46)', fontFamily: 'Outfit' }}>
+                  Restante hoje
+                </span>
+              </div>
+              <p className="text-sm font-semibold text-white leading-snug" style={{ fontFamily: 'Space Grotesk' }}>
+                {remaining.toLocaleString('pt-BR')} kcal
+              </p>
+              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.56)', fontFamily: 'Outfit' }}>
+                para chegar na sua meta diária
+              </p>
             </div>
           </motion.div>
         </div>
@@ -229,6 +448,60 @@ export default function Home() {
             </div>
           </div>
         </motion.div>
+
+        {/* ── Passos do Dia ── */}
+        {state.preferences.stepTrackingEnabled && (
+          <motion.div
+            custom={1}
+            variants={cardVariants}
+            initial="hidden"
+            animate="visible"
+            className="fitpro-card p-4"
+            style={{ boxShadow: '0 0 25px rgba(var(--theme-accent-rgb), 0.1), 0 4px 20px rgba(0,0,0,0.35)' }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(59,130,246,0.15)' }}>
+                  <Activity size={16} style={{ color: '#60a5fa' }} />
+                </div>
+                <span className="text-sm font-semibold text-white" style={{ fontFamily: 'Space Grotesk' }}>Passos de Hoje</span>
+              </div>
+              <button onClick={() => navigate('/perfil')} className="flex items-center gap-0.5">
+                <span className="text-xs" style={{ color: 'var(--theme-accent)', fontFamily: 'Outfit' }}>Configurar</span>
+                <ChevronRight size={12} style={{ color: 'var(--theme-accent)' }} />
+              </button>
+            </div>
+
+            <div className="flex items-end justify-between gap-4 mb-3">
+              <div>
+                <p className="text-2xl font-bold text-white leading-none" style={{ fontFamily: 'Space Grotesk' }}>
+                  {todaySteps.toLocaleString('pt-BR')}
+                </p>
+                <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Outfit' }}>
+                  Meta diária de {stepGoal.toLocaleString('pt-BR')} passos
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-lg font-bold" style={{ color: 'var(--theme-accent)', fontFamily: 'Space Grotesk' }}>
+                  {Math.round(stepPct)}%
+                </p>
+                <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>
+                  da meta
+                </p>
+              </div>
+            </div>
+
+            <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+              <motion.div
+                className="h-full rounded-full"
+                style={{ background: 'linear-gradient(90deg, #60a5fa 0%, var(--theme-accent) 100%)' }}
+                initial={{ width: 0 }}
+                animate={{ width: `${stepPct}%` }}
+                transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
+              />
+            </div>
+          </motion.div>
+        )}
 
         {/* ── Treino do Dia ── */}
         <motion.div custom={1} variants={cardVariants} initial="hidden" animate="visible">

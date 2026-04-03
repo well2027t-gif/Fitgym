@@ -8,7 +8,6 @@ import { ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'wouter';
 import BottomTabBar from './BottomTabBar';
-import FloatingMenu from './FloatingMenu';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -48,7 +47,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
         </motion.main>
       </AnimatePresence>
       <BottomTabBar />
-      <FloatingMenu />
     </div>
   );
 }

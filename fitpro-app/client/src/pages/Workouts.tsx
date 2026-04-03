@@ -52,11 +52,28 @@ function MuscleGroupBadge({ muscle }: { muscle: string }) {
   const color = MUSCLE_COLORS[muscle] || MUSCLE_COLORS['Peito'];
   return (
     <motion.span
-      whileHover={{ scale: 1.05 }}
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
-      style={{ background: color.bg, border: `1.5px solid ${color.border}`, color: color.text, fontFamily: 'Space Grotesk' }}
+      whileHover={{ scale: 1.03 }}
+      className="inline-flex items-center gap-2 rounded-2xl px-2.5 py-2 text-[11px] font-semibold"
+      style={{
+        background: 'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.03) 100%)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        color: 'rgba(255,255,255,0.9)',
+        fontFamily: 'Space Grotesk',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+      }}
     >
-      {muscle}
+      <span
+        className="w-6 h-6 rounded-full flex items-center justify-center text-[12px]"
+        style={{
+          background: `linear-gradient(135deg, ${color.bg} 0%, rgba(255,255,255,0.03) 100%)`,
+          border: `1px solid ${color.border}55`,
+          color: color.text,
+          boxShadow: `0 0 18px ${color.border}22`,
+        }}
+      >
+        {color.icon}
+      </span>
+      <span>{muscle}</span>
     </motion.span>
   );
 }
@@ -140,31 +157,67 @@ function WorkoutCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="fitpro-card overflow-hidden group"
+      className="fitpro-card relative overflow-hidden group"
       style={{
-        background: `linear-gradient(135deg, ${muscleColor.bg} 0%, rgba(13,13,15,0.8) 100%)`,
-        border: `1px solid ${muscleColor.border}33`,
+        background: 'linear-gradient(180deg, rgba(24,24,27,0.98) 0%, rgba(15,15,17,0.96) 100%)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        boxShadow: '0 22px 55px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.04)',
       }}
     >
+      <div
+        className="absolute inset-x-0 top-0 h-28"
+        style={{
+          background: `radial-gradient(circle at top right, ${muscleColor.border}22 0%, rgba(0,0,0,0) 58%)`,
+        }}
+      />
+      <div
+        className="absolute left-4 right-4 top-0 h-px"
+        style={{ background: `linear-gradient(90deg, transparent 0%, ${muscleColor.border}66 48%, transparent 100%)` }}
+      />
+
       {/* Header */}
-      <div className="p-4 pb-3">
+      <div className="relative z-10 p-4 pb-3">
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
-            <h3 className="text-base font-bold text-white mb-1" style={{ fontFamily: 'Space Grotesk' }}>
+            <p className="text-[10px] uppercase tracking-[0.18em] mb-2" style={{ color: 'rgba(255,255,255,0.38)', fontFamily: 'Space Grotesk' }}>
+              Plano premium
+            </p>
+            <h3 className="text-base font-bold text-white mb-3" style={{ fontFamily: 'Space Grotesk' }}>
               {workout.name}
             </h3>
-            <div className="flex items-center gap-2 flex-wrap">
-              {workout.muscleGroups.map(mg => (
-                <MuscleGroupBadge key={mg} muscle={mg} />
-              ))}
+            <div
+              className="rounded-[22px] p-3"
+              style={{
+                background: 'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.025) 100%)',
+                border: '1px solid rgba(255,255,255,0.07)',
+              }}
+            >
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.36)', fontFamily: 'Space Grotesk' }}>
+                  Foco muscular
+                </p>
+                <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.52)', fontFamily: 'Outfit' }}>
+                  {workout.muscleGroups.length} área{workout.muscleGroups.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                {workout.muscleGroups.map(mg => (
+                  <MuscleGroupBadge key={mg} muscle={mg} />
+                ))}
+              </div>
             </div>
           </div>
           {isToday && (
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1"
-              style={{ background: 'rgba(var(--theme-accent-rgb), 0.2)', color: 'var(--theme-accent)', fontFamily: 'Space Grotesk' }}
+              className="px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg"
+              style={{
+                background: 'linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.22) 0%, rgba(var(--theme-accent-rgb), 0.1) 100%)',
+                color: 'var(--theme-accent)',
+                fontFamily: 'Space Grotesk',
+                border: '1px solid rgba(var(--theme-accent-rgb), 0.2)',
+              }}
             >
               <Star size={12} fill="var(--theme-accent)" /> Hoje
             </motion.div>
@@ -173,27 +226,27 @@ function WorkoutCard({
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-2 mb-3">
-          <div className="px-2.5 py-1.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)' }}>
-            <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Outfit' }}>Exercícios</p>
-            <p className="text-sm font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>{workout.exercises.length}</p>
+          <div className="px-3 py-2 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <p className="text-[10px] uppercase tracking-[0.14em]" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>Exercícios</p>
+            <p className="text-sm font-bold text-white mt-1" style={{ fontFamily: 'Space Grotesk' }}>{workout.exercises.length}</p>
           </div>
-          <div className="px-2.5 py-1.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)' }}>
-            <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Outfit' }}>Volume</p>
-            <p className="text-sm font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>{Math.round(totalVolume)}</p>
+          <div className="px-3 py-2 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <p className="text-[10px] uppercase tracking-[0.14em]" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>Volume</p>
+            <p className="text-sm font-bold text-white mt-1" style={{ fontFamily: 'Space Grotesk' }}>{Math.round(totalVolume)}</p>
           </div>
-          <div className="px-2.5 py-1.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)' }}>
-            <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Outfit' }}>Duração</p>
-            <p className="text-sm font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>{Math.round(totalDuration)}min</p>
+          <div className="px-3 py-2 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <p className="text-[10px] uppercase tracking-[0.14em]" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>Duração</p>
+            <p className="text-sm font-bold text-white mt-1" style={{ fontFamily: 'Space Grotesk' }}>{Math.round(totalDuration)}min</p>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 rounded-[20px] p-2" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)' }}>
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => setExpanded(!expanded)}
-            className="flex-1 py-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5"
-            style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.7)', fontFamily: 'Space Grotesk' }}
+            className="flex-1 py-2.5 rounded-2xl text-xs font-semibold flex items-center justify-center gap-1.5"
+            style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.76)', fontFamily: 'Space Grotesk', border: '1px solid rgba(255,255,255,0.06)' }}
           >
             {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             {expanded ? 'Ocultar' : 'Detalhes'}
@@ -201,8 +254,8 @@ function WorkoutCard({
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={onStart}
-            className="flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 btn-glow"
-            style={{ background: 'var(--theme-accent)', color: '#0d0d0f', fontFamily: 'Space Grotesk' }}
+            className="flex-1 py-2.5 rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 btn-glow"
+            style={{ background: 'var(--theme-accent)', color: '#0d0d0f', fontFamily: 'Space Grotesk', boxShadow: '0 14px 30px rgba(var(--theme-accent-rgb), 0.22)' }}
           >
             <Play size={14} fill="#0d0d0f" /> Iniciar
           </motion.button>
@@ -262,6 +315,12 @@ export default function Workouts() {
   const { state, addWorkout, updateWorkout, deleteWorkout, setTodayWorkout, updateExercise, deleteExercise } = useApp();
   const [, navigate] = useLocation();
   const { workouts, todayWorkoutId } = state;
+  const totalExercises = workouts.reduce((sum, workout) => sum + workout.exercises.length, 0);
+  const totalVolume = workouts.reduce(
+    (sum, workout) => sum + workout.exercises.reduce((exerciseSum, ex) => exerciseSum + ex.sets * ex.reps * ex.weight, 0),
+    0
+  );
+  const todayWorkout = workouts.find(workout => workout.id === todayWorkoutId) ?? null;
 
   const [showWorkoutForm, setShowWorkoutForm] = useState(false);
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
@@ -366,32 +425,110 @@ export default function Workouts() {
   return (
     <div className="min-h-screen" style={{ background: '#0d0d0f' }}>
       {/* Header */}
-      <div className="relative overflow-hidden" style={{ height: 180 }}>
-        <img src={WORKOUT_BG} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.25 }} />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(13,13,15,0.2) 0%, rgba(13,13,15,0.98) 100%)' }} />
-        <div className="relative z-10 px-5 pt-12 pb-4 flex items-end justify-between h-full">
-          <div>
-            <p className="text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Outfit' }}>SEUS TREINOS</p>
-            <h1 className="text-3xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>Treinos</h1>
-            <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Outfit' }}>{workouts.length} treino{workouts.length !== 1 ? 's' : ''} criado{workouts.length !== 1 ? 's' : ''}</p>
+      <div className="relative overflow-hidden px-4 pt-10 pb-6">
+        <img src={WORKOUT_BG} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.22 }} />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(180deg, rgba(13,13,15,0.18) 0%, rgba(13,13,15,0.86) 38%, #0d0d0f 100%)',
+          }}
+        />
+
+        <div className="relative z-10 space-y-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-3"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
+              >
+                <Flame size={12} style={{ color: 'var(--theme-accent)' }} />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.62)', fontFamily: 'Space Grotesk' }}>
+                  Central de Treinos
+                </span>
+              </div>
+              <h1 className="text-3xl font-bold text-white leading-tight" style={{ fontFamily: 'Space Grotesk' }}>
+                Seus treinos com mais
+                <span style={{ color: 'var(--theme-accent)' }}> presença</span>
+              </h1>
+              <p className="text-sm mt-2 max-w-[260px]" style={{ color: 'rgba(255,255,255,0.55)', fontFamily: 'Outfit' }}>
+                Organize sua rotina, escolha o treino do dia e acompanhe sua carga de forma mais clara.
+              </p>
+            </div>
+
+            <motion.button
+              whileTap={{ scale: 0.92 }}
+              onClick={openNewWorkout}
+              className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold shadow-lg btn-glow"
+              style={{ background: 'var(--theme-accent)', color: '#0d0d0f', fontFamily: 'Space Grotesk' }}
+            >
+              <Plus size={18} />
+              Novo
+            </motion.button>
           </div>
-          <motion.button
-            whileTap={{ scale: 0.92 }}
-            onClick={openNewWorkout}
-            className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold btn-glow"
-            style={{ background: 'var(--theme-accent)', color: '#0d0d0f', fontFamily: 'Space Grotesk' }}
+
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-2xl p-3.5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(14px)' }}>
+              <p className="text-[10px] uppercase tracking-[0.16em] mb-2" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Treinos</p>
+              <p className="text-2xl font-bold text-white leading-none" style={{ fontFamily: 'Space Grotesk' }}>{workouts.length}</p>
+              <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'Outfit' }}>rotinas salvas</p>
+            </div>
+            <div className="rounded-2xl p-3.5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(14px)' }}>
+              <p className="text-[10px] uppercase tracking-[0.16em] mb-2" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Exercícios</p>
+              <p className="text-2xl font-bold text-white leading-none" style={{ fontFamily: 'Space Grotesk' }}>{totalExercises}</p>
+              <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'Outfit' }}>na sua biblioteca</p>
+            </div>
+            <div className="rounded-2xl p-3.5" style={{ background: 'rgba(var(--theme-accent-rgb), 0.12)', border: '1px solid rgba(var(--theme-accent-rgb), 0.22)', backdropFilter: 'blur(14px)' }}>
+              <p className="text-[10px] uppercase tracking-[0.16em] mb-2" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Volume</p>
+              <p className="text-2xl font-bold text-white leading-none" style={{ fontFamily: 'Space Grotesk' }}>{Math.round(totalVolume)}</p>
+              <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.55)', fontFamily: 'Outfit' }}>carga total</p>
+            </div>
+          </div>
+
+          <div
+            className="rounded-[24px] p-4"
+            style={{
+              background: 'linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.16) 0%, rgba(255,255,255,0.04) 100%)',
+              border: '1px solid rgba(var(--theme-accent-rgb), 0.18)',
+              boxShadow: '0 18px 50px rgba(0,0,0,0.28)',
+            }}
           >
-            <Plus size={18} />
-            Novo Treino
-          </motion.button>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.18em] mb-2" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Treino do dia</p>
+                <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                  {todayWorkout ? todayWorkout.name : 'Nenhum treino definido'}
+                </h2>
+                <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.55)', fontFamily: 'Outfit' }}>
+                  {todayWorkout
+                    ? `${todayWorkout.exercises.length} exercícios para manter consistência e intensidade.`
+                    : 'Escolha um treino abaixo para destacar sua rotina principal de hoje.'}
+                </p>
+              </div>
+              <div className="px-3 py-2 rounded-2xl text-right" style={{ background: 'rgba(13,13,15,0.34)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <p className="text-[10px] uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Grotesk' }}>Status</p>
+                <p className="text-sm font-bold mt-1" style={{ color: todayWorkout ? 'var(--theme-accent)' : 'rgba(255,255,255,0.75)', fontFamily: 'Space Grotesk' }}>
+                  {todayWorkout ? 'Pronto para iniciar' : 'Selecione abaixo'}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Workouts List */}
-      <div className="px-4 pb-6 space-y-3 -mt-2">
+      <div className="px-4 pb-6 space-y-3">
+        <div className="flex items-center justify-between px-1 pt-1">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.36)', fontFamily: 'Space Grotesk' }}>Biblioteca</p>
+            <h3 className="text-lg font-bold text-white mt-1" style={{ fontFamily: 'Space Grotesk' }}>Seus planos de treino</h3>
+          </div>
+          <div className="px-3 py-1.5 rounded-full text-xs font-semibold" style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.6)', fontFamily: 'Outfit' }}>
+            {workouts.length} item{workouts.length !== 1 ? 's' : ''}
+          </div>
+        </div>
         <AnimatePresence>
           {workouts.length === 0 ? (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fitpro-card p-10 text-center mt-4">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fitpro-card p-10 text-center mt-4" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(var(--theme-accent-rgb), 0.05) 100%)', border: '1px solid rgba(255,255,255,0.08)' }}>
               <motion.div
                 animate={{ rotate: [0, -5, 5, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
@@ -399,8 +536,8 @@ export default function Workouts() {
               >
                 <Dumbbell size={48} style={{ color: 'rgba(255,255,255,0.15)' }} />
               </motion.div>
-              <p className="text-base font-bold text-white mb-1" style={{ fontFamily: 'Space Grotesk' }}>Nenhum treino ainda</p>
-              <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>Crie seu primeiro treino personalizado</p>
+              <p className="text-base font-bold text-white mb-1" style={{ fontFamily: 'Space Grotesk' }}>Sua biblioteca está vazia</p>
+              <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>Monte seu primeiro treino personalizado com um visual mais organizado e profissional</p>
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={openNewWorkout}
