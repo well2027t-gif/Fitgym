@@ -45,11 +45,6 @@ export default function BottomTabBar() {
   
   // Verificar se estamos na tela de conversa com profissional
   const isInProfessionalChat = location.startsWith('/profissionais/chat/');
-  
-  // Se estamos na tela de conversa, não renderizar o menu
-  if (isInProfessionalChat) {
-    return null;
-  }
 
   useEffect(() => {
     const body = document.body;
@@ -75,6 +70,10 @@ export default function BottomTabBar() {
   }, [menuOpen]);
 
   const isMenuActive = menuItems.some(({ path }) => location === path || location.startsWith(path + '/'));
+
+  if (isInProfessionalChat) {
+    return null;
+  }
 
   const handleMenuNavigate = (path: string) => {
     setMenuOpen(false);
