@@ -132,6 +132,12 @@ export interface StepEntry {
   updatedAt?: string;
 }
 
+export interface WaterEntry {
+  date: string; // YYYY-MM-DD
+  cups: number;
+  updatedAt?: string;
+}
+
 export interface NotificationReminder {
   id: string;
   type: 'workout' | 'meal' | 'water' | 'weight_check' | 'cycle_start';
@@ -149,6 +155,8 @@ export interface UserPreferences {
   stepTrackingEnabled: boolean;
   dailyStepGoal: number;
   lastSyncTime?: string;
+  waterGoalLiters: number; // meta diária de água em litros
+  cupSizeMl: number;       // tamanho do copo em ml
 }
 
 export interface Badge {
@@ -215,6 +223,7 @@ export interface AppState {
   stats: UserStats;
   workoutPlans: WorkoutPlan[];
   stepEntries: StepEntry[];
+  waterEntries: WaterEntry[];
   preferences: UserPreferences;
   cycleEntries: CycleEntry[];
   cycleProfile: CycleProfile | null;
@@ -325,6 +334,13 @@ const defaultState: AppState = {
       updatedAt: new Date().toISOString(),
     },
   ],
+  waterEntries: [
+    {
+      date: new Date().toISOString().split('T')[0],
+      cups: 0,
+      updatedAt: new Date().toISOString(),
+    },
+  ],
   preferences: {
     theme: 'green',
     notifications: [
@@ -335,6 +351,8 @@ const defaultState: AppState = {
     offlineMode: false,
     stepTrackingEnabled: true,
     dailyStepGoal: 8000,
+    waterGoalLiters: 2.5,
+    cupSizeMl: 250,
   },
   cycleEntries: [
     {
@@ -440,6 +458,9 @@ interface AppContextValue {
   updateCycleEntry: (id: string, entry: Partial<CycleEntry>) => void;
   deleteCycleEntry: (id: string) => void;
   updateCycleProfile: (profile: Partial<CycleProfile>) => void;
+  getTodayWaterCups: () => number;
+  setTodayWaterCups: (cups: number) => void;
+  getWaterHistory: (days?: number) => Array<{ date: string; cups: number; liters: number }>;
 }
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);
@@ -458,6 +479,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           profile: { ...defaultState.profile, ...parsed.profile },
           preferences: { ...defaultState.preferences, ...parsed.preferences },
           cycleEntries: parsed.cycleEntries || [],
+          waterEntries: parsed.waterEntries || defaultState.waterEntries,
         };
       } catch (e) {
         return defaultState;
@@ -743,6 +765,40 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  // ─── Water / Hydration ────────────────────────────────────────────────────────
+
+  const getTodayWaterCups = useCallback(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return state.waterEntries.find(e => e.date === today)?.cups ?? 0;
+  }, [state.waterEntries]);
+
+  const setTodayWaterCups = useCallback((cups: number) => {
+    const nextCups = Math.max(0, Math.round(cups));
+    const today = new Date().toISOString().split('T')[0];
+    setState(s => {
+      const existing = s.waterEntries.find(e => e.date === today);
+      const waterEntries = existing
+        ? s.waterEntries.map(e => e.date === today ? { ...e, cups: nextCups, updatedAt: new Date().toISOString() } : e)
+        : [...s.waterEntries, { date: today, cups: nextCups, updatedAt: new Date().toISOString() }];
+      return { ...s, waterEntries };
+    });
+  }, []);
+
+  const getWaterHistory = useCallback((days: number = 7) => {
+    const cupSizeMl = state.preferences.cupSizeMl || 250;
+    const result: Array<{ date: string; cups: number; liters: number }> = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 86400000).toISOString().split('T')[0];
+      const entry = state.waterEntries.find(e => e.date === d);
+      result.push({
+        date: d,
+        cups: entry?.cups ?? 0,
+        liters: parseFloat(((entry?.cups ?? 0) * cupSizeMl / 1000).toFixed(2)),
+      });
+    }
+    return result;
+  }, [state.waterEntries, state.preferences.cupSizeMl]);
+
   return (
     <AppContext.Provider value={{
       state,
@@ -779,6 +835,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       updateCycleEntry,
       deleteCycleEntry,
       updateCycleProfile,
+      getTodayWaterCups,
+      setTodayWaterCups,
+      getWaterHistory,
     }}>
       {children}
     </AppContext.Provider>

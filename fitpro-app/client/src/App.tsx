@@ -28,6 +28,8 @@ import WorkoutActive from './pages/WorkoutActive';
 import WorkoutPlans from './pages/WorkoutPlans';
 import Workouts from './pages/Workouts';
 import Cycle from './pages/Cycle';
+import Hydration from './pages/Hydration';
+import Steps from './pages/Steps';
 
 function Router() {
   return (
@@ -45,6 +47,8 @@ function Router() {
         <Route path="/temas" component={Themes} />
         <Route path="/compartilhar" component={Share} />
         <Route path="/ciclo" component={Cycle} />
+        <Route path="/hidratacao" component={Hydration} />
+        <Route path="/passos" component={Steps} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

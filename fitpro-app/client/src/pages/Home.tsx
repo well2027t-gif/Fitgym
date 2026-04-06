@@ -7,13 +7,13 @@
 
 import { useApp } from '@/contexts/AppContext';
 import { useLocation } from '@/lib/router';
-import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
 import GamificationCard from '@/components/GamificationCard';
 import {
   Flame, Dumbbell, Apple, TrendingUp, ChevronRight,
   Zap, Target, Award, Play, Camera, Activity,
-  Droplets, Heart, Dna
+  Droplets, Heart, Dna, Settings, Plus, Minus, Check, X
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip
@@ -92,20 +92,21 @@ const cardVariants = {
 };
 
 export default function Home() {
-  const { state, getTodayCalories, getTodaySteps } = useApp();
+  const { state, getTodayCalories, getTodaySteps, getTodayWaterCups, setTodayWaterCups, updatePreferences } = useApp();
   const [, navigate] = useLocation();
   const { profile, workouts, todayWorkoutId, weightEntries, progressPhotos, workoutSessions } = state;
 
-  // Widget de água — persiste por dia
-  const todayKey = new Date().toISOString().split('T')[0];
-  const [waterCups, setWaterCups] = useState<number>(() => {
-    const saved = localStorage.getItem('fitpro_water_' + todayKey);
-    return saved ? parseInt(saved) : 0;
-  });
-  useEffect(() => {
-    localStorage.setItem('fitpro_water_' + todayKey, String(waterCups));
-  }, [waterCups, todayKey]);
-  const WATER_GOAL = 8;
+  // Widget de água — usa AppContext para persistência e configuração
+  const waterCups = getTodayWaterCups();
+  const cupSizeMl = state.preferences.cupSizeMl || 250;
+  const waterGoalLiters = state.preferences.waterGoalLiters || 2.5;
+  const WATER_GOAL = Math.max(1, Math.round((waterGoalLiters * 1000) / cupSizeMl));
+  const waterLitersConsumed = parseFloat(((waterCups * cupSizeMl) / 1000).toFixed(2));
+
+  // Modal de configuração de hidratação
+  const [showWaterConfig, setShowWaterConfig] = useState(false);
+  const [configGoalLiters, setConfigGoalLiters] = useState(waterGoalLiters);
+  const [configCupSizeMl, setConfigCupSizeMl] = useState(cupSizeMl);
 
   // Ciclo menstrual — fase atual
   const cycleProfile = state.cycleProfile;
@@ -496,15 +497,36 @@ export default function Home() {
               <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(56,189,248,0.15)' }}>
                 <Droplets size={16} style={{ color: '#38bdf8' }} />
               </div>
-              <span className="text-sm font-semibold text-white" style={{ fontFamily: 'Space Grotesk' }}>Hidratação</span>
+              <div>
+                <span className="text-sm font-semibold text-white" style={{ fontFamily: 'Space Grotesk' }}>Hidratação</span>
+                <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>
+                  Meta: {waterGoalLiters}L • Copo: {cupSizeMl}ml
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold" style={{ color: '#38bdf8', fontFamily: 'Space Grotesk' }}>
-                {waterCups}/{WATER_GOAL} copos
-              </span>
-              {waterCups >= WATER_GOAL && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{ background: 'rgba(56,189,248,0.2)', color: '#38bdf8' }}>Meta!</span>
-              )}
+              <div className="text-right">
+                <span className="text-xs font-bold" style={{ color: '#38bdf8', fontFamily: 'Space Grotesk' }}>
+                  {waterLitersConsumed}L / {waterGoalLiters}L
+                </span>
+                {waterCups >= WATER_GOAL && (
+                  <div><span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{ background: 'rgba(56,189,248,0.2)', color: '#38bdf8' }}>Meta!</span></div>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button onClick={() => navigate('/hidratacao')} className="flex items-center gap-0.5">
+                  <span className="text-xs" style={{ color: '#38bdf8', fontFamily: 'Outfit' }}>Detalhes</span>
+                  <ChevronRight size={12} style={{ color: '#38bdf8' }} />
+                </button>
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => { setConfigGoalLiters(waterGoalLiters); setConfigCupSizeMl(cupSizeMl); setShowWaterConfig(true); }}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center"
+                  style={{ background: 'rgba(56,189,248,0.12)', border: '1px solid rgba(56,189,248,0.2)' }}
+                >
+                  <Settings size={14} style={{ color: '#38bdf8' }} />
+                </motion.button>
+              </div>
             </div>
           </div>
 
@@ -521,10 +543,10 @@ export default function Home() {
 
           {/* Copos interativos */}
           <div className="flex gap-2 flex-wrap">
-            {Array.from({ length: WATER_GOAL }).map((_, i) => (
+            {Array.from({ length: Math.min(WATER_GOAL, 12) }).map((_, i) => (
               <motion.button
                 key={i}
-                onClick={() => setWaterCups(i < waterCups ? i : i + 1)}
+                onClick={() => setTodayWaterCups(i < waterCups ? i : i + 1)}
                 className="flex-1 min-w-[32px] h-9 rounded-xl flex items-center justify-center transition-all"
                 style={{
                   background: i < waterCups ? 'rgba(56,189,248,0.25)' : 'rgba(255,255,255,0.04)',
@@ -892,6 +914,126 @@ export default function Home() {
           </div>
         </motion.div>
       </div>
+
+      {/* Modal de Configuração de Hidratação */}
+      <AnimatePresence>
+        {showWaterConfig && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end"
+            style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)' }}
+            onClick={e => { if (e.target === e.currentTarget) setShowWaterConfig(false); }}
+          >
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+              className="w-full max-w-lg mx-auto rounded-t-3xl overflow-y-auto"
+              style={{ background: '#161618', maxHeight: '90vh' }}
+            >
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }} />
+              </div>
+              <div className="px-5 pb-8 pt-2">
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(56,189,248,0.15)' }}>
+                      <Droplets size={16} style={{ color: '#38bdf8' }} />
+                    </div>
+                    <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>Configurar Hidratação</h2>
+                  </div>
+                  <button onClick={() => setShowWaterConfig(false)}>
+                    <X size={20} style={{ color: 'rgba(255,255,255,0.5)' }} />
+                  </button>
+                </div>
+
+                {/* Meta diária */}
+                <div className="mb-5">
+                  <label className="text-xs font-semibold mb-3 block" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Outfit', letterSpacing: '0.1em' }}>META DIÁRIA DE ÁGUA</label>
+                  <div className="rounded-2xl p-4" style={{ background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.15)' }}>
+                    <div className="flex items-center justify-between gap-3 mb-3">
+                      <div>
+                        <p className="text-2xl font-bold" style={{ color: '#38bdf8', fontFamily: 'Space Grotesk' }}>{configGoalLiters.toFixed(1)} L</p>
+                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Outfit' }}>
+                          = {Math.round((configGoalLiters * 1000) / configCupSizeMl)} copos de {configCupSizeMl}ml
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <motion.button whileTap={{ scale: 0.9 }} onClick={() => setConfigGoalLiters(v => Math.max(0.5, parseFloat((v - 0.25).toFixed(2))))} className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                          <Minus size={16} style={{ color: 'rgba(255,255,255,0.7)' }} />
+                        </motion.button>
+                        <motion.button whileTap={{ scale: 0.9 }} onClick={() => setConfigGoalLiters(v => parseFloat((v + 0.25).toFixed(2)))} className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(56,189,248,0.2)' }}>
+                          <Plus size={16} style={{ color: '#38bdf8' }} />
+                        </motion.button>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      {[1.5, 2.0, 2.5, 3.0, 3.5].map(v => (
+                        <motion.button key={v} whileTap={{ scale: 0.9 }} onClick={() => setConfigGoalLiters(v)} className="flex-1 py-1.5 rounded-lg text-xs font-semibold" style={{ background: configGoalLiters === v ? 'rgba(56,189,248,0.25)' : 'rgba(255,255,255,0.06)', color: configGoalLiters === v ? '#38bdf8' : 'rgba(255,255,255,0.5)', border: configGoalLiters === v ? '1px solid rgba(56,189,248,0.4)' : '1px solid transparent', fontFamily: 'Space Grotesk' }}>
+                          {v}L
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tamanho do copo */}
+                <div className="mb-6">
+                  <label className="text-xs font-semibold mb-3 block" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Outfit', letterSpacing: '0.1em' }}>TAMANHO DO COPO</label>
+                  <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <div className="flex items-center justify-between gap-3 mb-3">
+                      <div>
+                        <p className="text-2xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>{configCupSizeMl} ml</p>
+                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Outfit' }}>por copo</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <motion.button whileTap={{ scale: 0.9 }} onClick={() => setConfigCupSizeMl(v => Math.max(100, v - 50))} className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                          <Minus size={16} style={{ color: 'rgba(255,255,255,0.7)' }} />
+                        </motion.button>
+                        <motion.button whileTap={{ scale: 0.9 }} onClick={() => setConfigCupSizeMl(v => Math.min(1000, v + 50))} className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(var(--theme-accent-rgb), 0.18)' }}>
+                          <Plus size={16} style={{ color: 'var(--theme-accent)' }} />
+                        </motion.button>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      {[150, 200, 250, 300, 500].map(v => (
+                        <motion.button key={v} whileTap={{ scale: 0.9 }} onClick={() => setConfigCupSizeMl(v)} className="flex-1 py-1.5 rounded-lg text-xs font-semibold" style={{ background: configCupSizeMl === v ? 'rgba(var(--theme-accent-rgb), 0.2)' : 'rgba(255,255,255,0.06)', color: configCupSizeMl === v ? 'var(--theme-accent)' : 'rgba(255,255,255,0.5)', border: configCupSizeMl === v ? '1px solid rgba(var(--theme-accent-rgb), 0.4)' : '1px solid transparent', fontFamily: 'Space Grotesk' }}>
+                          {v}ml
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl p-3 mb-4" style={{ background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.12)' }}>
+                  <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Outfit' }}>
+                    Você precisará beber{' '}
+                    <span style={{ color: '#38bdf8', fontWeight: 600 }}>{Math.round((configGoalLiters * 1000) / configCupSizeMl)} copos de {configCupSizeMl}ml</span>{' '}
+                    por dia para atingir sua meta de{' '}
+                    <span style={{ color: '#38bdf8', fontWeight: 600 }}>{configGoalLiters.toFixed(1)}L</span>.
+                  </p>
+                </div>
+
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => {
+                    updatePreferences({ waterGoalLiters: configGoalLiters, cupSizeMl: configCupSizeMl });
+                    setShowWaterConfig(false);
+                  }}
+                  className="w-full py-3.5 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2"
+                  style={{ background: 'linear-gradient(135deg, #38bdf8, #818cf8)', color: '#0d0d0f', fontFamily: 'Space Grotesk' }}
+                >
+                  <Check size={16} />
+                  Salvar Configurações
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
