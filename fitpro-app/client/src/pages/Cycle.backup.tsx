@@ -201,16 +201,6 @@ export default function Cycle() {
     setShowDayModal(true);
   };
 
-  const handleSaveProfile = () => {
-    if (!profileForm.cycleLengthDays || !profileForm.menstruationDays) {
-      toast.error('Preencha todos os campos obrigatórios!');
-      return;
-    }
-    updateCycleProfile(profileForm as CycleProfile);
-    setShowSettingsModal(false);
-    toast.success('Perfil de ciclo atualizado com sucesso!');
-  };
-
   const handleSaveDay = () => {
     if (!selectedDate || !lastCycle) return;
 
@@ -399,22 +389,13 @@ Consulte seu médico para análise profissional.
           </div>
         </div>
         {lastCycle && (
-          <div className="flex gap-2">
-            <Button 
-              onClick={() => setShowSettingsModal(true)}
-              className="rounded-2xl gap-2 bg-white/5 hover:bg-white/10 text-white"
-            >
-              <Settings size={16} />
-              Config
-            </Button>
-            <Button 
-              onClick={handleExportReport}
-              className="rounded-2xl gap-2 bg-white/5 hover:bg-white/10 text-white"
-            >
-              <Download size={16} />
-              Exportar
-            </Button>
-          </div>
+          <Button 
+            onClick={handleExportReport}
+            className="rounded-2xl gap-2 bg-white/5 hover:bg-white/10 text-white"
+          >
+            <Download size={16} />
+            Exportar
+          </Button>
         )}
       </div>
 
@@ -990,166 +971,6 @@ Consulte seu médico para análise profissional.
                   </Button>
                   <Button 
                     onClick={handleSaveDay}
-                    className="flex-1 rounded-2xl text-white font-bold"
-                    style={{ background: 'linear-gradient(135deg, #ec4899 0%, #f472b6 100%)' }}
-                  >
-                    Salvar
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Modal de Configurações de Perfil */}
-      <AnimatePresence>
-        {showSettingsModal && (
-          <div className="fixed inset-0 z-[100] flex items-end justify-center px-4 pb-6 sm:items-center">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-              onClick={() => setShowSettingsModal(false)}
-            />
-            <motion.div 
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              className="relative w-full max-w-md bg-gradient-to-br from-[#1a1620] to-[#121418] border border-white/10 rounded-[32px] p-6 shadow-2xl max-h-[90vh] overflow-y-auto"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Settings size={20} className="text-pink-500" />
-                  Configurações de Ciclo
-                </h3>
-                <button 
-                  onClick={() => setShowSettingsModal(false)}
-                  className="text-white/40 hover:text-white transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              <div className="space-y-5">
-                {/* Duração do Ciclo */}
-                <div>
-                  <label className="text-[11px] uppercase tracking-wider text-white/40 font-bold mb-2 block">Duração Média do Ciclo (dias)</label>
-                  <input 
-                    type="number" 
-                    min="21" 
-                    max="35" 
-                    value={profileForm.cycleLengthDays || 28}
-                    onChange={(e) => setProfileForm({ ...profileForm, cycleLengthDays: parseInt(e.target.value) })}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:border-pink-500/50 transition-colors"
-                  />
-                </div>
-
-                {/* Duração da Menstruação */}
-                <div>
-                  <label className="text-[11px] uppercase tracking-wider text-white/40 font-bold mb-2 block">Duração da Menstruação (dias)</label>
-                  <input 
-                    type="number" 
-                    min="2" 
-                    max="10" 
-                    value={profileForm.menstruationDays || 5}
-                    onChange={(e) => setProfileForm({ ...profileForm, menstruationDays: parseInt(e.target.value) })}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:border-pink-500/50 transition-colors"
-                  />
-                </div>
-
-                {/* Última Menstruação */}
-                <div>
-                  <label className="text-[11px] uppercase tracking-wider text-white/40 font-bold mb-2 block">Última Menstruação</label>
-                  <input 
-                    type="date" 
-                    value={profileForm.lastMenstruationDate || ''}
-                    onChange={(e) => setProfileForm({ ...profileForm, lastMenstruationDate: e.target.value })}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:border-pink-500/50 transition-colors"
-                  />
-                </div>
-
-                {/* Anticoncepcional */}
-                <div>
-                  <label className="text-[11px] uppercase tracking-wider text-white/40 font-bold mb-2 block flex items-center gap-2">
-                    <Heart size={14} />
-                    Usa Anticoncepcional?
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[{ label: 'Sim', value: true }, { label: 'Não', value: false }].map(opt => (
-                      <button
-                        key={String(opt.value)}
-                        onClick={() => setProfileForm({ ...profileForm, useContraceptive: opt.value })}
-                        className={`py-3 rounded-2xl text-xs font-bold transition-all border ${
-                          profileForm.useContraceptive === opt.value
-                            ? 'bg-pink-500/20 border-pink-500 text-pink-500'
-                            : 'bg-white/5 border-white/5 text-white/40 hover:border-white/20'
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Tipo de Anticoncepcional */}
-                {profileForm.useContraceptive && (
-                  <div>
-                    <label className="text-[11px] uppercase tracking-wider text-white/40 font-bold mb-2 block">Tipo de Anticoncepcional</label>
-                    <select 
-                      value={profileForm.contraceptiveType || ''}
-                      onChange={(e) => setProfileForm({ ...profileForm, contraceptiveType: e.target.value })}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:border-pink-500/50 transition-colors"
-                    >
-                      <option value="">Selecione...</option>
-                      <option value="pilula">Pílula</option>
-                      <option value="diu">DIU</option>
-                      <option value="injecao">Injeção</option>
-                      <option value="implante">Implante</option>
-                      <option value="outro">Outro</option>
-                    </select>
-                  </div>
-                )}
-
-                {/* Objetivo */}
-                <div>
-                  <label className="text-[11px] uppercase tracking-wider text-white/40 font-bold mb-2 block flex items-center gap-2">
-                    <Sparkles size={14} />
-                    Qual é seu Objetivo?
-                  </label>
-                  <div className="space-y-2">
-                    {[
-                      { id: 'track', label: 'Acompanhar ciclo', description: 'Entender melhor meu ciclo' },
-                      { id: 'conceive', label: 'Engravidar', description: 'Identificar dias férteis' },
-                      { id: 'avoid', label: 'Evitar gravidez', description: 'Usar como método contraceptivo' },
-                      { id: 'performance', label: 'Performance esportiva', description: 'Otimizar treinos' },
-                    ].map(opt => (
-                      <button
-                        key={opt.id}
-                        onClick={() => setProfileForm({ ...profileForm, objective: opt.id as any })}
-                        className={`w-full p-3 rounded-2xl text-left transition-all border ${
-                          profileForm.objective === opt.id
-                            ? 'bg-pink-500/20 border-pink-500'
-                            : 'bg-white/5 border-white/5 hover:border-white/20'
-                        }`}
-                      >
-                        <p className={`text-xs font-bold ${profileForm.objective === opt.id ? 'text-pink-500' : 'text-white'}`}>{opt.label}</p>
-                        <p className="text-[10px] text-white/50 mt-1">{opt.description}</p>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Botões */}
-                <div className="flex gap-3 pt-2">
-                  <Button 
-                    variant="ghost" 
-                    onClick={() => setShowSettingsModal(false)}
-                    className="flex-1 rounded-2xl text-white/60 hover:bg-white/5"
-                  >
-                    Cancelar
-                  </Button>
-                  <Button 
-                    onClick={handleSaveProfile}
                     className="flex-1 rounded-2xl text-white font-bold"
                     style={{ background: 'linear-gradient(135deg, #ec4899 0%, #f472b6 100%)' }}
                   >

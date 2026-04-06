@@ -186,6 +186,15 @@ export interface CycleDayEntry {
   notes?: string;
 }
 
+export interface CycleProfile {
+  cycleLengthDays: number; // duração média do ciclo (ex: 28)
+  menstruationDays: number; // duração média da menstruação (ex: 5)
+  useContraceptive: boolean; // usa anticoncepcional?
+  contraceptiveType?: string; // tipo de anticoncepcional
+  objective: 'track' | 'conceive' | 'avoid' | 'performance'; // objetivo
+  lastMenstruationDate?: string; // YYYY-MM-DD
+}
+
 export interface CycleEntry {
   id: string;
   startDate: string; // YYYY-MM-DD
@@ -208,6 +217,7 @@ export interface AppState {
   stepEntries: StepEntry[];
   preferences: UserPreferences;
   cycleEntries: CycleEntry[];
+  cycleProfile: CycleProfile | null;
 }
 
 // ─── Default State ────────────────────────────────────────────────────────────
@@ -327,6 +337,7 @@ const defaultState: AppState = {
     dailyStepGoal: 8000,
   },
   cycleEntries: [],
+  cycleProfile: null,
 };
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -365,6 +376,7 @@ interface AppContextValue {
   addCycleEntry: (entry: Omit<CycleEntry, 'id'>) => void;
   updateCycleEntry: (id: string, entry: Partial<CycleEntry>) => void;
   deleteCycleEntry: (id: string) => void;
+  updateCycleProfile: (profile: Partial<CycleProfile>) => void;
 }
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);
@@ -661,6 +673,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const updateCycleProfile = useCallback((profile: Partial<CycleProfile>) => {
+    setState(s => ({
+      ...s,
+      cycleProfile: s.cycleProfile ? { ...s.cycleProfile, ...profile } : (profile as CycleProfile),
+    }));
+  }, []);
+
   return (
     <AppContext.Provider value={{
       state,
@@ -696,6 +715,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addCycleEntry,
       updateCycleEntry,
       deleteCycleEntry,
+      updateCycleProfile,
     }}>
       {children}
     </AppContext.Provider>
