@@ -373,9 +373,14 @@ Consulte seu médico para análise profissional.
   }, [lastCycle]);
 
   const currentPhaseInfo = useMemo(() => {
-    if (!lastCycle || !lastCycle.dayEntries || lastCycle.dayEntries.length === 0) return null;
-    const dayOfCycle = getDayOfCycle(new Date().getDate());
-    return dayOfCycle ? getCyclePhaseInfo(dayOfCycle) : null;
+    if (!lastCycle) return null;
+    const today = new Date().toISOString().split('T')[0];
+    const startDate = new Date(lastCycle.startDate);
+    const currentDate = new Date(today);
+    const diffTime = currentDate.getTime() - startDate.getTime();
+    const dayOfCycle = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    const isValidDay = dayOfCycle > 0 && dayOfCycle <= (lastCycle.cycleLengthDays || 28);
+    return isValidDay ? getCyclePhaseInfo(dayOfCycle) : null;
   }, [lastCycle]);
 
   return (
@@ -462,7 +467,7 @@ Consulte seu médico para análise profissional.
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                       <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Fase Atual</p>
                       <p className={`text-2xl font-bold mt-2 ${currentPhaseInfo?.color || 'text-pink-500'}`} style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                        {currentPhaseInfo?.phase || 'Carregando...'}
+                        {currentPhaseInfo?.phase || 'Lútea'}
                       </p>
                     </div>
                   </div>
