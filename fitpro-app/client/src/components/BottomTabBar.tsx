@@ -125,105 +125,108 @@ export default function BottomTabBar() {
       </AnimatePresence>
 
       {/* ── FLOATING PILL BOTTOM TAB BAR ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 flex items-end justify-center pb-6 pointer-events-none">
-        <nav
-          className="relative h-20 bg-[#1a1a1d]/95 backdrop-blur-xl border border-white/10 rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-between px-8 pointer-events-auto"
-          style={{ width: 'calc(100% - 32px)', maxWidth: '520px', marginLeft: '16px', marginRight: '16px' }}
-        >
-          {/* Primeira aba (Início) */}
-          <Link href={tabs[0].path} className="flex flex-col items-center gap-1.5 flex-1">
-            {(() => {
-              const isActive = location === tabs[0].path || (tabs[0].path !== '/' && location.startsWith(tabs[0].path));
-              const Icon = tabs[0].icon;
-              return (
-                <>
-                  <Icon 
-                    size={28} 
-                    className={isActive ? 'text-[#c5ff22]' : 'text-white/50'} 
-                    strokeWidth={isActive ? 2.5 : 2}
-                  />
-                  <span className={`text-[11px] font-bold tracking-tight ${isActive ? 'text-[#c5ff22]' : 'text-white/50'}`}>
-                    {tabs[0].label}
-                  </span>
-                </>
-              );
-            })()}
-          </Link>
+      <div className="fixed bottom-0 left-0 right-0 z-30 flex items-end justify-center pb-4 pointer-events-none">
+        <div className="relative w-full flex justify-center">
+          {/* Pílula com abas */}
+          <nav
+            className="relative h-24 bg-[#1a1a1d]/95 backdrop-blur-xl border border-white/10 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-between px-6 pointer-events-auto"
+            style={{ width: 'calc(100% - 32px)', maxWidth: '480px', marginLeft: '16px', marginRight: '16px' }}
+          >
+            {/* Primeira aba (Início) */}
+            <Link href={tabs[0].path} className="flex flex-col items-center gap-1 flex-1 py-2">
+              {(() => {
+                const isActive = location === tabs[0].path || (tabs[0].path !== '/' && location.startsWith(tabs[0].path));
+                const Icon = tabs[0].icon;
+                return (
+                  <>
+                    <Icon 
+                      size={26} 
+                      className={isActive ? 'text-[#c5ff22]' : 'text-white/45'} 
+                      strokeWidth={isActive ? 2.5 : 2}
+                    />
+                    <span className={`text-[9px] font-bold tracking-tight ${isActive ? 'text-[#c5ff22]' : 'text-white/45'}`}>
+                      {tabs[0].label}
+                    </span>
+                  </>
+                );
+              })()}
+            </Link>
 
-          {/* Segunda aba (Treinos) */}
-          <Link href={tabs[1].path} className="flex flex-col items-center gap-1.5 flex-1">
-            {(() => {
-              const isActive = location === tabs[1].path || location.startsWith(tabs[1].path);
-              const Icon = tabs[1].icon;
-              return (
-                <>
-                  <Icon 
-                    size={28} 
-                    className={isActive ? 'text-[#c5ff22]' : 'text-white/50'} 
-                    strokeWidth={isActive ? 2.5 : 2}
-                  />
-                  <span className={`text-[11px] font-bold tracking-tight ${isActive ? 'text-[#c5ff22]' : 'text-white/50'}`}>
-                    {tabs[1].label}
-                  </span>
-                </>
-              );
-            })()}
-          </Link>
+            {/* Segunda aba (Treinos) */}
+            <Link href={tabs[1].path} className="flex flex-col items-center gap-1 flex-1 py-2">
+              {(() => {
+                const isActive = location === tabs[1].path || location.startsWith(tabs[1].path);
+                const Icon = tabs[1].icon;
+                return (
+                  <>
+                    <Icon 
+                      size={26} 
+                      className={isActive ? 'text-[#c5ff22]' : 'text-white/45'} 
+                      strokeWidth={isActive ? 2.5 : 2}
+                    />
+                    <span className={`text-[9px] font-bold tracking-tight ${isActive ? 'text-[#c5ff22]' : 'text-white/45'}`}>
+                      {tabs[1].label}
+                    </span>
+                  </>
+                );
+              })()}
+            </Link>
 
-          {/* Botão Central (+) - Flutuante */}
-          <div className="absolute -top-8 left-1/2 transform -translate-x-1/2">
+            {/* Terceira aba (Academia) */}
+            <Link href={tabs[2].path} className="flex flex-col items-center gap-1 flex-1 py-2">
+              {(() => {
+                const isActive = location === tabs[2].path || location.startsWith(tabs[2].path);
+                const Icon = tabs[2].icon;
+                return (
+                  <>
+                    <Icon 
+                      size={26} 
+                      className={isActive ? 'text-[#c5ff22]' : 'text-white/45'} 
+                      strokeWidth={isActive ? 2.5 : 2}
+                    />
+                    <span className={`text-[9px] font-bold tracking-tight ${isActive ? 'text-[#c5ff22]' : 'text-white/45'}`}>
+                      {tabs[2].label}
+                    </span>
+                  </>
+                );
+              })()}
+            </Link>
+
+            {/* Quarta aba (Perfil) */}
+            <Link href={tabs[3].path} className="flex flex-col items-center gap-1 flex-1 py-2">
+              {(() => {
+                const isActive = location === tabs[3].path || location.startsWith(tabs[3].path);
+                const Icon = tabs[3].icon;
+                return (
+                  <>
+                    <Icon 
+                      size={26} 
+                      className={isActive ? 'text-[#c5ff22]' : 'text-white/45'} 
+                      strokeWidth={isActive ? 2.5 : 2}
+                    />
+                    <span className={`text-[9px] font-bold tracking-tight ${isActive ? 'text-[#c5ff22]' : 'text-white/45'}`}>
+                      {tabs[3].label}
+                    </span>
+                  </>
+                );
+              })()}
+            </Link>
+          </nav>
+
+          {/* Botão Central (+) - Flutuante acima da pílula */}
+          <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 pointer-events-auto">
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => setMenuOpen(true)}
-              className="w-20 h-20 rounded-full bg-[#c5ff22] shadow-[0_12px_40px_rgba(197,255,34,0.5)] flex flex-col items-center justify-center border-[5px] border-[#000000] hover:scale-105 transition-transform"
+              className="w-16 h-16 rounded-full bg-[#c5ff22] shadow-[0_10px_35px_rgba(197,255,34,0.45)] flex items-center justify-center border-[4px] border-[#000000] hover:scale-105 transition-transform"
             >
-              <Plus size={36} className="text-black" strokeWidth={3} />
+              <Plus size={32} className="text-black" strokeWidth={3} />
             </motion.button>
-            <div className="text-center mt-1">
-              <span className="text-[10px] font-black text-white/70 uppercase tracking-widest">Registrar</span>
+            <div className="text-center mt-1.5 whitespace-nowrap">
+              <span className="text-[9px] font-black text-white/60 uppercase tracking-widest">Registrar</span>
             </div>
           </div>
-
-          {/* Terceira aba (Academia) */}
-          <Link href={tabs[2].path} className="flex flex-col items-center gap-1.5 flex-1">
-            {(() => {
-              const isActive = location === tabs[2].path || location.startsWith(tabs[2].path);
-              const Icon = tabs[2].icon;
-              return (
-                <>
-                  <Icon 
-                    size={28} 
-                    className={isActive ? 'text-[#c5ff22]' : 'text-white/50'} 
-                    strokeWidth={isActive ? 2.5 : 2}
-                  />
-                  <span className={`text-[11px] font-bold tracking-tight ${isActive ? 'text-[#c5ff22]' : 'text-white/50'}`}>
-                    {tabs[2].label}
-                  </span>
-                </>
-              );
-            })()}
-          </Link>
-
-          {/* Quarta aba (Perfil) */}
-          <Link href={tabs[3].path} className="flex flex-col items-center gap-1.5 flex-1">
-            {(() => {
-              const isActive = location === tabs[3].path || location.startsWith(tabs[3].path);
-              const Icon = tabs[3].icon;
-              return (
-                <>
-                  <Icon 
-                    size={28} 
-                    className={isActive ? 'text-[#c5ff22]' : 'text-white/50'} 
-                    strokeWidth={isActive ? 2.5 : 2}
-                  />
-                  <span className={`text-[11px] font-bold tracking-tight ${isActive ? 'text-[#c5ff22]' : 'text-white/50'}`}>
-                    {tabs[3].label}
-                  </span>
-                </>
-              );
-            })()}
-          </Link>
-        </nav>
+        </div>
       </div>
     </>
   );
