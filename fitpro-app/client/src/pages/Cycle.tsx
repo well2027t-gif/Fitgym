@@ -518,31 +518,30 @@ Consulte seu médico para análise profissional.
                     </svg>
 
                     {/* Conteúdo central */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ paddingBottom: 20 }}>
-                      <p className="text-[10px] uppercase tracking-[0.22em] mb-1" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>
-                        Dia {currentPhaseInfo?.dayRange?.split('–')[0] || '1'} do ciclo
-                      </p>
-                      {(() => {
-                        const nextPeriod = lastCycle
-                          ? Math.max(0, (lastCycle.cycleLengthDays || 28) - (parseInt(currentPhaseInfo?.dayRange?.split('–')[0] || '1')))
-                          : null;
-                        return nextPeriod !== null ? (
-                          <>
-                            <p className="text-4xl font-bold text-white leading-none" style={{ fontFamily: 'Space Grotesk', letterSpacing: '-0.03em' }}>
-                              {nextPeriod}
-                            </p>
-                            <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'Outfit' }}>
-                              dias para a próxima
-                            </p>
-                            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'Outfit' }}>menstruação</p>
-                          </>
-                        ) : (
-                          <p className="text-2xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
-                            {currentPhaseInfo?.phase || 'Lútea'}
+                    {(() => {
+                      // Calcula o dia real do ciclo hoje
+                      const todayStr = new Date().toISOString().split('T')[0];
+                      const startDate = lastCycle ? new Date(lastCycle.startDate + 'T00:00:00') : null;
+                      const todayDate = new Date(todayStr + 'T00:00:00');
+                      const diffDays = startDate
+                        ? Math.floor((todayDate.getTime() - startDate.getTime()) / 86400000) + 1
+                        : 1;
+                      const cycleDay = startDate && diffDays > 0 && diffDays <= (lastCycle?.cycleLengthDays || 28) ? diffDays : 1;
+                      const daysLeft = Math.max(0, (lastCycle?.cycleLengthDays || 28) - cycleDay);
+                      return (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ paddingBottom: 20 }}>
+                          <p className="text-[10px] uppercase tracking-[0.22em] mb-1" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>
+                            Dia {cycleDay} do ciclo
                           </p>
-                        );
-                      })()}
-                    </div>
+                          <p className="text-5xl font-bold text-white leading-none" style={{ fontFamily: 'Space Grotesk', letterSpacing: '-0.03em' }}>
+                            {daysLeft}
+                          </p>
+                          <p className="text-xs mt-1.5 text-center" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'Outfit', lineHeight: 1.5 }}>
+                            dias para a<br />próxima menstruação
+                          </p>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Fase atual + descrição */}
@@ -558,22 +557,25 @@ Consulte seu médico para análise profissional.
                     </p>
                   </div>
 
-                  {/* Atalhos rápidos — estilo Luna */}
-                  <div className="flex gap-5 justify-center">
+                  {/* Atalhos rápidos — ícones Lucide */}
+                  <div className="flex gap-4 justify-center">
                     {[
-                      { icon: '😊', label: 'Humor' },
-                      { icon: '💧', label: 'Fluxo' },
-                      { icon: '⚡', label: 'Sintomas' },
-                      { icon: '💪', label: 'Treino' },
-                      { icon: '😴', label: 'Sono' },
+                      { icon: <Heart size={20} />, label: 'Humor', color: '#ff8fab' },
+                      { icon: <Droplets size={20} />, label: 'Fluxo', color: '#90e0ef' },
+                      { icon: <AlertCircle size={20} />, label: 'Sintomas', color: '#ffd166' },
+                      { icon: <Dumbbell size={20} />, label: 'Treino', color: '#c77dff' },
+                      { icon: <Moon size={20} />, label: 'Sono', color: '#a8dadc' },
                     ].map(item => (
                       <motion.button
                         key={item.label}
-                        onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}
+                        onClick={() => {
+                          setSelectedDate(new Date().toISOString().split('T')[0]);
+                          setShowDayModal(true);
+                        }}
                         className="flex flex-col items-center gap-1.5"
                         whileTap={{ scale: 0.92 }}
                       >
-                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: item.color }}>
                           {item.icon}
                         </div>
                         <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Outfit' }}>{item.label}</span>
