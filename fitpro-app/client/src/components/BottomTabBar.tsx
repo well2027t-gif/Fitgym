@@ -1,15 +1,23 @@
 /**
- * FitPro — PremiumBottomNavBar v2
+ * FitPro — PremiumBottomNavBar v3
  *
  * Barra de navegação inferior premium — full-width, de borda a borda.
- * Ícones com container visual, clean, minimal, high-end.
+ * Ícones premium do Phosphor Icons, cuidadosamente selecionados.
  *
- * - Background: #0B0F1A — ocupa 100% da largura da tela
- * - Cor ativa: #2F80ED | Inativa: #6B7280
- * - Ícone ativo: container pill com fundo azul translúcido
- * - Indicador ativo: linha 28px × 3px no topo da barra
- * - Botão central: gradiente #2F80ED → #1E5EFF, 58×58px flutuante
- * - Animações suaves 200ms
+ * Ícones escolhidos:
+ *  - Início       → House (sólido, familiar, clean)
+ *  - Treinos      → Barbell (direto ao ponto, fitness)
+ *  - Centro (+)   → Lightning (energia, ação rápida)
+ *  - Dieta        → ForkKnife (elegante, gastronômico)
+ *  - Profissionais→ UsersThree (comunidade, equipe)
+ *
+ * Quick Actions:
+ *  - Perfil       → IdentificationBadge
+ *  - Progresso    → Heartbeat
+ *  - Saúde Fem.   → Sparkle
+ *  - Histórico    → Pulse
+ *  - Calc. 1RM    → Target
+ *  - Compartilhar → Rocket
  */
 
 import { useState } from 'react';
@@ -18,14 +26,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   House,
   Barbell,
-  BowlFood,
-  UserCircleCheck,
+  Lightning,
+  ForkKnife,
+  UsersThree,
   Plus,
-  User,
-  ChartLineUp,
-  Drop,
-  Calculator,
-  ShareNetwork,
+  IdentificationBadge,
+  Heartbeat,
+  Sparkle,
+  Pulse,
+  Target,
+  Rocket,
 } from '@phosphor-icons/react';
 import { X, ChevronRight } from 'lucide-react';
 
@@ -33,35 +43,35 @@ import { X, ChevronRight } from 'lucide-react';
    Paleta
 ───────────────────────────────────────────── */
 const C = {
-  bg:         '#0B0F1A',
-  active:     '#2F80ED',
-  inactive:   '#6B7280',
-  activeBg:   'rgba(47,128,237,0.14)',
-  gradStart:  '#2F80ED',
-  gradEnd:    '#1E5EFF',
+  bg:        '#0B0F1A',
+  active:    '#2F80ED',
+  inactive:  '#6B7280',
+  activeBg:  'rgba(47,128,237,0.13)',
+  gradStart: '#2F80ED',
+  gradEnd:   '#1E5EFF',
 };
 
 /* ─────────────────────────────────────────────
-   Itens do quick-actions sheet
+   Quick Actions
 ───────────────────────────────────────────── */
 const QUICK_ITEMS = [
-  { path: '/perfil',       Icon: User,          label: 'Perfil',          description: 'Dados pessoais e preferências' },
-  { path: '/progresso',    Icon: ChartLineUp,   label: 'Progresso',       description: 'Evolução e resultados' },
-  { path: '/ciclo',        Icon: Drop,          label: 'Saúde Feminina',  description: 'Ciclo menstrual' },
-  { path: '/historico',    Icon: ChartLineUp,   label: 'Histórico',       description: 'Registros e evolução' },
-  { path: '/1rm',          Icon: Calculator,    label: 'Calculadora 1RM', description: 'Estimativa de carga máxima' },
-  { path: '/compartilhar', Icon: ShareNetwork,  label: 'Compartilhar',    description: 'Enviar resultados' },
+  { path: '/perfil',       Icon: IdentificationBadge, label: 'Perfil',          description: 'Dados pessoais e preferências' },
+  { path: '/progresso',    Icon: Heartbeat,           label: 'Progresso',       description: 'Evolução e resultados' },
+  { path: '/ciclo',        Icon: Sparkle,             label: 'Saúde Feminina',  description: 'Ciclo menstrual' },
+  { path: '/historico',    Icon: Pulse,               label: 'Histórico',       description: 'Registros e evolução' },
+  { path: '/1rm',          Icon: Target,              label: 'Calculadora 1RM', description: 'Estimativa de carga máxima' },
+  { path: '/compartilhar', Icon: Rocket,              label: 'Compartilhar',    description: 'Enviar resultados' },
 ];
 
 /* ─────────────────────────────────────────────
-   Itens de navegação principal
+   Nav Items principais
 ───────────────────────────────────────────── */
 const NAV_ITEMS = [
-  { href: '/',              label: 'Início',       Icon: House,           IconFill: House           },
-  { href: '/treinos',       label: 'Treinos',      Icon: Barbell,         IconFill: Barbell         },
+  { href: '/',              label: 'Início',       Icon: House       },
+  { href: '/treinos',       label: 'Treinos',      Icon: Barbell     },
   // slot central = botão +
-  { href: '/dieta',         label: 'Dieta',        Icon: BowlFood,        IconFill: BowlFood        },
-  { href: '/profissionais', label: 'Profissionais',Icon: UserCircleCheck, IconFill: UserCircleCheck },
+  { href: '/dieta',         label: 'Dieta',        Icon: ForkKnife   },
+  { href: '/profissionais', label: 'Profissionais',Icon: UsersThree  },
 ];
 
 /* ─────────────────────────────────────────────
@@ -71,11 +81,10 @@ interface NavItemProps {
   href: string;
   label: string;
   Icon: React.ComponentType<any>;
-  IconFill: React.ComponentType<any>;
   isActive: boolean;
 }
 
-function NavItem({ href, label, Icon, IconFill, isActive }: NavItemProps) {
+function NavItem({ href, label, Icon, isActive }: NavItemProps) {
   const color = isActive ? C.active : C.inactive;
 
   return (
@@ -95,7 +104,7 @@ function NavItem({ href, label, Icon, IconFill, isActive }: NavItemProps) {
         position: 'relative',
       }}
     >
-      {/* Indicador superior — linha no topo da barra */}
+      {/* Indicador topo */}
       <motion.div
         animate={{ width: isActive ? 28 : 0, opacity: isActive ? 1 : 0 }}
         transition={{ duration: 0.22, ease: 'easeInOut' }}
@@ -108,26 +117,27 @@ function NavItem({ href, label, Icon, IconFill, isActive }: NavItemProps) {
         }}
       />
 
-      {/* Container do ícone com pill ativo */}
+      {/* Pill do ícone */}
       <motion.div
-        whileTap={{ scale: 0.84 }}
+        whileTap={{ scale: 0.82 }}
         transition={{ duration: 0.12 }}
         style={{
-          width: 44,
+          width: 46,
           height: 30,
           borderRadius: 15,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           background: isActive ? C.activeBg : 'transparent',
-          transition: 'background 200ms ease',
-          marginBottom: 4,
+          transition: 'background 220ms ease',
+          marginBottom: 5,
         }}
       >
-        {isActive
-          ? <IconFill size={22} weight="fill" color={color} />
-          : <Icon     size={22} weight="regular" color={color} />
-        }
+        <Icon
+          size={22}
+          weight={isActive ? 'fill' : 'regular'}
+          color={color}
+        />
       </motion.div>
 
       {/* Label */}
@@ -138,7 +148,7 @@ function NavItem({ href, label, Icon, IconFill, isActive }: NavItemProps) {
           color,
           lineHeight: 1,
           letterSpacing: '0.02em',
-          transition: 'color 200ms ease, font-weight 200ms ease',
+          transition: 'color 200ms ease',
           whiteSpace: 'nowrap',
         }}
       >
@@ -164,7 +174,7 @@ function CenterButton({ onPress }: { onPress: () => void }) {
       }}
     >
       <motion.button
-        whileTap={{ scale: 0.90 }}
+        whileTap={{ scale: 0.88 }}
         transition={{ duration: 0.12 }}
         onClick={onPress}
         style={{
@@ -181,7 +191,7 @@ function CenterButton({ onPress }: { onPress: () => void }) {
           outline: 'none',
           padding: 0,
           WebkitTapHighlightColor: 'transparent',
-          boxShadow: '0 6px 20px rgba(47,128,237,0.30)',
+          boxShadow: '0 6px 20px rgba(47,128,237,0.32)',
         }}
       >
         <Plus size={26} weight="bold" color="#fff" />
@@ -325,7 +335,11 @@ export default function BottomTabBar() {
                           background: active ? C.active : 'rgba(255,255,255,0.07)',
                         }}
                       >
-                        <Icon size={17} weight={active ? 'fill' : 'regular'} color={active ? '#fff' : 'rgba(255,255,255,0.55)'} />
+                        <Icon
+                          size={17}
+                          weight={active ? 'fill' : 'regular'}
+                          color={active ? '#fff' : 'rgba(255,255,255,0.55)'}
+                        />
                       </div>
                       <div>
                         <p style={{ fontSize: 12.5, fontWeight: 600, color: active ? C.active : 'rgba(255,255,255,0.85)', margin: 0, lineHeight: 1.3 }}>
@@ -351,7 +365,7 @@ export default function BottomTabBar() {
         )}
       </AnimatePresence>
 
-      {/* ── BARRA INFERIOR — FULL WIDTH, DE BORDA A BORDA ── */}
+      {/* ── BARRA INFERIOR — FULL WIDTH ── */}
       <div
         style={{
           position: 'fixed',
@@ -363,7 +377,6 @@ export default function BottomTabBar() {
           WebkitTransform: 'translate3d(0,0,0)',
         }}
       >
-        {/* Sem margin, sem padding lateral — ocupa 100% da tela */}
         <nav
           style={{
             width: '100%',
@@ -373,18 +386,16 @@ export default function BottomTabBar() {
             justifyContent: 'space-evenly',
             height: 72,
             overflow: 'visible',
-            /* Sombra sutil no topo */
             boxShadow: '0 -1px 0 rgba(255,255,255,0.05), 0 -8px 24px rgba(0,0,0,0.30)',
           }}
         >
           {/* Início + Treinos */}
-          {NAV_ITEMS.slice(0, 2).map(({ href, label, Icon, IconFill }) => (
+          {NAV_ITEMS.slice(0, 2).map(({ href, label, Icon }) => (
             <NavItem
               key={href}
               href={href}
               label={label}
               Icon={Icon}
-              IconFill={IconFill}
               isActive={isTabActive(href)}
             />
           ))}
@@ -393,25 +404,19 @@ export default function BottomTabBar() {
           <CenterButton onPress={() => setMenuOpen(true)} />
 
           {/* Dieta + Profissionais */}
-          {NAV_ITEMS.slice(2).map(({ href, label, Icon, IconFill }) => (
+          {NAV_ITEMS.slice(2).map(({ href, label, Icon }) => (
             <NavItem
               key={href}
               href={href}
               label={label}
               Icon={Icon}
-              IconFill={IconFill}
               isActive={isTabActive(href)}
             />
           ))}
         </nav>
 
         {/* Safe area iPhone */}
-        <div
-          style={{
-            background: C.bg,
-            height: 'env(safe-area-inset-bottom, 0px)',
-          }}
-        />
+        <div style={{ background: C.bg, height: 'env(safe-area-inset-bottom, 0px)' }} />
       </div>
     </>
   );
