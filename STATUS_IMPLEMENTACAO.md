@@ -29,6 +29,75 @@ Para garantir uma experiência de "app nativo" em dispositivos móveis, foram ap
 
 ---
 
+## 🏋️ Sistema de Treinos — Implementação em Progresso
+
+Status: 🔄 **Em Desenvolvimento**
+
+O sistema de treinos está sendo redesenhado conforme o plano em `workout-redesign-plan.md`. Abaixo está o progresso por componente:
+
+### Análise Atual
+
+#### ✅ Já Implementado
+
+1. **Motor de Geração Automática (`workoutEngine.ts`)**
+   - Biblioteca de exercícios com 50+ exercícios pré-configurados
+   - Funções de geração automática baseadas em perfil
+   - Divisões de treino: Full Body (2-3 dias), Upper/Lower (4 dias), Bro Split (5-6 dias)
+   - Adaptação de séries, reps e descanso por objetivo
+   - Filtros por nível, local, equipamentos e limitações
+   - Assinatura de perfil para detectar mudanças
+
+2. **Campos de Perfil de Treino (Profile.tsx)**
+   - ✅ `sex` (Masculino/Feminino/Outro)
+   - ✅ `level` (Iniciante/Intermediário/Avançado)
+   - ✅ `trainingFrequency` (1-7 dias por semana)
+   - ✅ `trainingLocation` (Academia/Casa)
+   - ✅ `availableEquipment` (10+ opções com toggle)
+   - ✅ `limitations` (campo de texto livre)
+
+3. **AppContext**
+   - ✅ Tipos de dados expandidos para treinos
+   - ✅ Persistência em localStorage
+   - ✅ Métodos para gerenciar workouts, sessions e histórico
+
+#### 🔄 Em Progresso
+
+1. **Página Workouts.tsx (Hub do Sistema)**
+   - Status: Parcialmente implementada
+   - Faltam: Integração completa com modo automático/manual, seletor visual de modo, regeneração automática ao mudar perfil
+
+2. **Página WorkoutActive.tsx (Execução)**
+   - Status: Funcional básico
+   - Faltam: Registro de carga por exercício, cronômetro de descanso contextual, persistência enriquecida de detalhes
+
+3. **Histórico e Evolução**
+   - Status: Estrutura pronta
+   - Faltam: Visualizações de volume, PRs e evolução de força
+
+#### ⏳ Próximos Passos
+
+1. **Integrar modo automático/manual na tela Workouts**
+   - Adicionar seletor visual de modo (automático vs manual)
+   - Implementar geração automática ao selecionar modo automático
+   - Exibir resumo do plano gerado (split, dias, exercícios)
+
+2. **Expandir WorkoutActive para execução rica**
+   - Adicionar campo de carga por exercício
+   - Implementar cronômetro de descanso com acionamento automático
+   - Melhorar persistência de detalhes executados
+
+3. **Atualização automática com base no perfil**
+   - Detectar mudanças no perfil usando assinatura
+   - Exibir aviso com CTA para regenerar treinos
+   - Regenerar automaticamente se confirmado
+
+4. **Testes e validação**
+   - Testar geração automática com diferentes perfis
+   - Validar filtros de equipamentos e limitações
+   - Testar persistência de dados
+
+---
+
 ## 🚀 Status Geral do Projeto
 
 | Módulo | Status | Observação |
@@ -37,7 +106,7 @@ Para garantir uma experiência de "app nativo" em dispositivos móveis, foram ap
 | **Layout Mobile** | ✅ Corrigido | Scroll reset e overflow-x resolvidos |
 | **Persistência** | ✅ Funcional | LocalStorage (Offline-first) |
 | **Hospedagem** | ✅ Ativa | GitHub Pages (Static) |
-| **Sistema de Treinos** | ✅ Completo | Geração automática e manual |
+| **Sistema de Treinos** | 🔄 Em Progresso | Motor pronto, integração em andamento |
 | **Sistema de Dieta** | ✅ Completo | Macros e calorias automáticos |
 
 ---
@@ -46,3 +115,11 @@ Para garantir uma experiência de "app nativo" em dispositivos móveis, foram ap
 O site está configurado para deploy via diretório `docs/` na branch `main`, otimizado para hospedagem estática gratuita.
 
 **URL Oficial:** [https://well2027t-gif.github.io/Fitgym/](https://well2027t-gif.github.io/Fitgym/)
+
+---
+
+## 📋 Commits Recentes
+
+- `0388c55` - build: atualizar build com correções mobile para GitHub Pages
+- `b05454d` - docs: adicionar STATUS_IMPLEMENTACAO.md com as correções mobile
+- `d665546` - fix: melhorar experiência mobile (viewport, scroll reset, overflow horizontal)
