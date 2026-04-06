@@ -127,13 +127,13 @@ export default function BottomTabBar() {
       {/* ── FLOATING PILL BOTTOM TAB BAR ── */}
       <div className="fixed bottom-0 left-0 right-0 z-30 flex items-end justify-center pb-4 pointer-events-none">
         <div className="relative w-full flex justify-center">
-          {/* Pílula com abas */}
+          {/* Pílula com abas - Layout com 2 abas de cada lado */}
           <nav
-            className="relative h-24 bg-[#1a1a1d]/95 backdrop-blur-xl border border-white/10 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-between px-6 pointer-events-auto"
+            className="relative h-24 bg-[#1a1a1d]/95 backdrop-blur-xl border border-white/10 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-between pointer-events-auto"
             style={{ width: 'calc(100% - 32px)', maxWidth: '480px', marginLeft: '16px', marginRight: '16px' }}
           >
-            {/* Primeira aba (Início) */}
-            <Link href={tabs[0].path} className="flex flex-col items-center gap-1 flex-1 py-2">
+            {/* Primeira aba (Início) - Lado Esquerdo */}
+            <Link href={tabs[0].path} className="flex flex-col items-center gap-1 flex-1 py-2 px-2">
               {(() => {
                 const isActive = location === tabs[0].path || (tabs[0].path !== '/' && location.startsWith(tabs[0].path));
                 const Icon = tabs[0].icon;
@@ -152,8 +152,8 @@ export default function BottomTabBar() {
               })()}
             </Link>
 
-            {/* Segunda aba (Treinos) */}
-            <Link href={tabs[1].path} className="flex flex-col items-center gap-1 flex-1 py-2">
+            {/* Segunda aba (Treinos) - Lado Esquerdo */}
+            <Link href={tabs[1].path} className="flex flex-col items-center gap-1 flex-1 py-2 px-2">
               {(() => {
                 const isActive = location === tabs[1].path || location.startsWith(tabs[1].path);
                 const Icon = tabs[1].icon;
@@ -172,8 +172,11 @@ export default function BottomTabBar() {
               })()}
             </Link>
 
-            {/* Terceira aba (Academia) */}
-            <Link href={tabs[2].path} className="flex flex-col items-center gap-1 flex-1 py-2">
+            {/* Espaço Central para o Botão Flutuante */}
+            <div className="flex-1 px-2" />
+
+            {/* Terceira aba (Academia) - Lado Direito */}
+            <Link href={tabs[2].path} className="flex flex-col items-center gap-1 flex-1 py-2 px-2">
               {(() => {
                 const isActive = location === tabs[2].path || location.startsWith(tabs[2].path);
                 const Icon = tabs[2].icon;
@@ -192,8 +195,8 @@ export default function BottomTabBar() {
               })()}
             </Link>
 
-            {/* Quarta aba (Perfil) */}
-            <Link href={tabs[3].path} className="flex flex-col items-center gap-1 flex-1 py-2">
+            {/* Quarta aba (Perfil) - Lado Direito */}
+            <Link href={tabs[3].path} className="flex flex-col items-center gap-1 flex-1 py-2 px-2">
               {(() => {
                 const isActive = location === tabs[3].path || location.startsWith(tabs[3].path);
                 const Icon = tabs[3].icon;
