@@ -1,7 +1,7 @@
 /**
  * FitPro — BottomTabBar
- * Design: Premium Dark Fitness
- * Mobile-first bottom navigation with active state animations.
+ * Design: Premium Dark Fitness / Floating Pill Layout
+ * Mobile-first bottom navigation with floating center button and rounded pill style.
  */
 
 import { useEffect, useState } from 'react';
@@ -9,24 +9,27 @@ import { Link, useLocation } from '@/lib/router';
 import {
   Home,
   Dumbbell,
-  UtensilsCrossed,
   TrendingUp,
-  Menu,
   User,
-  BookOpen,
+  Droplets,
   Calculator,
   Share2,
   ChevronRight,
   X,
-  Droplets,
+  Plus,
+  LayoutGrid,
+  Apple,
+  Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Tabs atualizadas conforme a foto e solicitações anteriores
 const tabs = [
-  { path: '/', icon: Home, label: 'Home' },
+  { path: '/', icon: Home, label: 'Início' },
   { path: '/treinos', icon: Dumbbell, label: 'Treinos' },
-  { path: '/dieta', icon: UtensilsCrossed, label: 'Dieta' },
-  { path: '/profissionais', icon: BookOpen, label: 'Profissionais' },
+  // O botão central "Registrar" (+) será inserido manualmente entre as abas
+  { path: '/dieta', icon: Apple, label: 'Dieta' },
+  { path: '/profissionais', icon: Users, label: 'Profissionais' },
 ];
 
 const menuItems = [
@@ -34,7 +37,6 @@ const menuItems = [
   { path: '/progresso', icon: TrendingUp, label: 'Progresso', description: 'Evolução e resultados' },
   { path: '/ciclo', icon: Droplets, label: 'Saúde Feminina', description: 'Acompanhamento de ciclo menstrual' },
   { path: '/historico', icon: TrendingUp, label: 'Histórico', description: 'Ver registros e evolução' },
-  { path: '/planos', icon: BookOpen, label: 'Planos', description: 'Gerenciar planos de treino' },
   { path: '/1rm', icon: Calculator, label: 'Calculadora 1RM', description: 'Estimativa de carga máxima' },
   { path: '/compartilhar', icon: Share2, label: 'Compartilhar', description: 'Enviar resultados e progresso' },
 ];
@@ -43,47 +45,32 @@ export default function BottomTabBar() {
   const [location, navigate] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   
-  // Verificar se estamos na tela de conversa com profissional
   const isInProfessionalChat = location.startsWith('/profissionais/chat/');
 
   useEffect(() => {
     const body = document.body;
     const html = document.documentElement;
-    const previousBodyOverflow = body.style.overflow;
-    const previousHtmlOverflow = html.style.overflow;
-    const previousBodyTouchAction = body.style.touchAction;
-    const previousHtmlTouchAction = html.style.touchAction;
-
     if (menuOpen) {
       body.style.overflow = 'hidden';
       html.style.overflow = 'hidden';
       body.style.touchAction = 'none';
-      html.style.touchAction = 'none';
+    } else {
+      body.style.overflow = '';
+      html.style.overflow = '';
+      body.style.touchAction = '';
     }
-
-    return () => {
-      body.style.overflow = previousBodyOverflow;
-      html.style.overflow = previousHtmlOverflow;
-      body.style.touchAction = previousBodyTouchAction;
-      html.style.touchAction = previousHtmlTouchAction;
-    };
   }, [menuOpen]);
 
-  const isMenuActive = menuItems.some(({ path }) => location === path || location.startsWith(path + '/'));
-
-  if (isInProfessionalChat) {
-    return null;
-  }
+  if (isInProfessionalChat) return null;
 
   const handleMenuNavigate = (path: string) => {
     setMenuOpen(false);
     setTimeout(() => navigate(path), 140);
   };
 
-  const secondaryItems = menuItems.filter(item => item.path !== '/perfil');
-
   return (
     <>
+      {/* ── SIDE MENU MODAL ── */}
       <AnimatePresence>
         {menuOpen && (
           <>
@@ -92,233 +79,112 @@ export default function BottomTabBar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-40"
-              style={{
-                background: 'rgba(0,0,0,0.62)',
-                backdropFilter: 'blur(8px)',
-                WebkitBackdropFilter: 'blur(8px)',
-                touchAction: 'none',
-              }}
+              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
               onClick={() => setMenuOpen(false)}
             />
 
             <motion.aside
-              initial={{ x: '100%', opacity: 0.94 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: '100%', opacity: 0.94 }}
-              transition={{ type: 'tween', duration: 0.24, ease: 'easeOut' }}
-              className="fixed top-0 right-0 z-50 h-[100dvh] w-[84%] max-w-sm overflow-hidden"
-              style={{
-                background: 'linear-gradient(180deg, rgba(18,20,24,0.99) 0%, rgba(10,10,12,0.99) 100%)',
-                borderLeft: '1px solid rgba(255,255,255,0.08)',
-                boxShadow: '-20px 0 50px rgba(0,0,0,0.45)',
-                backdropFilter: 'blur(18px)',
-                WebkitBackdropFilter: 'blur(18px)',
-                touchAction: 'manipulation',
-              }}
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 z-50 h-[100dvh] w-[85%] max-w-sm bg-[#0d0d0f] border-l border-white/10 shadow-2xl flex flex-col"
             >
-              <div className="h-full flex flex-col justify-between px-3 py-3">
-                <div>
-                  <div
-                    className="px-4 pt-3 pb-3 rounded-[28px]"
-                    style={{
-                      background: 'radial-gradient(circle at top right, rgba(var(--theme-accent-rgb), 0.22) 0%, rgba(255,255,255,0) 46%), rgba(255,255,255,0.03)',
-                      border: '1px solid rgba(255,255,255,0.06)',
-                    }}
-                  >
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div>
-                        <p className="text-[10px] uppercase tracking-[0.2em]" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit, sans-serif' }}>
-                          FitPro
-                        </p>
-                        <h3 className="text-lg font-bold text-white mt-1" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                          Menu lateral
-                        </h3>
-                        <p className="text-[11px] mt-1 leading-4" style={{ color: 'rgba(255,255,255,0.48)', fontFamily: 'Outfit, sans-serif' }}>
-                          Tudo em uma tela, sem rolagem.
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setMenuOpen(false)}
-                        className="w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0"
-                        style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.06)' }}
-                      >
-                        <X size={16} style={{ color: 'white' }} />
-                      </button>
-                    </div>
+              <div className="p-6 flex items-center justify-between border-b border-white/5">
+                <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>Menu</h3>
+                <button 
+                  onClick={() => setMenuOpen(false)}
+                  className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center"
+                >
+                  <X size={20} className="text-white" />
+                </button>
+              </div>
 
+              <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                {menuItems.map(({ path, icon: Icon, label, description }) => {
+                  const active = location === path;
+                  return (
                     <button
-                      type="button"
-                      onClick={() => handleMenuNavigate('/perfil')}
-                      className="w-full rounded-[22px] p-3 text-left"
-                      style={{
-                        background: 'linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.18) 0%, rgba(var(--theme-accent-rgb), 0.08) 100%)',
-                        border: '1px solid rgba(var(--theme-accent-rgb), 0.18)',
-                      }}
+                      key={path}
+                      onClick={() => handleMenuNavigate(path)}
+                      className={`w-full p-4 rounded-2xl flex items-center gap-4 transition-all ${
+                        active ? 'bg-[#22c55e]/10 border border-[#22c55e]/20' : 'bg-white/5 border border-transparent'
+                      }`}
                     >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div
-                            className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
-                            style={{ background: 'rgba(0,0,0,0.18)' }}
-                          >
-                            <User size={18} style={{ color: 'var(--theme-accent)' }} />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-sm font-semibold text-white" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                              Perfil e ajustes
-                            </p>
-                            <p className="text-[11px] leading-4" style={{ color: 'rgba(255,255,255,0.55)', fontFamily: 'Outfit, sans-serif' }}>
-                              Configurações, metas e preferências
-                            </p>
-                          </div>
-                        </div>
-                        <ChevronRight size={16} style={{ color: 'var(--theme-accent)' }} />
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${active ? 'bg-[#22c55e] text-black' : 'bg-white/5 text-white/60'}`}>
+                        <Icon size={20} />
+                      </div>
+                      <div className="text-left">
+                        <p className={`font-bold ${active ? 'text-[#22c55e]' : 'text-white'}`}>{label}</p>
+                        <p className="text-[11px] text-white/40">{description}</p>
                       </div>
                     </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-2 mt-3 overflow-y-auto max-h-[calc(100dvh-280px)] pr-1 custom-scrollbar">
-                    {secondaryItems.map(({ path, icon: Icon, label, description }) => {
-                      const active = location === path || location.startsWith(path + '/');
-
-                      return (
-                        <button
-                          key={path}
-                          type="button"
-                          onClick={() => handleMenuNavigate(path)}
-                          className="w-full rounded-[20px] px-3 py-2.5 text-left transition-all"
-                          style={{
-                            background: active ? 'rgba(var(--theme-accent-rgb), 0.12)' : 'rgba(255,255,255,0.035)',
-                            border: active ? '1px solid rgba(var(--theme-accent-rgb), 0.22)' : '1px solid rgba(255,255,255,0.05)',
-                          }}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div
-                              className="w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0"
-                              style={{ background: active ? 'rgba(var(--theme-accent-rgb), 0.16)' : 'rgba(255,255,255,0.06)' }}
-                            >
-                              <Icon size={16} style={{ color: active ? 'var(--theme-accent)' : 'rgba(255,255,255,0.82)' }} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p
-                                className="text-[13px] font-semibold leading-4"
-                                style={{ color: active ? 'var(--theme-accent)' : 'white', fontFamily: 'Space Grotesk, sans-serif' }}
-                              >
-                                {label}
-                              </p>
-                              <p
-                                className="text-[10px] leading-3 mt-1"
-                                style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Outfit, sans-serif' }}
-                              >
-                                {description}
-                              </p>
-                            </div>
-                            <ChevronRight size={14} style={{ color: active ? 'var(--theme-accent)' : 'rgba(255,255,255,0.32)' }} />
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="px-2 pb-1 pt-2">
-                  <p className="text-[10px] text-center" style={{ color: 'rgba(255,255,255,0.28)', fontFamily: 'Outfit, sans-serif' }}>
-                    Toque em qualquer opção para navegar.
-                  </p>
-                </div>
+                  );
+                })}
               </div>
             </motion.aside>
           </>
         )}
       </AnimatePresence>
 
-      <nav
-        className="fixed bottom-0 left-0 right-0 z-30 bottom-tab-bar"
-        style={{
-          background: 'linear-gradient(to top, #0d0d0f 80%, transparent)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderTop: '1px solid rgba(255,255,255,0.06)',
-          height: 'auto',
-          minHeight: '4.5rem',
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-        }}
-      >
-        <div className="flex items-center justify-around px-2 py-2 max-w-lg mx-auto h-full">
-          {tabs.map(({ path, icon: Icon, label }) => {
-            const isActive = location === path || (path !== '/' && location.startsWith(path));
-
-            return (
-              <Link key={path} href={path}>
-                <motion.div
-                  className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl relative"
-                  whileTap={{ scale: 0.88 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="tab-bg"
-                      className="absolute inset-0 rounded-xl"
-                      style={{ background: 'rgba(var(--theme-accent-rgb), 0.12)' }}
-                      initial={false}
-                    />
-                  )}
-                  <div className="relative z-10">
-                    <Icon
-                      size={20}
-                      strokeWidth={isActive ? 2.5 : 2}
-                      style={{ color: isActive ? 'var(--theme-accent)' : 'rgba(255,255,255,0.45)' }}
-                    />
-                  </div>
-                  <span
-                    className="text-[10px] font-medium relative z-10"
-                    style={{
-                      color: isActive ? 'var(--theme-accent)' : 'rgba(255,255,255,0.45)',
-                      fontFamily: 'Outfit, sans-serif',
-                    }}
-                  >
+      {/* ── FLOATING BOTTOM TAB BAR ── */}
+      <div className="fixed bottom-6 left-0 right-0 z-30 px-4 pointer-events-none">
+        <nav
+          className="max-w-md mx-auto h-[72px] bg-[#111111]/90 backdrop-blur-xl border border-white/10 rounded-[36px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-between px-2 pointer-events-auto"
+        >
+          {/* Primeiras duas abas */}
+          <div className="flex flex-1 justify-around items-center">
+            {tabs.slice(0, 2).map(({ path, icon: Icon, label }) => {
+              const isActive = location === path || (path !== '/' && location.startsWith(path));
+              return (
+                <Link key={path} href={path} className="flex flex-col items-center gap-1 px-4">
+                  <Icon 
+                    size={24} 
+                    className={isActive ? 'text-[#c5ff22]' : 'text-white/40'} 
+                    strokeWidth={isActive ? 2.5 : 2}
+                  />
+                  <span className={`text-[10px] font-bold tracking-tight ${isActive ? 'text-[#c5ff22]' : 'text-white/40'}`}>
                     {label}
                   </span>
-                </motion.div>
-              </Link>
-            );
-          })}
+                </Link>
+              );
+            })}
+          </div>
 
-          <motion.button
-            type="button"
-            onClick={() => setMenuOpen(true)}
-            className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl relative"
-            whileTap={{ scale: 0.88 }}
-          >
-            {isMenuActive && !menuOpen && (
-              <motion.div
-                layoutId="tab-bg"
-                className="absolute inset-0 rounded-xl"
-                style={{ background: 'rgba(var(--theme-accent-rgb), 0.12)' }}
-              />
-            )}
-            <div className="relative z-10">
-              <Menu
-                size={20}
-                strokeWidth={isMenuActive ? 2.5 : 2}
-                style={{ color: isMenuActive ? 'var(--theme-accent)' : 'rgba(255,255,255,0.45)' }}
-              />
-            </div>
-            <span
-              className="text-[10px] font-medium relative z-10"
-              style={{
-                color: isMenuActive ? 'var(--theme-accent)' : 'rgba(255,255,255,0.45)',
-                fontFamily: 'Outfit, sans-serif',
-              }}
+          {/* Botão Central (+) */}
+          <div className="relative -top-6 px-2">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setMenuOpen(true)}
+              className="w-16 h-16 rounded-full bg-[#c5ff22] shadow-[0_8px_25px_rgba(197,255,34,0.4)] flex flex-col items-center justify-center border-[6px] border-[#000000]"
             >
-              Menu
-            </span>
-          </motion.button>
-        </div>
-      </nav>
+              <Plus size={32} className="text-black" strokeWidth={3} />
+            </motion.button>
+            <div className="absolute -bottom-10 left-0 right-0 text-center">
+              <span className="text-[10px] font-black text-white uppercase tracking-widest">Menu</span>
+            </div>
+          </div>
+
+          {/* Últimas duas abas */}
+          <div className="flex flex-1 justify-around items-center">
+            {tabs.slice(2).map(({ path, icon: Icon, label }) => {
+              const isActive = location === path || location.startsWith(path);
+              return (
+                <Link key={path} href={path} className="flex flex-col items-center gap-1 px-4">
+                  <Icon 
+                    size={24} 
+                    className={isActive ? 'text-[#c5ff22]' : 'text-white/40'} 
+                    strokeWidth={isActive ? 2.5 : 2}
+                  />
+                  <span className={`text-[10px] font-bold tracking-tight ${isActive ? 'text-[#c5ff22]' : 'text-white/40'}`}>
+                    {label}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      </div>
     </>
   );
 }
