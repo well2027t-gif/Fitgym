@@ -1,13 +1,8 @@
 /**
- * FitPro — WorkoutActive Page (Premium Layout)
- * Design: Premium Dark Fitness / Full Screen Guided Flow
- * Layout exatamente conforme imagem de referência:
- * - Cabeçalho com contador e timer
- * - Vídeo/imagem centralizada com play button
- * - Caixa de dicas com ícone de lâmpada
- * - 4 cards de métricas (Série, Reps, Carga, Descanso)
- * - Botão principal verde "Concluir série"
- * - Timer de descanso integrado na base
+ * FitPro — WorkoutActive Page (Ultra Premium Design)
+ * Design: Glassmorphism + Premium Dark Fitness
+ * Interface visualmente deslumbrante com efeitos de vidro,
+ * gradientes suaves, sombras profundas e micro-interações refinadas.
  */
 
 import { useEffect, useMemo, useState } from 'react';
@@ -58,7 +53,7 @@ function RestTimerBottom({ seconds, onComplete, onSkip }: RestTimerProps) {
   }, [remaining, running, onComplete]);
 
   const progress = Math.max(0, remaining / Math.max(seconds, 1));
-  const radius = 48;
+  const radius = 52;
   const circumference = 2 * Math.PI * radius;
 
   const minutes = Math.floor(remaining / 60);
@@ -70,46 +65,99 @@ function RestTimerBottom({ seconds, onComplete, onSkip }: RestTimerProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
-      className="rounded-[24px] border p-5"
-      style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.06)' }}
+      className="rounded-[28px] border p-6 backdrop-blur-xl"
+      style={{
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
+        borderColor: 'rgba(255,255,255,0.12)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1)',
+      }}
     >
-      <p className="text-xs uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>
-        Descanso
+      <p className="text-xs uppercase tracking-[0.2em]" style={{ color: 'rgba(255,255,255,0.48)', fontFamily: 'Space Grotesk' }}>
+        Descanso Ativo
       </p>
       
-      <div className="mt-4 flex items-center justify-between gap-4">
-        <div className="flex-1">
-          <p className="text-4xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+      <div className="mt-5 flex items-center justify-between gap-6">
+        <motion.div
+          animate={{ scale: [1, 1.02, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <p className="text-5xl font-bold text-white" style={{ fontFamily: 'Space Grotesk', color: 'var(--theme-accent)' }}>
             {timeDisplay}
           </p>
-        </div>
+          <p className="mt-1 text-xs uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.36)', fontFamily: 'Space Grotesk' }}>
+            Recuperando
+          </p>
+        </motion.div>
 
-        <div className="relative size-32">
-          <svg width="128" height="128" viewBox="0 0 128 128" className="-rotate-90">
-            <circle cx="64" cy="64" r={radius} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" />
-            <circle
-              cx="64"
-              cy="64"
+        <div className="relative size-40">
+          <svg width="160" height="160" viewBox="0 0 160 160" className="-rotate-90">
+            <circle cx="80" cy="80" r={radius} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="8" />
+            <motion.circle
+              cx="80"
+              cy="80"
               r={radius}
               fill="none"
-              stroke="var(--theme-accent)"
+              stroke="url(#gradientAccent)"
               strokeWidth="8"
               strokeLinecap="round"
               strokeDasharray={circumference}
               strokeDashoffset={circumference * (1 - progress)}
-              style={{ filter: 'drop-shadow(0 0 12px rgba(var(--theme-accent-rgb), 0.7))' }}
+              style={{ filter: 'drop-shadow(0 0 16px rgba(var(--theme-accent-rgb), 0.8))' }}
             />
+            <defs>
+              <linearGradient id="gradientAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style={{ stopColor: 'var(--theme-accent)', stopOpacity: 1 }} />
+                <stop offset="100%" style={{ stopColor: '#84cc16', stopOpacity: 0.8 }} />
+              </linearGradient>
+            </defs>
           </svg>
         </div>
 
-        <button
+        <motion.button
           onClick={onSkip}
-          className="rounded-2xl border px-4 py-3 text-sm font-semibold text-white"
-          style={{ borderColor: 'rgba(255,255,255,0.1)', fontFamily: 'Space Grotesk' }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="rounded-2xl border px-5 py-3 text-sm font-semibold text-white backdrop-blur-lg"
+          style={{
+            borderColor: 'rgba(255,255,255,0.15)',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
+            fontFamily: 'Space Grotesk',
+          }}
         >
-          ⏭ Pular descanso
-        </button>
+          ⏭ Pular
+        </motion.button>
       </div>
+    </motion.div>
+  );
+}
+
+function MetricCard({ icon, label, value, highlight = false, children }: any) {
+  return (
+    <motion.div
+      whileHover={{ y: -4 }}
+      className="rounded-[24px] border p-4 backdrop-blur-xl transition-all"
+      style={{
+        background: highlight
+          ? 'linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.15) 0%, rgba(var(--theme-accent-rgb), 0.05) 100%)'
+          : 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
+        borderColor: highlight ? 'rgba(var(--theme-accent-rgb), 0.3)' : 'rgba(255,255,255,0.12)',
+        boxShadow: highlight
+          ? '0 8px 24px rgba(var(--theme-accent-rgb), 0.15), inset 0 1px 0 rgba(255,255,255,0.1)'
+          : '0 8px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.08)',
+      }}
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <div className="flex size-8 items-center justify-center rounded-lg" style={{ background: 'rgba(var(--theme-accent-rgb), 0.2)' }}>
+          {icon}
+        </div>
+      </div>
+      <p className="text-xs uppercase tracking-[0.14em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>
+        {label}
+      </p>
+      <p className="mt-2 text-2xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+        {value}
+      </p>
+      {children}
     </motion.div>
   );
 }
@@ -188,20 +236,31 @@ export default function WorkoutActive() {
   if (!workout) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#0d0d0f] px-6 text-center">
-        <div className="flex size-16 items-center justify-center rounded-[28px]" style={{ background: 'rgba(255,255,255,0.05)' }}>
-          <Zap size={28} style={{ color: 'rgba(255,255,255,0.22)' }} />
-        </div>
-        <h1 className="text-xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>Treino não encontrado</h1>
-        <p className="max-w-xs text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.48)', fontFamily: 'Outfit' }}>
+        <motion.div
+          initial={{ scale: 0.8 }}
+          animate={{ scale: 1 }}
+          className="flex size-20 items-center justify-center rounded-2xl backdrop-blur-xl"
+          style={{
+            background: 'linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.15) 0%, rgba(var(--theme-accent-rgb), 0.05) 100%)',
+            border: '1px solid rgba(var(--theme-accent-rgb), 0.3)',
+            color: 'var(--theme-accent)',
+          }}
+        >
+          <Zap size={32} />
+        </motion.div>
+        <h1 className="text-2xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>Treino não encontrado</h1>
+        <p className="max-w-xs text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.56)', fontFamily: 'Outfit' }}>
           Este treino pode ter sido removido ou substituído. Volte para continuar.
         </p>
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => navigate('/treinos')}
-          className="rounded-2xl px-5 py-3 text-sm font-bold"
+          className="rounded-2xl px-6 py-3 text-sm font-bold"
           style={{ background: 'var(--theme-accent)', color: '#0d0d0f', fontFamily: 'Space Grotesk' }}
         >
           Voltar aos treinos
-        </button>
+        </motion.button>
       </div>
     );
   }
@@ -316,86 +375,110 @@ export default function WorkoutActive() {
   const currentProgress = exerciseState[activeExercise?.id ?? '']?.completedSets ?? 0;
   const isWorkoutComplete = completedExercises.length + skippedExercises.length === workout.exercises.length;
 
-  // Renderizar indicador de progresso com bolinhas
   const progressDots = Array.from({ length: allExercises.length }).map((_, i) => {
     const isCompleted = completedExercises.some(ex => ex.id === allExercises[i].id);
-    const isSkipped = skippedExercises.includes(allExercises[i].id);
     const isCurrent = i === currentExerciseIndex;
     
     return (
-      <div
+      <motion.div
         key={i}
-        className="h-2 rounded-full"
-        style={{
-          width: '32px',
-          background: isCurrent ? 'var(--theme-accent)' : isCompleted ? 'var(--theme-accent)' : isSkipped ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.15)',
+        layoutId={`dot-${i}`}
+        animate={{
+          width: isCurrent ? '40px' : '28px',
+          background: isCurrent ? 'var(--theme-accent)' : isCompleted ? 'var(--theme-accent)' : 'rgba(255,255,255,0.15)',
         }}
+        className="h-2 rounded-full transition-all"
       />
     );
   });
 
-  // Calcular tempo total do treino
   const elapsedMinutes = Math.floor((Date.now() - startedAt) / 60000);
   const elapsedSeconds = Math.floor(((Date.now() - startedAt) % 60000) / 1000);
   const timeDisplay = `${String(elapsedMinutes).padStart(2, '0')}:${String(elapsedSeconds).padStart(2, '0')}`;
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-[#0d0d0f]" style={{ height: '100dvh' }}>
-      {/* CABEÇALHO */}
-      <div className="flex-shrink-0 px-5 py-4">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <button
+    <div className="fixed inset-0 z-40 flex flex-col bg-gradient-to-br from-[#0d0d0f] via-[#0a0a0c] to-[#0d0d0f]" style={{ height: '100dvh' }}>
+      {/* CABEÇALHO PREMIUM */}
+      <motion.div className="flex-shrink-0 px-5 py-5 backdrop-blur-xl border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/treinos')}
-            className="flex size-10 items-center justify-center rounded-2xl"
-            style={{ background: 'rgba(255,255,255,0.06)', color: 'white' }}
+            className="flex size-11 items-center justify-center rounded-2xl backdrop-blur-lg"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              color: 'white',
+            }}
           >
-            <ArrowLeft size={18} />
-          </button>
+            <ArrowLeft size={20} />
+          </motion.button>
           
-          <div className="flex-1 text-center">
-            <h1 className="text-2xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+          <motion.div className="flex-1 text-center">
+            <motion.h1
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-2xl font-bold text-white"
+              style={{ fontFamily: 'Space Grotesk' }}
+            >
               {activeExercise?.name ?? 'Treino concluído'}
-            </h1>
-            <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.56)', fontFamily: 'Outfit' }}>
-              {currentExerciseIndex + 1} / {allExercises.length}
+            </motion.h1>
+            <p className="mt-1 text-xs" style={{ color: 'rgba(255,255,255,0.48)', fontFamily: 'Space Grotesk' }}>
+              {currentExerciseIndex + 1} de {allExercises.length}
             </p>
-          </div>
+          </motion.div>
 
-          <div className="text-right">
-            <div className="flex size-10 items-center justify-center rounded-2xl" style={{ background: 'rgba(var(--theme-accent-rgb), 0.15)' }}>
-              <p className="text-sm font-bold" style={{ color: 'var(--theme-accent)', fontFamily: 'Space Grotesk' }}>
-                {timeDisplay}
-              </p>
-            </div>
-          </div>
+          <motion.div
+            className="flex size-11 items-center justify-center rounded-2xl backdrop-blur-lg"
+            style={{
+              background: 'linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.15) 0%, rgba(var(--theme-accent-rgb), 0.05) 100%)',
+              border: '1px solid rgba(var(--theme-accent-rgb), 0.3)',
+            }}
+          >
+            <p className="text-sm font-bold" style={{ color: 'var(--theme-accent)', fontFamily: 'Space Grotesk' }}>
+              {timeDisplay}
+            </p>
+          </motion.div>
         </div>
 
         {/* PROGRESSO COM BOLINHAS */}
-        <div className="flex gap-1.5 justify-center">
+        <div className="flex gap-2 justify-center">
           {progressDots}
         </div>
-      </div>
+      </motion.div>
 
       {/* CONTEÚDO SCROLLÁVEL */}
-      <div className="flex-1 overflow-y-auto px-5 py-4">
+      <div className="flex-1 overflow-y-auto px-5 py-6">
         <AnimatePresence mode="wait">
           {activeExercise && !isWorkoutComplete ? (
             <motion.div
               key={activeExercise.id}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="flex flex-col gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col gap-5"
             >
               {/* VÍDEO/IMAGEM COM PLAY BUTTON */}
-              <div className="relative rounded-[24px] overflow-hidden bg-black aspect-video">
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40 flex items-center justify-center">
-                  <div className="flex size-16 items-center justify-center rounded-full border-2 border-white">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                className="relative rounded-[28px] overflow-hidden bg-black aspect-video backdrop-blur-xl border"
+                style={{
+                  borderColor: 'rgba(255,255,255,0.12)',
+                  boxShadow: '0 20px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)',
+                }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/50 flex items-center justify-center">
+                  <motion.div
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="flex size-20 items-center justify-center rounded-full border-2 border-white"
+                  >
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
                       <path d="M8 5v14l11-7z" />
                     </svg>
-                  </div>
+                  </motion.div>
                 </div>
                 {activeExercise.videoUrl && (
                   <img
@@ -404,116 +487,145 @@ export default function WorkoutActive() {
                     className="w-full h-full object-cover"
                   />
                 )}
-              </div>
+              </motion.div>
 
               {/* CAIXA DE DICAS COM ÍCONE DE LÂMPADA */}
-              <div className="rounded-[20px] border p-4 flex gap-3" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.06)' }}>
-                <div className="flex-shrink-0 mt-1">
-                  <Lightbulb size={20} style={{ color: 'var(--theme-accent)' }} />
-                </div>
+              <motion.div
+                whileHover={{ y: -2 }}
+                className="rounded-[24px] border p-5 flex gap-4 backdrop-blur-xl"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
+                  borderColor: 'rgba(255,255,255,0.12)',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.08)',
+                }}
+              >
+                <motion.div
+                  animate={{ rotate: [0, 5, -5, 0] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  className="flex-shrink-0 mt-1 flex size-10 items-center justify-center rounded-lg"
+                  style={{ background: 'rgba(var(--theme-accent-rgb), 0.2)' }}
+                >
+                  <Lightbulb size={22} style={{ color: 'var(--theme-accent)' }} />
+                </motion.div>
                 <p className="text-sm leading-relaxed text-white" style={{ fontFamily: 'Outfit' }}>
                   {activeExercise.instructions || 'Execute o exercício com controle e técnica adequada.'}
                 </p>
-              </div>
+              </motion.div>
 
               {/* 4 CARDS DE MÉTRICAS */}
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 gap-3">
                 {/* Série */}
-                <div className="rounded-[20px] border p-3 text-center" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.06)' }}>
-                  <div className="flex justify-center mb-2">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--theme-accent)" strokeWidth="2">
-                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                      <path d="M21 3v5h-5" />
-                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                      <path d="M3 21v-5h5" />
+                <MetricCard
+                  highlight
+                  icon={
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--theme-accent)" strokeWidth="2">
+                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M3 21v-5h5" />
                     </svg>
-                  </div>
-                  <p className="text-xs uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Série</p>
-                  <p className="mt-1 text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
-                    {currentProgress}/{activeExercise.sets}
-                  </p>
-                  <div className="mt-2 h-1 rounded-full" style={{ background: 'rgba(var(--theme-accent-rgb), 0.3)' }}>
-                    <div
+                  }
+                  label="Série"
+                  value={`${currentProgress}/${activeExercise.sets}`}
+                >
+                  <div className="mt-3 h-1.5 rounded-full" style={{ background: 'rgba(var(--theme-accent-rgb), 0.2)' }}>
+                    <motion.div
+                      animate={{ width: `${(currentProgress / activeExercise.sets) * 100}%` }}
                       className="h-full rounded-full"
                       style={{
-                        width: `${(currentProgress / activeExercise.sets) * 100}%`,
-                        background: 'var(--theme-accent)',
+                        background: 'linear-gradient(90deg, var(--theme-accent) 0%, #84cc16 100%)',
+                        boxShadow: '0 0 8px rgba(var(--theme-accent-rgb), 0.6)',
                       }}
                     />
                   </div>
-                </div>
+                </MetricCard>
 
                 {/* Repetições */}
-                <div className="rounded-[20px] border p-3 text-center" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.06)' }}>
-                  <div className="flex justify-center mb-2">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: '#f59e0b' }}>
+                <MetricCard
+                  icon={
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: '#f59e0b' }}>
                       <path d="M6 9h12M6 15h12M3 3h18v18H3z" />
                     </svg>
-                  </div>
-                  <p className="text-xs uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Repetições</p>
-                  <p className="mt-1 text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
-                    {exerciseState[activeExercise.id]?.reps ?? activeExercise.reps} reps
-                  </p>
-                </div>
+                  }
+                  label="Reps"
+                  value={`${exerciseState[activeExercise.id]?.reps ?? activeExercise.reps}`}
+                />
 
                 {/* Carga com +/- */}
-                <div className="rounded-[20px] border p-3 text-center" style={{ background: 'rgba(var(--theme-accent-rgb), 0.12)', borderColor: 'rgba(var(--theme-accent-rgb), 0.22)' }}>
-                  <div className="flex justify-center mb-2">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--theme-accent)" strokeWidth="2">
+                <MetricCard
+                  highlight
+                  icon={
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--theme-accent)" strokeWidth="2">
                       <circle cx="12" cy="12" r="1" />
                       <circle cx="19" cy="12" r="1" />
                       <circle cx="5" cy="12" r="1" />
                       <path d="M12 2v20M2 12h20" />
                     </svg>
-                  </div>
-                  <p className="text-xs uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Carga</p>
-                  <p className="mt-1 text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
-                    {(exerciseState[activeExercise.id]?.weight ?? activeExercise.weight).toFixed(0)} kg
-                  </p>
-                  <div className="mt-2 flex gap-1">
-                    <button
+                  }
+                  label="Carga"
+                  value={`${(exerciseState[activeExercise.id]?.weight ?? activeExercise.weight).toFixed(0)}`}
+                >
+                  <div className="mt-3 flex gap-2">
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
                       onClick={() => handleChangeNumber(activeExercise.id, 'weight', -2.5)}
-                      className="flex-1 rounded-lg py-1 text-xs font-bold"
-                      style={{ background: 'rgba(255,255,255,0.08)', color: 'white' }}
+                      className="flex-1 rounded-lg py-2 text-xs font-bold backdrop-blur-lg"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        color: 'white',
+                      }}
                     >
                       <Minus size={12} className="mx-auto" />
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
                       onClick={() => handleChangeNumber(activeExercise.id, 'weight', 2.5)}
-                      className="flex-1 rounded-lg py-1 text-xs font-bold"
-                      style={{ background: 'rgba(255,255,255,0.08)', color: 'white' }}
+                      className="flex-1 rounded-lg py-2 text-xs font-bold backdrop-blur-lg"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        color: 'white',
+                      }}
                     >
                       <Plus size={12} className="mx-auto" />
-                    </button>
+                    </motion.button>
                   </div>
-                </div>
+                </MetricCard>
 
                 {/* Descanso */}
-                <div className="rounded-[20px] border p-3 text-center" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.06)' }}>
-                  <div className="flex justify-center mb-2">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2">
+                <MetricCard
+                  icon={
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2">
                       <circle cx="12" cy="12" r="10" />
                       <polyline points="12 6 12 12 16 14" />
                     </svg>
-                  </div>
-                  <p className="text-xs uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Descanso</p>
-                  <p className="mt-1 text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
-                    {activeExercise.restSeconds}s
-                  </p>
-                </div>
+                  }
+                  label="Descanso"
+                  value={`${activeExercise.restSeconds}s`}
+                />
               </div>
 
               {/* BOTÃO PRINCIPAL VERDE */}
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => handleCompleteSet(activeExercise.id)}
-                className="w-full rounded-2xl px-4 py-4 text-lg font-bold flex items-center justify-center gap-2 mt-2"
-                style={{ background: 'var(--theme-accent)', color: '#0d0d0f', fontFamily: 'Space Grotesk' }}
+                className="w-full rounded-2xl px-4 py-5 text-lg font-bold flex items-center justify-center gap-3 backdrop-blur-xl border"
+                style={{
+                  background: 'linear-gradient(135deg, var(--theme-accent) 0%, #84cc16 100%)',
+                  color: '#0d0d0f',
+                  fontFamily: 'Space Grotesk',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  boxShadow: '0 12px 32px rgba(var(--theme-accent-rgb), 0.4), inset 0 1px 0 rgba(255,255,255,0.3)',
+                }}
               >
-                <Check size={20} />
+                <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                  <Check size={22} />
+                </motion.div>
                 Concluir série
-              </button>
-              <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.48)', fontFamily: 'Outfit' }}>
-                Ao concluir, o descanso será iniciado.
+              </motion.button>
+              <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Outfit' }}>
+                Ao concluir, o descanso será iniciado automaticamente
               </p>
 
               {/* TIMER DE DESCANSO */}
@@ -534,40 +646,64 @@ export default function WorkoutActive() {
               </AnimatePresence>
 
               {/* BOTÃO SECUNDÁRIO PULAR */}
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => handleSkipExercise(activeExercise.id)}
-                className="w-full rounded-2xl border px-4 py-3 text-sm font-semibold text-white"
-                style={{ borderColor: 'rgba(255,255,255,0.1)', fontFamily: 'Space Grotesk' }}
+                className="w-full rounded-2xl border px-4 py-3 text-sm font-semibold text-white backdrop-blur-lg"
+                style={{
+                  borderColor: 'rgba(255,255,255,0.15)',
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
+                  fontFamily: 'Space Grotesk',
+                }}
               >
                 <SkipForward size={16} className="inline mr-2" />
                 Pular exercício
-              </button>
+              </motion.button>
             </motion.div>
           ) : isWorkoutComplete ? (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
               className="flex flex-col items-center justify-center gap-6 py-12 text-center"
             >
-              <div className="flex size-20 items-center justify-center rounded-full" style={{ background: 'rgba(var(--theme-accent-rgb), 0.15)', color: 'var(--theme-accent)' }}>
-                <Check size={40} />
-              </div>
+              <motion.div
+                animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="flex size-24 items-center justify-center rounded-full backdrop-blur-xl border"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.2) 0%, rgba(var(--theme-accent-rgb), 0.05) 100%)',
+                  border: '2px solid var(--theme-accent)',
+                  color: 'var(--theme-accent)',
+                  boxShadow: '0 12px 32px rgba(var(--theme-accent-rgb), 0.3)',
+                }}
+              >
+                <Check size={48} />
+              </motion.div>
               <div>
-                <h2 className="text-2xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                <h2 className="text-3xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
                   Treino concluído!
                 </h2>
-                <p className="mt-2 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.56)', fontFamily: 'Outfit' }}>
-                  Você completou {completedExercises.length} exercícios em {elapsedMinutes} minutos.
+                <p className="mt-3 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.56)', fontFamily: 'Outfit' }}>
+                  Você completou {completedExercises.length} exercícios em {elapsedMinutes} minutos e {elapsedSeconds} segundos.
                 </p>
               </div>
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={finishWorkout}
-                className="w-full rounded-2xl px-4 py-4 text-base font-bold flex items-center justify-center gap-2"
-                style={{ background: 'var(--theme-accent)', color: '#0d0d0f', fontFamily: 'Space Grotesk' }}
+                className="w-full rounded-2xl px-4 py-4 text-base font-bold flex items-center justify-center gap-2 backdrop-blur-xl border"
+                style={{
+                  background: 'linear-gradient(135deg, var(--theme-accent) 0%, #84cc16 100%)',
+                  color: '#0d0d0f',
+                  fontFamily: 'Space Grotesk',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  boxShadow: '0 12px 32px rgba(var(--theme-accent-rgb), 0.4)',
+                }}
               >
-                <Check size={18} />
+                <Check size={20} />
                 Salvar e finalizar
-              </button>
+              </motion.button>
             </motion.div>
           ) : null}
         </AnimatePresence>
