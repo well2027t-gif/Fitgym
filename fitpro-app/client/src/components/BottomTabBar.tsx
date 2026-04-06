@@ -42,6 +42,14 @@ const menuItems = [
 export default function BottomTabBar() {
   const [location, navigate] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  
+  // Verificar se estamos na tela de conversa com profissional
+  const isInProfessionalChat = location.startsWith('/profissionais/chat/');
+  
+  // Se estamos na tela de conversa, não renderizar o menu
+  if (isInProfessionalChat) {
+    return null;
+  }
 
   useEffect(() => {
     const body = document.body;
@@ -235,9 +243,12 @@ export default function BottomTabBar() {
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           borderTop: '1px solid rgba(255,255,255,0.06)',
+          height: 'auto',
+          minHeight: '4.5rem',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         }}
       >
-        <div className="flex items-center justify-around px-2 py-2 max-w-lg mx-auto">
+        <div className="flex items-center justify-around px-2 py-2 max-w-lg mx-auto h-full">
           {tabs.map(({ path, icon: Icon, label }) => {
             const isActive = location === path || (path !== '/' && location.startsWith(path));
 

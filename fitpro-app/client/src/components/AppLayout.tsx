@@ -27,6 +27,9 @@ const pageTransition = {
 
 export default function AppLayout({ children }: AppLayoutProps) {
   const [location] = useLocation();
+  
+  // Verificar se estamos na tela de conversa com profissional
+  const isInProfessionalChat = location.startsWith('/profissionais/chat/');
 
   return (
     <div
@@ -41,7 +44,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           animate="animate"
           exit="exit"
           transition={pageTransition}
-          className="page-with-nav min-h-screen"
+          className={isInProfessionalChat ? "min-h-screen" : "page-with-nav min-h-screen"}
         >
           {children}
         </motion.main>
