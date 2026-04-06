@@ -1,7 +1,8 @@
 /**
  * FitPro — BottomTabBar
- * Design: Exato conforme referência — barra escura arredondada, borda azul neon,
- * botão central azul gradiente com glow, fixo no rodapé sem se mover.
+ * Design: Barra escura arredondada, borda azul neon,
+ * botão central azul gradiente com glow.
+ * FIXO no rodapé — não se move.
  */
 
 import { useEffect, useState } from 'react';
@@ -48,16 +49,15 @@ function TabItem({ href, icon: Icon, label, isActive, filled }: {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: '4px',
+        gap: '3px',
         flex: 1,
         textDecoration: 'none',
-        paddingTop: '10px',
-        paddingBottom: '10px',
+        padding: '8px 0',
         position: 'relative',
       }}
     >
       <Icon
-        size={24}
+        size={22}
         fill={filled && isActive ? '#3b82f6' : 'none'}
         color={isActive ? '#3b82f6' : 'rgba(255,255,255,0.4)'}
         strokeWidth={isActive ? 2.5 : 1.8}
@@ -73,15 +73,14 @@ function TabItem({ href, icon: Icon, label, isActive, filled }: {
       >
         {label}
       </span>
-      {/* Indicador azul embaixo do ativo */}
       {isActive && (
         <div
           style={{
             position: 'absolute',
-            bottom: '6px',
+            bottom: '2px',
             left: '50%',
             transform: 'translateX(-50%)',
-            width: '22px',
+            width: '20px',
             height: '3px',
             borderRadius: '2px',
             background: '#3b82f6',
@@ -98,29 +97,32 @@ export default function BottomTabBar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const isInProfessionalChat = location.startsWith('/profissionais/chat/');
+  const isInWorkoutMode = location.startsWith('/treino-ativo/');
 
   useEffect(() => {
-    const body = document.body;
-    const html = document.documentElement;
     if (menuOpen) {
-      body.style.overflow = 'hidden';
-      html.style.overflow = 'hidden';
-      body.style.touchAction = 'none';
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
     } else {
-      body.style.overflow = '';
-      html.style.overflow = '';
-      body.style.touchAction = '';
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      document.body.style.touchAction = '';
     }
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      document.body.style.touchAction = '';
+    };
   }, [menuOpen]);
 
-  if (isInProfessionalChat) return null;
+  if (isInProfessionalChat || isInWorkoutMode) return null;
 
   const handleMenuNavigate = (path: string) => {
     setMenuOpen(false);
     setTimeout(() => navigate(path), 140);
   };
 
-  /* Detectar aba ativa */
   const isTabActive = (path: string) => {
     if (path === '/') return location === '/';
     return location.startsWith(path);
@@ -141,7 +143,7 @@ export default function BottomTabBar() {
               style={{
                 position: 'fixed',
                 inset: 0,
-                zIndex: 40,
+                zIndex: 9998,
                 background: 'rgba(0,0,0,0.72)',
                 backdropFilter: 'blur(6px)',
                 WebkitBackdropFilter: 'blur(6px)',
@@ -157,7 +159,7 @@ export default function BottomTabBar() {
                 bottom: 0,
                 left: 0,
                 right: 0,
-                zIndex: 50,
+                zIndex: 9999,
                 borderTopLeftRadius: '24px',
                 borderTopRightRadius: '24px',
                 background: 'linear-gradient(180deg, #16161a 0%, #0d0d0f 100%)',
@@ -265,96 +267,104 @@ export default function BottomTabBar() {
       </AnimatePresence>
 
       {/* ── BARRA INFERIOR FIXA ── */}
-      <nav
+      <div
         style={{
           position: 'fixed',
           bottom: 0,
           left: 0,
           right: 0,
-          zIndex: 30,
-          maxWidth: '480px',
-          margin: '0 auto',
-          /* Fixar sem mover */
-          transform: 'translateZ(0)',
-          willChange: 'auto',
-          pointerEvents: 'none',
+          zIndex: 9990,
+          /* Forçar compositing layer para evitar bugs de scroll no iOS */
+          transform: 'translate3d(0,0,0)',
+          WebkitTransform: 'translate3d(0,0,0)',
         }}
       >
+        {/* Container centralizado */}
         <div
           style={{
-            position: 'relative',
-            margin: '0 10px 10px',
-            borderRadius: '22px',
-            background: 'rgba(10,10,14,0.96)',
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            border: '1px solid rgba(59,130,246,0.22)',
-            boxShadow: '0 0 30px rgba(59,130,246,0.08), 0 0 60px rgba(59,130,246,0.04), 0 -4px 30px rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-around',
-            height: '72px',
-            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-            overflow: 'visible',
-            pointerEvents: 'auto',
+            maxWidth: '480px',
+            margin: '0 auto',
+            padding: '0 8px 8px',
           }}
         >
-          {/* Aba Início */}
-          <TabItem href="/" icon={Home} label="Início" isActive={isTabActive('/')} filled />
-
-          {/* Aba Treinos */}
-          <TabItem href="/treinos" icon={Dumbbell} label="Treinos" isActive={isTabActive('/treinos')} />
-
-          {/* Botão Central (+) */}
-          <div
+          {/* Barra principal */}
+          <nav
             style={{
-              flex: 1,
+              position: 'relative',
+              borderRadius: '20px',
+              background: 'rgba(10,10,14,0.97)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              border: '1px solid rgba(59,130,246,0.25)',
+              boxShadow: '0 0 25px rgba(59,130,246,0.1), 0 0 50px rgba(59,130,246,0.05), 0 -4px 20px rgba(0,0,0,0.6)',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative',
+              justifyContent: 'space-around',
+              height: '68px',
+              overflow: 'visible',
             }}
           >
-            <button
-              onClick={() => setMenuOpen(true)}
+            {/* Aba Início */}
+            <TabItem href="/" icon={Home} label="Início" isActive={isTabActive('/')} filled />
+
+            {/* Aba Treinos */}
+            <TabItem href="/treinos" icon={Dumbbell} label="Treinos" isActive={isTabActive('/treinos')} />
+
+            {/* Botão Central (+) */}
+            <div
               style={{
-                position: 'relative',
-                width: '60px',
-                height: '60px',
-                borderRadius: '50%',
-                background: 'linear-gradient(145deg, #3b82f6 0%, #6366f1 50%, #7c3aed 100%)',
-                border: '3.5px solid rgba(10,10,14,0.95)',
-                boxShadow: '0 0 28px rgba(59,130,246,0.55), 0 0 70px rgba(59,130,246,0.15), 0 6px 20px rgba(0,0,0,0.4)',
+                flex: 1,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                cursor: 'pointer',
-                marginTop: '-22px',
-                outline: 'none',
-                padding: 0,
+                position: 'relative',
               }}
             >
-              {/* Anel externo azul */}
-              <div
+              <button
+                onClick={() => setMenuOpen(true)}
                 style={{
-                  position: 'absolute',
-                  inset: '-6px',
+                  position: 'relative',
+                  width: '56px',
+                  height: '56px',
                   borderRadius: '50%',
-                  border: '2px solid rgba(59,130,246,0.28)',
-                  pointerEvents: 'none',
+                  background: 'linear-gradient(145deg, #3b82f6 0%, #6366f1 50%, #7c3aed 100%)',
+                  border: '3px solid rgba(10,10,14,0.97)',
+                  boxShadow: '0 0 25px rgba(59,130,246,0.5), 0 0 60px rgba(59,130,246,0.15), 0 4px 15px rgba(0,0,0,0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  marginTop: '-24px',
+                  outline: 'none',
+                  padding: 0,
+                  WebkitTapHighlightColor: 'transparent',
                 }}
-              />
-              <Plus size={28} color="#fff" strokeWidth={2.5} />
-            </button>
-          </div>
+              >
+                {/* Anel externo azul */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: '-5px',
+                    borderRadius: '50%',
+                    border: '2px solid rgba(59,130,246,0.3)',
+                    pointerEvents: 'none',
+                  }}
+                />
+                <Plus size={26} color="#fff" strokeWidth={2.5} />
+              </button>
+            </div>
 
-          {/* Aba Dieta */}
-          <TabItem href="/dieta" icon={Salad} label="Dieta" isActive={isTabActive('/dieta')} />
+            {/* Aba Dieta */}
+            <TabItem href="/dieta" icon={Salad} label="Dieta" isActive={isTabActive('/dieta')} />
 
-          {/* Aba Profissionais */}
-          <TabItem href="/profissionais" icon={Users} label="Profissionais" isActive={isTabActive('/profissionais')} />
+            {/* Aba Profissionais */}
+            <TabItem href="/profissionais" icon={Users} label="Profissionais" isActive={isTabActive('/profissionais')} />
+          </nav>
+
+          {/* Safe area padding para iPhone */}
+          <div style={{ height: 'env(safe-area-inset-bottom, 0px)' }} />
         </div>
-      </nav>
+      </div>
     </>
   );
 }

@@ -256,7 +256,7 @@
 
   /* Page with bottom nav padding */
   .page-with-nav {
-    padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
   }
 
   /* Macro bar */
