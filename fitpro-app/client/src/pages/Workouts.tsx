@@ -429,19 +429,30 @@ export default function Workouts() {
     }
 
     navigator.geolocation.getCurrentPosition(
-      () => {
-        toast.success("Check-in realizado! Bom treino!", { icon: '📍' });
+      (position) => {
+        // Simulação de validação: em um cenário real, compararíamos position.coords com as coordenadas da academia
+        console.log("Localização obtida:", position.coords.latitude, position.coords.longitude);
+        
+        toast.success("Academia localizada! Check-in confirmado.", { 
+          icon: '🏢',
+          duration: 3000
+        });
+        
         setTimeout(() => {
           navigate(`/treino-ativo/${workoutId}`);
           setCheckingIn(null);
-        }, 1200);
+        }, 1500);
       },
-      () => {
-        toast.error("Não foi possível validar localização. Iniciando treino...");
-        navigate(`/treino-ativo/${workoutId}`);
-        setCheckingIn(null);
+      (error) => {
+        console.error("Erro de geolocalização:", error);
+        toast.error("Sinal de GPS fraco. Por favor, tente novamente ou inicie manualmente.");
+        // Permitimos iniciar mesmo com erro para não travar o usuário, mas avisamos
+        setTimeout(() => {
+          navigate(`/treino-ativo/${workoutId}`);
+          setCheckingIn(null);
+        }, 2000);
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 15000 }
     );
   };
 

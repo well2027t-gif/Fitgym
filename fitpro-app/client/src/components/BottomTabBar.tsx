@@ -26,11 +26,12 @@ const tabs = [
   { path: '/', icon: Home, label: 'Home' },
   { path: '/treinos', icon: Dumbbell, label: 'Treinos' },
   { path: '/dieta', icon: UtensilsCrossed, label: 'Dieta' },
-  { path: '/progresso', icon: TrendingUp, label: 'Progresso' },
+  { path: '/profissionais', icon: BookOpen, label: 'Profissionais' },
 ];
 
 const menuItems = [
   { path: '/perfil', icon: User, label: 'Perfil', description: 'Dados pessoais e preferências' },
+  { path: '/progresso', icon: TrendingUp, label: 'Progresso', description: 'Evolução e resultados' },
   { path: '/ciclo', icon: Droplets, label: 'Saúde Feminina', description: 'Acompanhamento de ciclo menstrual' },
   { path: '/historico', icon: TrendingUp, label: 'Histórico', description: 'Ver registros e evolução' },
   { path: '/planos', icon: BookOpen, label: 'Planos', description: 'Gerenciar planos de treino' },

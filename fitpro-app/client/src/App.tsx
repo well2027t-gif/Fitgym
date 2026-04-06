@@ -30,6 +30,7 @@ import Workouts from './pages/Workouts';
 import Cycle from './pages/Cycle';
 import Hydration from './pages/Hydration';
 import Steps from './pages/Steps';
+import Professionals from './pages/Professionals';
 
 function Router() {
   return (
@@ -49,6 +50,7 @@ function Router() {
         <Route path="/ciclo" component={Cycle} />
         <Route path="/hidratacao" component={Hydration} />
         <Route path="/passos" component={Steps} />
+        <Route path="/profissionais" component={Professionals} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

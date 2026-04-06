@@ -745,7 +745,7 @@ Consulte seu médico para análise profissional.
                         animate={isToday ? { 
                           scale: [1, 1.1, 1],
                           opacity: [0.7, 1, 0.7],
-                          color: ['#ff8fab', '#ff4d6d', '#ff8fab']
+                          color: ['#ffffff', '#ff8fab', '#ffffff']
                         } : {}}
                         transition={isToday ? { duration: 2, repeat: Infinity } : {}}
                       >
