@@ -4,7 +4,7 @@
  * Acompanhamento profissional de ciclo menstrual com análise, educação e insights médicos.
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar as CalendarIcon, 
@@ -173,12 +173,40 @@ export default function Cycle() {
   const cycleEntries = state.cycleEntries || [];
   const lastCycle = useMemo(() => cycleEntries[0], [cycleEntries]);
 
-  // Sincronizar profileForm com cycleProfile do state
-  useMemo(() => {
-    if (state.cycleProfile) {
-      setProfileForm(state.cycleProfile);
+  useEffect(() => {
+    if (showSettingsModal) {
+      setProfileForm(state.cycleProfile || {
+        cycleLengthDays: 28,
+        menstruationDays: 5,
+        useContraceptive: false,
+        objective: 'track',
+      });
     }
-  }, [state.cycleProfile]);
+  }, [showSettingsModal, state.cycleProfile]);
+
+  useEffect(() => {
+    const hasModalOpen = showDayModal || showSettingsModal || activeQuickModal !== null;
+    if (!hasModalOpen) return;
+
+    const body = document.body;
+    const html = document.documentElement;
+    const previousBodyOverflow = body.style.overflow;
+    const previousHtmlOverflow = html.style.overflow;
+    const previousBodyTouchAction = body.style.touchAction;
+    const previousHtmlTouchAction = html.style.touchAction;
+
+    body.style.overflow = 'hidden';
+    html.style.overflow = 'hidden';
+    body.style.touchAction = 'none';
+    html.style.touchAction = 'none';
+
+    return () => {
+      body.style.overflow = previousBodyOverflow;
+      html.style.overflow = previousHtmlOverflow;
+      body.style.touchAction = previousBodyTouchAction;
+      html.style.touchAction = previousHtmlTouchAction;
+    };
+  }, [showDayModal, showSettingsModal, activeQuickModal]);
 
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -357,12 +385,16 @@ Consulte seu médico para análise profissional.
 
   const getDayOfCycle = (day: number | null): number | null => {
     if (!day || !lastCycle) return null;
+
     const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const startDate = new Date(lastCycle.startDate);
-    const currentDate = new Date(dateStr);
+    const cycleLength = lastCycle.cycleLengthDays || state.cycleProfile?.cycleLengthDays || 28;
+    const startDate = new Date(`${lastCycle.startDate}T00:00:00`);
+    const currentDate = new Date(`${dateStr}T00:00:00`);
     const diffTime = currentDate.getTime() - startDate.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
-    return diffDays > 0 && diffDays <= (lastCycle.cycleLengthDays || 28) ? diffDays : null;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const normalizedDay = ((diffDays % cycleLength) + cycleLength) % cycleLength;
+
+    return normalizedDay + 1;
   };
 
   const getColorForDay = (day: number | null): string => {
@@ -698,15 +730,15 @@ Consulte seu médico para análise profissional.
                       <motion.button
                         key={idx}
                         onClick={() => handleDayClick(day)}
-                        className={`aspect-square rounded-2xl border transition-all flex flex-col items-center justify-center gap-0.5 relative ${
+                        className={`aspect-square rounded-2xl border transition-all flex flex-col items-center justify-center gap-0.5 relative overflow-hidden ${
                           isSelected
                             ? 'bg-white/20 border-white/50 shadow-lg shadow-white/10'
                             : dayOfCycle
                             ? `${phaseBg} hover:brightness-125`
                             : 'bg-white/[0.03] border-white/5 hover:bg-white/10 hover:border-white/20'
                         }`}
-                        whileHover={{ scale: 1.06 }}
-                        whileTap={{ scale: 0.94 }}
+                        whileHover={{ scale: 1.04 }}
+                        whileTap={{ scale: 0.97 }}
                       >
                         {/* Destaque do dia de hoje */}
                         {isToday && (
@@ -718,6 +750,21 @@ Consulte seu médico para análise profissional.
                           />
                         )}
 
+                        {!isSelected && dayOfCycle && (
+                          <div
+                            className="absolute inset-[2px] rounded-[14px] opacity-90"
+                            style={{
+                              background: dayOfCycle <= 5
+                                ? 'linear-gradient(135deg, rgba(239,68,68,0.28) 0%, rgba(244,63,94,0.12) 100%)'
+                                : dayOfCycle <= 13
+                                ? 'linear-gradient(135deg, rgba(59,130,246,0.26) 0%, rgba(34,211,238,0.12) 100%)'
+                                : dayOfCycle <= 16
+                                ? 'linear-gradient(135deg, rgba(236,72,153,0.28) 0%, rgba(217,70,239,0.12) 100%)'
+                                : 'linear-gradient(135deg, rgba(245,158,11,0.28) 0%, rgba(234,179,8,0.12) 100%)'
+                            }}
+                          />
+                        )}
+
                         {/* Número do dia */}
                         <span className={`text-sm font-bold leading-none relative z-10 ${
                           isToday ? 'text-white drop-shadow-lg' : isSelected ? 'text-white' : dayOfCycle ? phaseText : 'text-white/40'
@@ -725,10 +772,26 @@ Consulte seu médico para análise profissional.
                           {day}
                         </span>
 
+                        {/* Indicador de fase */}
+                        {dayOfCycle && !isToday && (
+                          <div
+                            className="relative z-10 w-1.5 h-1.5 rounded-full"
+                            style={{
+                              background: dayOfCycle <= 5
+                                ? '#fb7185'
+                                : dayOfCycle <= 13
+                                ? '#60a5fa'
+                                : dayOfCycle <= 16
+                                ? '#f472b6'
+                                : '#fbbf24'
+                            }}
+                          />
+                        )}
+
                         {/* Indicador de registro */}
                         {hasEntry && (
                           <motion.div
-                            className="w-1 h-1 rounded-full bg-white/60"
+                            className="relative z-10 w-1 h-1 rounded-full bg-white/75"
                             animate={{ scale: [1, 1.4, 1] }}
                             transition={{ duration: 2, repeat: Infinity }}
                           />
@@ -1372,17 +1435,21 @@ Consulte seu médico para análise profissional.
       {/* Modal de Configurações de Perfil */}
       <AnimatePresence>
         {showSettingsModal && (
-          <div className="fixed inset-0 z-[100] flex items-end justify-center px-4 pb-6 sm:items-center">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 py-4">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               className="absolute inset-0 bg-black/80 backdrop-blur-sm"
               onClick={() => setShowSettingsModal(false)}
             />
             <motion.div 
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              className="relative w-full max-w-md bg-gradient-to-br from-[#1a1620] to-[#121418] border border-white/10 rounded-[32px] p-6 shadow-2xl max-h-[90vh] overflow-y-auto"
+              initial={{ y: 40, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 40, opacity: 0 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+              className="relative w-full max-w-md bg-gradient-to-br from-[#1a1620] to-[#121418] border border-white/10 rounded-[32px] p-6 shadow-2xl max-h-[88vh] overflow-y-auto overscroll-contain"
+              style={{ touchAction: 'pan-y' }}
             >
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-white flex items-center gap-2">
