@@ -493,10 +493,10 @@ export default function WorkoutActive() {
 
               <motion.div
                 animate={{ rotate: 360 }}
-                transition={{ duration: restTimeRemaining, repeat: 0, ease: 'linear' }}
+                transition={{ duration: Math.max(restTimeRemaining || 1, 1), repeat: 0, ease: 'linear' }}
                 className="w-20 h-20 rounded-full flex items-center justify-center"
                 style={{
-                  background: 'conic-gradient(#4ade80 0deg, #4ade80 ' + (360 * (1 - restTimeRemaining / activeExercise.restSeconds)) + 'deg, rgba(255,255,255,0.1) ' + (360 * (1 - restTimeRemaining / activeExercise.restSeconds)) + 'deg)',
+                  background: `conic-gradient(#4ade80 0deg, #4ade80 ${Math.max(0, Math.min(360, 360 * (1 - (restTimeRemaining || 0) / (activeExercise?.restSeconds || 1))))}deg, rgba(255,255,255,0.1) ${Math.max(0, Math.min(360, 360 * (1 - (restTimeRemaining || 0) / (activeExercise?.restSeconds || 1))))}deg)`,
                   border: '2px solid rgba(74, 222, 128, 0.2)',
                 }}
               />
