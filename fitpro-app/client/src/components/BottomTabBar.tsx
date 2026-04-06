@@ -127,11 +127,12 @@ export default function BottomTabBar() {
         )}
       </AnimatePresence>
 
-      {/* ── FLOATING BOTTOM TAB BAR ── */}
-      <div className="fixed bottom-6 left-0 right-0 z-30 px-4 pointer-events-none">
-        <nav
-          className="max-w-md mx-auto h-[72px] bg-[#111111]/90 backdrop-blur-xl border border-white/10 rounded-[36px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-between px-2 pointer-events-auto"
-        >
+      {/* ── FIXED BOTTOM TAB BAR ── */}
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-30 h-[88px] bg-[#111111]/95 backdrop-blur-xl border-t border-white/10 flex items-center justify-center px-4 bottom-tab-bar"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
+        <div className="max-w-md w-full h-full flex items-center justify-between">
           {/* Primeiras duas abas */}
           <div className="flex flex-1 justify-around items-center">
             {tabs.slice(0, 2).map(({ path, icon: Icon, label }) => {
@@ -152,17 +153,14 @@ export default function BottomTabBar() {
           </div>
 
           {/* Botão Central (+) */}
-          <div className="relative -top-6 px-2">
+          <div className="relative px-2 flex items-center justify-center">
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => setMenuOpen(true)}
-              className="w-16 h-16 rounded-full bg-[#c5ff22] shadow-[0_8px_25px_rgba(197,255,34,0.4)] flex flex-col items-center justify-center border-[6px] border-[#000000]"
+              className="w-14 h-14 rounded-full bg-[#c5ff22] shadow-[0_8px_25px_rgba(197,255,34,0.4)] flex items-center justify-center border-[4px] border-[#000000]"
             >
-              <Plus size={32} className="text-black" strokeWidth={3} />
+              <Plus size={28} className="text-black" strokeWidth={3} />
             </motion.button>
-            <div className="absolute -bottom-10 left-0 right-0 text-center">
-              <span className="text-[10px] font-black text-white uppercase tracking-widest">Menu</span>
-            </div>
           </div>
 
           {/* Últimas duas abas */}
@@ -183,8 +181,8 @@ export default function BottomTabBar() {
               );
             })}
           </div>
-        </nav>
-      </div>
+        </div>
+      </nav>
     </>
   );
 }
