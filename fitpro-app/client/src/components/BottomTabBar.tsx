@@ -43,7 +43,7 @@ const C = {
 ───────────────────────────────────────────── */
 
 /** Dieta — bowl com folha verde */
-function DietIcon({ active, size = 28 }: { active?: boolean; size?: number }) {
+function DietIcon({ active, size = 32 }: { active?: boolean; size?: number }) {
   const grey = active ? C.active : C.inactive;
   const leafColor = active ? C.active : C.green;
   return (
@@ -85,7 +85,7 @@ function DietIcon({ active, size = 28 }: { active?: boolean; size?: number }) {
 }
 
 /** Profissionais — pessoa com escudo e estrela */
-function ProfessionalIcon({ active, size = 28 }: { active?: boolean; size?: number }) {
+function ProfessionalIcon({ active, size = 32 }: { active?: boolean; size?: number }) {
   const grey = active ? C.active : C.inactive;
   const shieldColor = active ? C.active : '#4B7BF5';
   return (
@@ -174,7 +174,7 @@ function NavItem({ href, label, isActive, children }: NavItemProps) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          height: 28,
+          height: 34,
         }}
       >
         {children}
@@ -183,7 +183,7 @@ function NavItem({ href, label, isActive, children }: NavItemProps) {
       {/* Label */}
       <span
         style={{
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: isActive ? 600 : 400,
           color,
           lineHeight: 1,
@@ -209,7 +209,7 @@ function NavItem({ href, label, isActive, children }: NavItemProps) {
 }
 
 /* ─────────────────────────────────────────────
-   CenterButton — com glow e anel externo
+   CenterButton — com glow, SEM anel externo
 ───────────────────────────────────────────── */
 function CenterButton({ onPress }: { onPress: () => void }) {
   return (
@@ -223,21 +223,6 @@ function CenterButton({ onPress }: { onPress: () => void }) {
         paddingBottom: 6,
       }}
     >
-      {/* Anel externo */}
-      <div
-        style={{
-          position: 'absolute',
-          width: 72,
-          height: 72,
-          borderRadius: '50%',
-          border: `2px solid ${C.border}`,
-          top: -12,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          pointerEvents: 'none',
-        }}
-      />
-
       {/* Botão */}
       <motion.button
         whileTap={{ scale: 0.90 }}
@@ -262,7 +247,7 @@ function CenterButton({ onPress }: { onPress: () => void }) {
           zIndex: 2,
         }}
       >
-        <Plus size={28} weight="bold" color="#fff" />
+        <Plus size={30} weight="bold" color="#fff" />
       </motion.button>
     </div>
   );
@@ -486,7 +471,7 @@ export default function BottomTabBar() {
           {/* Início */}
           <NavItem href="/" label="Início" isActive={isTabActive('/')}>
             <House
-              size={26}
+              size={30}
               weight={isTabActive('/') ? 'fill' : 'regular'}
               color={isTabActive('/') ? C.active : C.inactive}
             />
@@ -495,7 +480,7 @@ export default function BottomTabBar() {
           {/* Treinos */}
           <NavItem href="/treinos" label="Treinos" isActive={isTabActive('/treinos')}>
             <Barbell
-              size={26}
+              size={30}
               weight={isTabActive('/treinos') ? 'fill' : 'regular'}
               color={isTabActive('/treinos') ? C.active : C.inactive}
             />
@@ -506,12 +491,12 @@ export default function BottomTabBar() {
 
           {/* Dieta — ícone customizado com folha verde */}
           <NavItem href="/dieta" label="Dieta" isActive={isTabActive('/dieta')}>
-            <DietIcon active={isTabActive('/dieta')} size={26} />
+            <DietIcon active={isTabActive('/dieta')} size={32} />
           </NavItem>
 
           {/* Profissionais — ícone customizado com escudo azul */}
           <NavItem href="/profissionais" label="Profissionais" isActive={isTabActive('/profissionais')}>
-            <ProfessionalIcon active={isTabActive('/profissionais')} size={26} />
+            <ProfessionalIcon active={isTabActive('/profissionais')} size={32} />
           </NavItem>
         </nav>
 
