@@ -714,14 +714,15 @@ Consulte seu médico para análise profissional.
                     const isSelected = day && selectedDate === dateStr;
                     const isToday = day && dateStr === new Date().toISOString().split('T')[0];
 
-                    // Cores por fase
+                    // Cores por fase - suavizadas
                     let phaseBg = '';
-                    let phaseText = 'text-white/70';
+                    let phaseText = 'text-white/60';
+                    let phaseBorder = 'border-white/10';
                     if (dayOfCycle) {
-                      if (dayOfCycle <= 5) { phaseBg = 'bg-red-500/25 border-red-500/40'; phaseText = 'text-red-300'; }
-                      else if (dayOfCycle <= 13) { phaseBg = 'bg-blue-500/20 border-blue-500/30'; phaseText = 'text-blue-300'; }
-                      else if (dayOfCycle <= 16) { phaseBg = 'bg-pink-500/25 border-pink-500/40'; phaseText = 'text-pink-300'; }
-                      else { phaseBg = 'bg-amber-500/20 border-amber-500/30'; phaseText = 'text-amber-300'; }
+                      if (dayOfCycle <= 5) { phaseBg = 'bg-red-500/12'; phaseBorder = 'border-red-500/20'; phaseText = 'text-white/70'; }
+                      else if (dayOfCycle <= 13) { phaseBg = 'bg-blue-500/12'; phaseBorder = 'border-blue-500/20'; phaseText = 'text-white/70'; }
+                      else if (dayOfCycle <= 16) { phaseBg = 'bg-pink-500/12'; phaseBorder = 'border-pink-500/20'; phaseText = 'text-white/70'; }
+                      else { phaseBg = 'bg-amber-500/12'; phaseBorder = 'border-amber-500/20'; phaseText = 'text-white/70'; }
                     }
 
                     if (!day) return <div key={idx} className="aspect-square" />;
@@ -730,72 +731,30 @@ Consulte seu médico para análise profissional.
                       <motion.button
                         key={idx}
                         onClick={() => handleDayClick(day)}
-                        className={`aspect-square rounded-2xl border transition-all flex flex-col items-center justify-center gap-0.5 relative overflow-hidden ${
+                        className={`aspect-square rounded-xl border transition-all flex flex-col items-center justify-center relative overflow-hidden ${
                           isSelected
-                            ? 'bg-white/20 border-white/50 shadow-lg shadow-white/10'
+                            ? 'bg-white/15 border-white/40 shadow-lg shadow-white/20'
                             : dayOfCycle
-                            ? `${phaseBg} hover:brightness-125`
-                            : 'bg-white/[0.03] border-white/5 hover:bg-white/10 hover:border-white/20'
+                            ? `${phaseBg} ${phaseBorder} hover:bg-opacity-20`
+                            : 'bg-white/[0.02] border-white/5 hover:bg-white/5 hover:border-white/15'
                         }`}
-                        whileHover={{ scale: 1.04 }}
-                        whileTap={{ scale: 0.97 }}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.96 }}
                       >
-                        {/* Destaque do dia de hoje */}
+                        {/* Destaque do dia de hoje - anel sutil */}
                         {isToday && (
-                          <motion.div
-                            className="absolute inset-0 rounded-2xl"
-                            style={{ background: 'linear-gradient(135deg, rgba(236,72,153,0.5) 0%, rgba(168,85,247,0.5) 100%)', boxShadow: '0 0 16px 4px rgba(236,72,153,0.4)' }}
-                            animate={{ opacity: [0.7, 1, 0.7] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                          />
-                        )}
-
-                        {!isSelected && dayOfCycle && (
                           <div
-                            className="absolute inset-[2px] rounded-[14px] opacity-90"
-                            style={{
-                              background: dayOfCycle <= 5
-                                ? 'linear-gradient(135deg, rgba(239,68,68,0.28) 0%, rgba(244,63,94,0.12) 100%)'
-                                : dayOfCycle <= 13
-                                ? 'linear-gradient(135deg, rgba(59,130,246,0.26) 0%, rgba(34,211,238,0.12) 100%)'
-                                : dayOfCycle <= 16
-                                ? 'linear-gradient(135deg, rgba(236,72,153,0.28) 0%, rgba(217,70,239,0.12) 100%)'
-                                : 'linear-gradient(135deg, rgba(245,158,11,0.28) 0%, rgba(234,179,8,0.12) 100%)'
-                            }}
+                            className="absolute inset-1 rounded-lg border-2 border-pink-400/60"
+                            style={{ boxShadow: '0 0 12px 2px rgba(244,114,182,0.25)' }}
                           />
                         )}
 
-                        {/* Número do dia */}
-                        <span className={`text-sm font-bold leading-none relative z-10 ${
-                          isToday ? 'text-white drop-shadow-lg' : isSelected ? 'text-white' : dayOfCycle ? phaseText : 'text-white/40'
+                        {/* Número do dia - centralizado e destacado */}
+                        <span className={`text-base font-bold leading-none relative z-10 ${
+                          isToday ? 'text-white drop-shadow-md' : isSelected ? 'text-white' : 'text-white/80'
                         }`}>
                           {day}
                         </span>
-
-                        {/* Indicador de fase */}
-                        {dayOfCycle && !isToday && (
-                          <div
-                            className="relative z-10 w-1.5 h-1.5 rounded-full"
-                            style={{
-                              background: dayOfCycle <= 5
-                                ? '#fb7185'
-                                : dayOfCycle <= 13
-                                ? '#60a5fa'
-                                : dayOfCycle <= 16
-                                ? '#f472b6'
-                                : '#fbbf24'
-                            }}
-                          />
-                        )}
-
-                        {/* Indicador de registro */}
-                        {hasEntry && (
-                          <motion.div
-                            className="relative z-10 w-1 h-1 rounded-full bg-white/75"
-                            animate={{ scale: [1, 1.4, 1] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                          />
-                        )}
                       </motion.button>
                     );
                   })}
@@ -804,32 +763,40 @@ Consulte seu médico para análise profissional.
 
               {/* Legenda de Fases */}
               <div className="grid grid-cols-2 gap-3">
-                <Card className="p-3 border-white/5 bg-red-500/10 flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500" />
-                  <div className="text-[11px]">
-                    <p className="font-bold text-white">Menstruação</p>
-                    <p className="text-white/50 text-[9px]">Dias 1-5</p>
+                <Card className="p-4 border border-red-500/20 bg-red-500/8 hover:bg-red-500/12 transition-colors">
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 rounded-full bg-red-400 mt-1.5 flex-shrink-0" />
+                    <div className="text-[11px]">
+                      <p className="font-semibold text-white">Menstruação</p>
+                      <p className="text-white/50 text-[9px] mt-0.5">Dias 1-5</p>
+                    </div>
                   </div>
                 </Card>
-                <Card className="p-3 border-white/5 bg-blue-500/10 flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-blue-500" />
-                  <div className="text-[11px]">
-                    <p className="font-bold text-white">Folicular</p>
-                    <p className="text-white/50 text-[9px]">Dias 6-13</p>
+                <Card className="p-4 border border-blue-500/20 bg-blue-500/8 hover:bg-blue-500/12 transition-colors">
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 rounded-full bg-blue-400 mt-1.5 flex-shrink-0" />
+                    <div className="text-[11px]">
+                      <p className="font-semibold text-white">Folicular</p>
+                      <p className="text-white/50 text-[9px] mt-0.5">Dias 6-13</p>
+                    </div>
                   </div>
                 </Card>
-                <Card className="p-3 border-white/5 bg-pink-500/10 flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-pink-500" />
-                  <div className="text-[11px]">
-                    <p className="font-bold text-white">Ovulatória</p>
-                    <p className="text-white/50 text-[9px]">Dias 14-16</p>
+                <Card className="p-4 border border-pink-500/20 bg-pink-500/8 hover:bg-pink-500/12 transition-colors">
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 rounded-full bg-pink-400 mt-1.5 flex-shrink-0" />
+                    <div className="text-[11px]">
+                      <p className="font-semibold text-white">Ovulatória</p>
+                      <p className="text-white/50 text-[9px] mt-0.5">Dias 14-16</p>
+                    </div>
                   </div>
                 </Card>
-                <Card className="p-3 border-white/5 bg-amber-500/10 flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-amber-500" />
-                  <div className="text-[11px]">
-                    <p className="font-bold text-white">Lútea</p>
-                    <p className="text-white/50 text-[9px]">Dias 17-28</p>
+                <Card className="p-4 border border-amber-500/20 bg-amber-500/8 hover:bg-amber-500/12 transition-colors">
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 rounded-full bg-amber-400 mt-1.5 flex-shrink-0" />
+                    <div className="text-[11px]">
+                      <p className="font-semibold text-white">Lútea</p>
+                      <p className="text-white/50 text-[9px] mt-0.5">Dias 17-28</p>
+                    </div>
                   </div>
                 </Card>
               </div>
