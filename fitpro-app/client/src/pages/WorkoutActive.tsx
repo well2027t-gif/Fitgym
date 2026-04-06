@@ -1,7 +1,7 @@
 /**
- * FitPro — WorkoutActive Page (Fidelity to Reference Design)
- * Design: Premium Dark Fitness / Exatamente como a imagem de referência
- * Layout limpo, elegante e proporcional para mobile.
+ * FitPro — WorkoutActive Page (Single Screen Compact Design)
+ * Design: Premium Dark Fitness / Tudo em uma tela sem rolagem
+ * Layout otimizado para mobile com timer de descanso visível.
  */
 
 import { useEffect, useMemo, useState } from 'react';
@@ -26,103 +26,16 @@ interface ExerciseProgressState {
   skipped: boolean;
 }
 
-interface RestTimerProps {
-  seconds: number;
-  onComplete: () => void;
-  onSkip: () => void;
-}
-
-function RestTimerBottom({ seconds, onComplete, onSkip }: RestTimerProps) {
-  const [remaining, setRemaining] = useState(seconds);
-
-  useEffect(() => {
-    setRemaining(seconds);
-  }, [seconds]);
-
-  useEffect(() => {
-    if (remaining <= 0) {
-      onComplete();
-      return;
-    }
-    const timer = window.setTimeout(() => setRemaining(value => value - 1), 1000);
-    return () => window.clearTimeout(timer);
-  }, [remaining, onComplete]);
-
-  const progress = Math.max(0, remaining / Math.max(seconds, 1));
-  const radius = 45;
-  const circumference = 2 * Math.PI * radius;
-
-  const minutes = Math.floor(remaining / 60);
-  const secs = remaining % 60;
-  const timeDisplay = `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 20 }}
-      className="rounded-[20px] border p-4"
-      style={{
-        background: 'rgba(255,255,255,0.04)',
-        borderColor: 'rgba(255,255,255,0.08)',
-      }}
-    >
-      <p className="text-xs uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>
-        Descanso
-      </p>
-      
-      <div className="mt-4 flex items-center justify-between gap-4">
-        <p className="text-5xl font-bold text-white" style={{ fontFamily: 'Space Grotesk', color: '#4ade80' }}>
-          {timeDisplay}
-        </p>
-
-        <div className="relative size-28">
-          <svg width="112" height="112" viewBox="0 0 112 112" className="-rotate-90">
-            <circle cx="56" cy="56" r={radius} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="6" />
-            <motion.circle
-              cx="56"
-              cy="56"
-              r={radius}
-              fill="none"
-              stroke="#4ade80"
-              strokeWidth="6"
-              strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={circumference * (1 - progress)}
-              style={{ filter: 'drop-shadow(0 0 8px rgba(74, 222, 128, 0.6))' }}
-            />
-          </svg>
-        </div>
-
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onSkip}
-          className="rounded-2xl border px-4 py-2 text-xs font-semibold text-white"
-          style={{
-            borderColor: 'rgba(255,255,255,0.1)',
-            background: 'rgba(255,255,255,0.05)',
-            fontFamily: 'Space Grotesk',
-          }}
-        >
-          ⏭ Pular descanso
-        </motion.button>
-      </div>
-    </motion.div>
-  );
-}
-
 export default function WorkoutActive() {
   const { id } = useParams<{ id: string }>();
   const [, navigate] = useLocation();
   const { state, saveWorkoutSession } = useApp();
 
   const workout = useMemo(() => state.workouts.find(item => item.id === id), [state.workouts, id]);
-  const [showRestTimer, setShowRestTimer] = useState(false);
-  const [timerSeconds, setTimerSeconds] = useState(60);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [startedAt] = useState(Date.now());
   const [exerciseState, setExerciseState] = useState<Record<string, ExerciseProgressState>>({});
+  const [restTimeRemaining, setRestTimeRemaining] = useState<number | null>(null);
 
   useEffect(() => {
     if (!workout) return;
@@ -139,6 +52,17 @@ export default function WorkoutActive() {
       return next;
     });
   }, [workout]);
+
+  // Timer de descanso
+  useEffect(() => {
+    if (restTimeRemaining === null || restTimeRemaining <= 0) return;
+    
+    const timer = window.setTimeout(() => {
+      setRestTimeRemaining(prev => (prev ?? 0) - 1);
+    }, 1000);
+    
+    return () => window.clearTimeout(timer);
+  }, [restTimeRemaining]);
 
   const allExercises = workout?.exercises ?? [];
   const activeExercise = allExercises[currentExerciseIndex];
@@ -190,9 +114,6 @@ export default function WorkoutActive() {
           <Zap size={28} style={{ color: 'rgba(255,255,255,0.22)' }} />
         </div>
         <h1 className="text-xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>Treino não encontrado</h1>
-        <p className="max-w-xs text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.48)', fontFamily: 'Outfit' }}>
-          Este treino pode ter sido removido ou substituído. Volte para continuar.
-        </p>
         <button
           onClick={() => navigate('/treinos')}
           className="rounded-2xl px-5 py-3 text-sm font-bold"
@@ -247,10 +168,7 @@ export default function WorkoutActive() {
       setTimeout(() => goToNextPendingExercise(), 300);
     } else {
       if (exercise.restSeconds > 0) {
-        setTimerSeconds(exercise.restSeconds);
-        setShowRestTimer(true);
-      } else {
-        goToNextPendingExercise();
+        setRestTimeRemaining(exercise.restSeconds);
       }
     }
   };
@@ -264,6 +182,7 @@ export default function WorkoutActive() {
       },
     }));
     toast.success('Exercício pulado.');
+    setRestTimeRemaining(null);
     goToNextPendingExercise();
   };
 
@@ -321,9 +240,9 @@ export default function WorkoutActive() {
     return (
       <div
         key={i}
-        className="h-2 rounded-full transition-all"
+        className="h-1.5 rounded-full transition-all"
         style={{
-          width: '24px',
+          width: '20px',
           background: isCurrent ? '#4ade80' : isCompleted ? '#4ade80' : 'rgba(255,255,255,0.15)',
         }}
       />
@@ -334,274 +253,302 @@ export default function WorkoutActive() {
   const elapsedSeconds = Math.floor(((Date.now() - startedAt) % 60000) / 1000);
   const timeDisplay = `${String(elapsedMinutes).padStart(2, '0')}:${String(elapsedSeconds).padStart(2, '0')}`;
 
+  const restMinutes = restTimeRemaining ? Math.floor(restTimeRemaining / 60) : 0;
+  const restSecs = restTimeRemaining ? restTimeRemaining % 60 : 0;
+  const restDisplay = `${String(restMinutes).padStart(2, '0')}:${String(restSecs).padStart(2, '0')}`;
+
+  const restProgress = activeExercise && restTimeRemaining !== null
+    ? Math.max(0, restTimeRemaining / activeExercise.restSeconds)
+    : 0;
+
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-[#0d0d0f]" style={{ height: '100dvh' }}>
-      {/* CABEÇALHO */}
-      <div className="flex-shrink-0 px-4 py-4">
-        <div className="flex items-center justify-between gap-3 mb-4">
+      {/* CABEÇALHO COMPACTO */}
+      <div className="flex-shrink-0 px-3 py-2.5">
+        <div className="flex items-center justify-between gap-2 mb-2">
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/treinos')}
-            className="flex size-10 items-center justify-center rounded-2xl"
+            className="flex size-9 items-center justify-center rounded-2xl"
             style={{
               background: 'rgba(255,255,255,0.08)',
               border: '1px solid rgba(255,255,255,0.12)',
               color: 'white',
             }}
           >
-            <ArrowLeft size={18} />
+            <ArrowLeft size={16} />
           </motion.button>
           
           <div className="flex-1 text-center">
-            <h1 className="text-xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+            <h1 className="text-lg font-bold text-white leading-tight" style={{ fontFamily: 'Space Grotesk' }}>
               {activeExercise?.name ?? 'Treino concluído'}
             </h1>
-            <p className="mt-0.5 text-xs" style={{ color: 'rgba(255,255,255,0.48)', fontFamily: 'Space Grotesk' }}>
+            <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.48)', fontFamily: 'Space Grotesk' }}>
               {currentExerciseIndex + 1} de {allExercises.length}
             </p>
           </div>
 
           <div
-            className="flex size-10 items-center justify-center rounded-2xl"
+            className="flex size-9 items-center justify-center rounded-2xl flex-shrink-0"
             style={{
               background: 'rgba(74, 222, 128, 0.15)',
               border: '1px solid rgba(74, 222, 128, 0.3)',
             }}
           >
-            <p className="text-xs font-bold" style={{ color: '#4ade80', fontFamily: 'Space Grotesk' }}>
+            <p className="text-[10px] font-bold" style={{ color: '#4ade80', fontFamily: 'Space Grotesk' }}>
               {timeDisplay}
             </p>
           </div>
         </div>
 
         {/* PROGRESSO COM BOLINHAS */}
-        <div className="flex gap-1.5 justify-center">
+        <div className="flex gap-1 justify-center">
           {progressDots}
         </div>
       </div>
 
-      {/* CONTEÚDO SCROLLÁVEL */}
-      <div className="flex-1 overflow-y-auto px-4 py-4">
-        <AnimatePresence mode="wait">
-          {activeExercise && !isWorkoutComplete ? (
-            <motion.div
-              key={activeExercise.id}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="flex flex-col gap-4"
-            >
-              {/* VÍDEO/IMAGEM COM PLAY BUTTON */}
-              <div className="relative rounded-[20px] overflow-hidden bg-black aspect-video border" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40 flex items-center justify-center">
-                  <div className="flex size-16 items-center justify-center rounded-full border-2 border-white">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </div>
+      {/* CONTEÚDO PRINCIPAL */}
+      <AnimatePresence mode="wait">
+        {activeExercise && !isWorkoutComplete ? (
+          <motion.div
+            key={activeExercise.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="flex-1 flex flex-col overflow-hidden px-3 py-2"
+          >
+            {/* VÍDEO COMPACTO */}
+            <div className="relative rounded-[16px] overflow-hidden bg-black aspect-video border mb-2" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40 flex items-center justify-center">
+                <div className="flex size-12 items-center justify-center rounded-full border-2 border-white">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
                 </div>
-                {activeExercise.videoUrl && (
-                  <img
-                    src={activeExercise.videoUrl}
-                    alt={activeExercise.name}
-                    className="w-full h-full object-cover"
+              </div>
+              {activeExercise.videoUrl && (
+                <img
+                  src={activeExercise.videoUrl}
+                  alt={activeExercise.name}
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
+
+            {/* CAIXA DE DICAS COMPACTA */}
+            <div className="rounded-[14px] border p-2.5 flex gap-2 mb-2" style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.08)' }}>
+              <div className="flex-shrink-0 flex size-7 items-center justify-center rounded-lg" style={{ background: 'rgba(74, 222, 128, 0.2)' }}>
+                <Lightbulb size={14} style={{ color: '#4ade80' }} />
+              </div>
+              <p className="text-xs leading-snug text-white" style={{ fontFamily: 'Outfit' }}>
+                {activeExercise.instructions || 'Execute com controle e técnica.'}
+              </p>
+            </div>
+
+            {/* 4 CARDS DE MÉTRICAS COMPACTOS */}
+            <div className="grid grid-cols-4 gap-1.5 mb-2">
+              {/* Série */}
+              <div className="rounded-[14px] border p-2 text-center" style={{ background: 'rgba(74, 222, 128, 0.12)', borderColor: 'rgba(74, 222, 128, 0.25)' }}>
+                <div className="flex justify-center mb-1">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2">
+                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M3 21v-5h5" />
+                  </svg>
+                </div>
+                <p className="text-[8px] uppercase tracking-[0.08em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Série</p>
+                <p className="text-sm font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                  {currentProgress}/{activeExercise.sets}
+                </p>
+                <div className="mt-1 h-0.5 rounded-full" style={{ background: 'rgba(74, 222, 128, 0.2)' }}>
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${(currentProgress / activeExercise.sets) * 100}%`,
+                      background: '#4ade80',
+                    }}
                   />
-                )}
+                </div>
               </div>
 
-              {/* CAIXA DE DICAS COM ÍCONE DE LÂMPADA */}
-              <div className="rounded-[20px] border p-4 flex gap-3" style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.08)' }}>
-                <div className="flex-shrink-0 mt-0.5 flex size-9 items-center justify-center rounded-lg" style={{ background: 'rgba(74, 222, 128, 0.2)' }}>
-                  <Lightbulb size={18} style={{ color: '#4ade80' }} />
+              {/* Repetições */}
+              <div className="rounded-[14px] border p-2 text-center" style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.08)' }}>
+                <div className="flex justify-center mb-1">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2">
+                    <path d="M6 9h12M6 15h12M3 3h18v18H3z" />
+                  </svg>
                 </div>
-                <p className="text-sm leading-relaxed text-white" style={{ fontFamily: 'Outfit' }}>
-                  {activeExercise.instructions || 'Execute o exercício com controle e técnica adequada.'}
+                <p className="text-[8px] uppercase tracking-[0.08em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Reps</p>
+                <p className="text-sm font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                  {exerciseState[activeExercise.id]?.reps ?? activeExercise.reps}
                 </p>
               </div>
 
-              {/* 4 CARDS DE MÉTRICAS */}
-              <div className="grid grid-cols-4 gap-2">
-                {/* Série */}
-                <div className="rounded-[18px] border p-3 text-center" style={{ background: 'rgba(74, 222, 128, 0.12)', borderColor: 'rgba(74, 222, 128, 0.25)' }}>
-                  <div className="flex justify-center mb-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2">
-                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M3 21v-5h5" />
-                    </svg>
-                  </div>
-                  <p className="text-[10px] uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Série</p>
-                  <p className="mt-1 text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
-                    {currentProgress}/{activeExercise.sets}
-                  </p>
-                  <div className="mt-2 h-1 rounded-full" style={{ background: 'rgba(74, 222, 128, 0.2)' }}>
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${(currentProgress / activeExercise.sets) * 100}%`,
-                        background: '#4ade80',
-                      }}
-                    />
-                  </div>
+              {/* Carga com +/- */}
+              <div className="rounded-[14px] border p-2 text-center" style={{ background: 'rgba(74, 222, 128, 0.12)', borderColor: 'rgba(74, 222, 128, 0.25)' }}>
+                <div className="flex justify-center mb-1">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2">
+                    <circle cx="12" cy="12" r="1" />
+                    <circle cx="19" cy="12" r="1" />
+                    <circle cx="5" cy="12" r="1" />
+                    <path d="M12 2v20M2 12h20" />
+                  </svg>
                 </div>
-
-                {/* Repetições */}
-                <div className="rounded-[18px] border p-3 text-center" style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.08)' }}>
-                  <div className="flex justify-center mb-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2">
-                      <path d="M6 9h12M6 15h12M3 3h18v18H3z" />
-                    </svg>
-                  </div>
-                  <p className="text-[10px] uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Reps</p>
-                  <p className="mt-1 text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
-                    {exerciseState[activeExercise.id]?.reps ?? activeExercise.reps}
-                  </p>
-                </div>
-
-                {/* Carga com +/- */}
-                <div className="rounded-[18px] border p-3 text-center" style={{ background: 'rgba(74, 222, 128, 0.12)', borderColor: 'rgba(74, 222, 128, 0.25)' }}>
-                  <div className="flex justify-center mb-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2">
-                      <circle cx="12" cy="12" r="1" />
-                      <circle cx="19" cy="12" r="1" />
-                      <circle cx="5" cy="12" r="1" />
-                      <path d="M12 2v20M2 12h20" />
-                    </svg>
-                  </div>
-                  <p className="text-[10px] uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Carga</p>
-                  <p className="mt-1 text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
-                    {(exerciseState[activeExercise.id]?.weight ?? activeExercise.weight).toFixed(0)}
-                  </p>
-                  <div className="mt-2 flex gap-1">
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => handleChangeNumber(activeExercise.id, 'weight', -2.5)}
-                      className="flex-1 rounded-lg py-1.5 text-xs font-bold"
-                      style={{
-                        background: 'rgba(74, 222, 128, 0.2)',
-                        color: '#4ade80',
-                      }}
-                    >
-                      <Minus size={12} className="mx-auto" />
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => handleChangeNumber(activeExercise.id, 'weight', 2.5)}
-                      className="flex-1 rounded-lg py-1.5 text-xs font-bold"
-                      style={{
-                        background: 'rgba(74, 222, 128, 0.2)',
-                        color: '#4ade80',
-                      }}
-                    >
-                      <Plus size={12} className="mx-auto" />
-                    </motion.button>
-                  </div>
-                </div>
-
-                {/* Descanso */}
-                <div className="rounded-[18px] border p-3 text-center" style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.08)' }}>
-                  <div className="flex justify-center mb-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2">
-                      <circle cx="12" cy="12" r="10" />
-                      <polyline points="12 6 12 12 16 14" />
-                    </svg>
-                  </div>
-                  <p className="text-[10px] uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Descanso</p>
-                  <p className="mt-1 text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
-                    {activeExercise.restSeconds}s
-                  </p>
+                <p className="text-[8px] uppercase tracking-[0.08em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Carga</p>
+                <p className="text-sm font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                  {(exerciseState[activeExercise.id]?.weight ?? activeExercise.weight).toFixed(0)}
+                </p>
+                <div className="mt-1 flex gap-0.5">
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => handleChangeNumber(activeExercise.id, 'weight', -2.5)}
+                    className="flex-1 rounded-lg py-1 text-xs font-bold"
+                    style={{
+                      background: 'rgba(74, 222, 128, 0.2)',
+                      color: '#4ade80',
+                    }}
+                  >
+                    <Minus size={10} className="mx-auto" />
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => handleChangeNumber(activeExercise.id, 'weight', 2.5)}
+                    className="flex-1 rounded-lg py-1 text-xs font-bold"
+                    style={{
+                      background: 'rgba(74, 222, 128, 0.2)',
+                      color: '#4ade80',
+                    }}
+                  >
+                    <Plus size={10} className="mx-auto" />
+                  </motion.button>
                 </div>
               </div>
 
-              {/* BOTÃO PRINCIPAL VERDE */}
+              {/* Descanso */}
+              <div className="rounded-[14px] border p-2 text-center" style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.08)' }}>
+                <div className="flex justify-center mb-1">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                </div>
+                <p className="text-[8px] uppercase tracking-[0.08em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Descanso</p>
+                <p className="text-sm font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                  {activeExercise.restSeconds}s
+                </p>
+              </div>
+            </div>
+
+            {/* TIMER DE DESCANSO VISÍVEL (se ativo) */}
+            <AnimatePresence>
+              {restTimeRemaining !== null && restTimeRemaining > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="rounded-[14px] border p-2 mb-2 flex items-center justify-between"
+                  style={{
+                    background: 'rgba(74, 222, 128, 0.12)',
+                    borderColor: 'rgba(74, 222, 128, 0.25)',
+                  }}
+                >
+                  <div className="flex-1">
+                    <p className="text-[9px] uppercase tracking-[0.08em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Recuperando</p>
+                    <p className="text-lg font-bold text-white" style={{ color: '#4ade80', fontFamily: 'Space Grotesk' }}>
+                      {restDisplay}
+                    </p>
+                  </div>
+                  <div className="relative size-16">
+                    <svg width="64" height="64" viewBox="0 0 64 64" className="-rotate-90">
+                      <circle cx="32" cy="32" r="28" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="4" />
+                      <motion.circle
+                        cx="32"
+                        cy="32"
+                        r="28"
+                        fill="none"
+                        stroke="#4ade80"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        strokeDasharray={2 * Math.PI * 28}
+                        strokeDashoffset={2 * Math.PI * 28 * (1 - restProgress)}
+                        style={{ filter: 'drop-shadow(0 0 4px rgba(74, 222, 128, 0.6))' }}
+                      />
+                    </svg>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* BOTÕES DE AÇÃO */}
+            <div className="flex-shrink-0 flex gap-2">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleCompleteSet(activeExercise.id)}
-                className="w-full rounded-2xl px-4 py-4 text-lg font-bold flex items-center justify-center gap-2"
+                className="flex-1 rounded-xl px-3 py-2.5 text-sm font-bold flex items-center justify-center gap-1.5"
                 style={{
                   background: '#4ade80',
                   color: '#0d0d0f',
                   fontFamily: 'Space Grotesk',
                 }}
               >
-                <Check size={20} />
+                <Check size={16} />
                 Concluir série
               </motion.button>
-              <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Outfit' }}>
-                Ao concluir, o descanso será iniciado.
-              </p>
 
-              {/* TIMER DE DESCANSO */}
-              <AnimatePresence>
-                {showRestTimer && (
-                  <RestTimerBottom
-                    seconds={timerSeconds}
-                    onComplete={() => {
-                      setShowRestTimer(false);
-                      goToNextPendingExercise();
-                    }}
-                    onSkip={() => {
-                      setShowRestTimer(false);
-                      goToNextPendingExercise();
-                    }}
-                  />
-                )}
-              </AnimatePresence>
-
-              {/* BOTÃO SECUNDÁRIO PULAR */}
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleSkipExercise(activeExercise.id)}
-                className="w-full rounded-2xl border px-4 py-3 text-sm font-semibold text-white"
+                className="flex-1 rounded-xl border px-3 py-2.5 text-sm font-bold"
                 style={{
                   borderColor: 'rgba(255,255,255,0.1)',
                   background: 'rgba(255,255,255,0.05)',
+                  color: 'white',
                   fontFamily: 'Space Grotesk',
                 }}
               >
-                <SkipForward size={16} className="inline mr-2" />
-                Pular exercício
+                <SkipForward size={14} className="inline mr-1" />
+                Pular
               </motion.button>
-            </motion.div>
-          ) : isWorkoutComplete ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-col items-center justify-center gap-6 py-12 text-center"
+            </div>
+          </motion.div>
+        ) : isWorkoutComplete ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex-1 flex flex-col items-center justify-center gap-4 px-4 text-center"
+          >
+            <div className="flex size-16 items-center justify-center rounded-full" style={{ background: 'rgba(74, 222, 128, 0.15)', color: '#4ade80' }}>
+              <Check size={32} />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                Treino concluído!
+              </h2>
+              <p className="mt-1 text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.56)', fontFamily: 'Outfit' }}>
+                {completedExercises.length} exercícios em {elapsedMinutes}m {elapsedSeconds}s
+              </p>
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={finishWorkout}
+              className="w-full rounded-xl px-3 py-3 text-sm font-bold flex items-center justify-center gap-2"
+              style={{
+                background: '#4ade80',
+                color: '#0d0d0f',
+                fontFamily: 'Space Grotesk',
+              }}
             >
-              <div className="flex size-20 items-center justify-center rounded-full" style={{ background: 'rgba(74, 222, 128, 0.15)', color: '#4ade80' }}>
-                <Check size={40} />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
-                  Treino concluído!
-                </h2>
-                <p className="mt-2 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.56)', fontFamily: 'Outfit' }}>
-                  Você completou {completedExercises.length} exercícios em {elapsedMinutes}m {elapsedSeconds}s.
-                </p>
-              </div>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={finishWorkout}
-                className="w-full rounded-2xl px-4 py-4 text-base font-bold flex items-center justify-center gap-2"
-                style={{
-                  background: '#4ade80',
-                  color: '#0d0d0f',
-                  fontFamily: 'Space Grotesk',
-                }}
-              >
-                <Check size={18} />
-                Salvar e finalizar
-              </motion.button>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
-      </div>
+              <Check size={16} />
+              Salvar e finalizar
+            </motion.button>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }
