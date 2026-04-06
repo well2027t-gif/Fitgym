@@ -127,11 +127,17 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    box-sizing: border-box;
+    max-width: 100%;
   }
 
   html {
     -webkit-tap-highlight-color: transparent;
     scroll-behavior: smooth;
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+    scroll-padding-top: 0;
   }
 
   body {
@@ -140,6 +146,10 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overscroll-behavior: none;
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+    box-sizing: border-box;
   }
 
   h1, h2, h3, h4, h5, h6 {

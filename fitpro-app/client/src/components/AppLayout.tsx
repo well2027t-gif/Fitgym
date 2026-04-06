@@ -4,7 +4,7 @@
  * Main layout wrapper with bottom tab bar and page transitions.
  */
 
-import { ReactNode } from 'react';
+import { useEffect, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from '@/lib/router';
 import BottomTabBar from './BottomTabBar';
@@ -28,6 +28,14 @@ const pageTransition = {
 export default function AppLayout({ children }: AppLayoutProps) {
   const [location] = useLocation();
   
+  // Forçar scroll para o topo ao mudar de rota
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    // Garantir que o body e html também resetem
+    document.body.scrollTo(0, 0);
+    document.documentElement.scrollTo(0, 0);
+  }, [location]);
+
   // Verificar se estamos na tela de conversa com profissional
   const isInProfessionalChat = location.startsWith('/profissionais/chat/');
 
