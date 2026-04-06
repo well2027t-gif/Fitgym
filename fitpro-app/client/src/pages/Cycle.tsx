@@ -148,6 +148,7 @@ export default function Cycle() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showDayModal, setShowDayModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [activeQuickModal, setActiveQuickModal] = useState<'humor' | 'fluxo' | 'sintomas' | 'treino' | 'sono' | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'analysis' | 'education'>('overview');
   const [profileForm, setProfileForm] = useState<Partial<CycleProfile>>({
     cycleLengthDays: 28,
@@ -557,31 +558,47 @@ Consulte seu médico para análise profissional.
                     </p>
                   </div>
 
-                  {/* Atalhos rápidos — ícones Lucide */}
-                  <div className="flex gap-4 justify-center">
-                    {[
-                      { icon: <Heart size={20} />, label: 'Humor', color: '#ff8fab' },
-                      { icon: <Droplets size={20} />, label: 'Fluxo', color: '#90e0ef' },
-                      { icon: <AlertCircle size={20} />, label: 'Sintomas', color: '#ffd166' },
-                      { icon: <Dumbbell size={20} />, label: 'Treino', color: '#c77dff' },
-                      { icon: <Moon size={20} />, label: 'Sono', color: '#a8dadc' },
-                    ].map(item => (
-                      <motion.button
-                        key={item.label}
-                        onClick={() => {
-                          setSelectedDate(new Date().toISOString().split('T')[0]);
-                          setShowDayModal(true);
-                        }}
-                        className="flex flex-col items-center gap-1.5"
-                        whileTap={{ scale: 0.92 }}
-                      >
-                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: item.color }}>
-                          {item.icon}
-                        </div>
-                        <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Outfit' }}>{item.label}</span>
-                      </motion.button>
-                    ))}
-                  </div>
+                  {/* Atalhos rápidos — cada um abre mini-modal específico */}
+                  {(() => {
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    const todayEntry = lastCycle?.dayEntries?.find(e => e.date === todayStr);
+                    const moodLabel = MOODS.find(m => m.id === todayEntry?.mood)?.label;
+                    const flowLabels: Record<string, string> = { light: 'Leve', medium: 'Médio', heavy: 'Intenso' };
+                    const flowLabel = todayEntry?.flow ? flowLabels[todayEntry.flow] : null;
+                    const symptomsCount = todayEntry?.symptoms?.length || 0;
+                    const sleepVal = todayEntry?.sleep ? `${todayEntry.sleep}h` : null;
+                    const shortcuts = [
+                      { key: 'humor' as const, icon: <Heart size={20} />, label: 'Humor', color: '#ff8fab', value: moodLabel },
+                      { key: 'fluxo' as const, icon: <Droplets size={20} />, label: 'Fluxo', color: '#90e0ef', value: flowLabel },
+                      { key: 'sintomas' as const, icon: <AlertCircle size={20} />, label: 'Sintomas', color: '#ffd166', value: symptomsCount > 0 ? `${symptomsCount}` : null },
+                      { key: 'treino' as const, icon: <Dumbbell size={20} />, label: 'Treino', color: '#c77dff', value: todayEntry?.energy === 'high' ? 'Alta' : todayEntry?.energy === 'low' ? 'Baixa' : null },
+                      { key: 'sono' as const, icon: <Moon size={20} />, label: 'Sono', color: '#a8dadc', value: sleepVal },
+                    ];
+                    return (
+                      <div className="flex gap-4 justify-center">
+                        {shortcuts.map(item => (
+                          <motion.button
+                            key={item.key}
+                            onClick={() => setActiveQuickModal(item.key)}
+                            className="flex flex-col items-center gap-1.5"
+                            whileTap={{ scale: 0.92 }}
+                          >
+                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center relative" style={{ background: item.value ? `${item.color}22` : 'rgba(255,255,255,0.06)', border: `1px solid ${item.value ? item.color + '55' : 'rgba(255,255,255,0.1)'}`, color: item.color }}>
+                              {item.icon}
+                              {item.value && (
+                                <div className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full flex items-center justify-center px-1" style={{ background: item.color, fontSize: 8, color: '#000', fontWeight: 700 }}>
+                                  {item.key === 'sintomas' ? item.value : ''}
+                                </div>
+                              )}
+                            </div>
+                            <span className="text-[10px]" style={{ color: item.value ? item.color : 'rgba(255,255,255,0.4)', fontFamily: 'Outfit', fontWeight: item.value ? 600 : 400 }}>
+                              {item.value || item.label}
+                            </span>
+                          </motion.button>
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
 
@@ -1111,6 +1128,245 @@ Consulte seu médico para análise profissional.
             </motion.div>
           </div>
         )}
+      </AnimatePresence>
+
+      {/* Mini-Modais de Atalho Rápido */}
+      <AnimatePresence>
+        {activeQuickModal && (() => {
+          const todayStr = new Date().toISOString().split('T')[0];
+          const todayEntry = lastCycle?.dayEntries?.find(e => e.date === todayStr);
+
+          const saveQuickField = (field: Partial<CycleDayEntry>) => {
+            if (!lastCycle) return;
+            const existing = lastCycle.dayEntries?.find(e => e.date === todayStr);
+            if (existing) {
+              const updated = lastCycle.dayEntries.map(e =>
+                e.date === todayStr ? { ...e, ...field } : e
+              );
+              updateCycleEntry(lastCycle.id, { dayEntries: updated });
+            } else {
+              const newEntry: CycleDayEntry = {
+                id: Math.random().toString(),
+                date: todayStr,
+                symptoms: [],
+                mood: 'normal',
+                energy: 'normal',
+                libido: 'normal',
+                sleep: 7,
+                temperature: 36.5,
+                ...field,
+              };
+              updateCycleEntry(lastCycle.id, { dayEntries: [...(lastCycle.dayEntries || []), newEntry] });
+            }
+            toast.success('Registrado!');
+            setActiveQuickModal(null);
+          };
+
+          const modalTitles: Record<string, string> = {
+            humor: 'Como você está se sentindo?',
+            fluxo: 'Intensidade do Fluxo',
+            sintomas: 'Sintomas de Hoje',
+            treino: 'Energia para o Treino',
+            sono: 'Horas de Sono',
+          };
+          const modalColors: Record<string, string> = {
+            humor: '#ff8fab', fluxo: '#90e0ef', sintomas: '#ffd166', treino: '#c77dff', sono: '#a8dadc',
+          };
+
+          return (
+            <div className="fixed inset-0 z-[100] flex items-end justify-center px-4 pb-6">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+                onClick={() => setActiveQuickModal(null)}
+              />
+              <motion.div
+                initial={{ y: '100%', opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: '100%', opacity: 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                className="relative w-full max-w-md rounded-[28px] p-6 shadow-2xl"
+                style={{ background: 'linear-gradient(160deg, #1a0a2e 0%, #0d0d1a 100%)', border: `1px solid ${modalColors[activeQuickModal]}33` }}
+              >
+                {/* Handle */}
+                <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mb-5" />
+
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                    {modalTitles[activeQuickModal]}
+                  </h3>
+                  <button onClick={() => setActiveQuickModal(null)} className="text-white/40 hover:text-white">
+                    <X size={20} />
+                  </button>
+                </div>
+
+                {/* HUMOR */}
+                {activeQuickModal === 'humor' && (
+                  <div className="grid grid-cols-5 gap-3">
+                    {MOODS.map(mood => (
+                      <motion.button
+                        key={mood.id}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => saveQuickField({ mood: mood.id })}
+                        className="flex flex-col items-center gap-2 p-3 rounded-2xl transition-all"
+                        style={{
+                          background: todayEntry?.mood === mood.id ? `${modalColors.humor}22` : 'rgba(255,255,255,0.05)',
+                          border: `1px solid ${todayEntry?.mood === mood.id ? modalColors.humor : 'rgba(255,255,255,0.08)'}`,
+                        }}
+                      >
+                        <span className="text-2xl">{mood.emoji}</span>
+                        <span className="text-[9px] text-white/60" style={{ fontFamily: 'Outfit' }}>{mood.label}</span>
+                      </motion.button>
+                    ))}
+                  </div>
+                )}
+
+                {/* FLUXO */}
+                {activeQuickModal === 'fluxo' && (
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { id: 'light', label: 'Leve', emoji: '💧', desc: 'Fluxo leve' },
+                      { id: 'medium', label: 'Médio', emoji: '🔴', desc: 'Fluxo moderado' },
+                      { id: 'heavy', label: 'Intenso', emoji: '⚠️', desc: 'Fluxo intenso' },
+                    ].map(f => (
+                      <motion.button
+                        key={f.id}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => saveQuickField({ flow: f.id as 'light' | 'medium' | 'heavy' })}
+                        className="flex flex-col items-center gap-2 p-4 rounded-2xl transition-all"
+                        style={{
+                          background: todayEntry?.flow === f.id ? `${modalColors.fluxo}22` : 'rgba(255,255,255,0.05)',
+                          border: `1px solid ${todayEntry?.flow === f.id ? modalColors.fluxo : 'rgba(255,255,255,0.08)'}`,
+                        }}
+                      >
+                        <span className="text-2xl">{f.emoji}</span>
+                        <span className="text-sm font-bold text-white" style={{ fontFamily: 'Outfit' }}>{f.label}</span>
+                        <span className="text-[10px] text-white/40">{f.desc}</span>
+                      </motion.button>
+                    ))}
+                  </div>
+                )}
+
+                {/* SINTOMAS */}
+                {activeQuickModal === 'sintomas' && (() => {
+                  const currentSymptoms = todayEntry?.symptoms || [];
+                  return (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-2">
+                        {SYMPTOMS.map(symptom => {
+                          const selected = currentSymptoms.includes(symptom.id);
+                          return (
+                            <motion.button
+                              key={symptom.id}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => {
+                                const updated = selected
+                                  ? currentSymptoms.filter(s => s !== symptom.id)
+                                  : [...currentSymptoms, symptom.id];
+                                saveQuickField({ symptoms: updated });
+                              }}
+                              className="flex items-center gap-2 p-3 rounded-2xl transition-all text-left"
+                              style={{
+                                background: selected ? `${modalColors.sintomas}22` : 'rgba(255,255,255,0.05)',
+                                border: `1px solid ${selected ? modalColors.sintomas : 'rgba(255,255,255,0.08)'}`,
+                              }}
+                            >
+                              <span className="text-lg">{symptom.emoji}</span>
+                              <span className="text-xs text-white" style={{ fontFamily: 'Outfit' }}>{symptom.label}</span>
+                            </motion.button>
+                          );
+                        })}
+                      </div>
+                      {currentSymptoms.length > 0 && (
+                        <button
+                          onClick={() => saveQuickField({ symptoms: [] })}
+                          className="w-full py-2 rounded-xl text-xs text-white/40 hover:text-white/70 transition-colors"
+                        >
+                          Limpar seleção
+                        </button>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* TREINO */}
+                {activeQuickModal === 'treino' && (
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { id: 'baixa', label: 'Baixa', emoji: '😴', desc: 'Sem disposição' },
+                      { id: 'normal', label: 'Normal', emoji: '💪', desc: 'Pronta para treinar' },
+                      { id: 'alta', label: 'Alta', emoji: '⚡', desc: 'Energia máxima!' },
+                    ].map(e => (
+                      <motion.button
+                        key={e.id}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => saveQuickField({ energy: e.id as 'baixa' | 'normal' | 'alta' })}
+                        className="flex flex-col items-center gap-2 p-4 rounded-2xl transition-all"
+                        style={{
+                          background: todayEntry?.energy === e.id ? `${modalColors.treino}22` : 'rgba(255,255,255,0.05)',
+                          border: `1px solid ${todayEntry?.energy === e.id ? modalColors.treino : 'rgba(255,255,255,0.08)'}`,
+                        }}
+                      >
+                        <span className="text-2xl">{e.emoji}</span>
+                        <span className="text-sm font-bold text-white" style={{ fontFamily: 'Outfit' }}>{e.label}</span>
+                        <span className="text-[10px] text-white/40">{e.desc}</span>
+                      </motion.button>
+                    ))}
+                  </div>
+                )}
+
+                {/* SONO */}
+                {activeQuickModal === 'sono' && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center">
+                      <span className="text-6xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                        {dayForm.sleep}h
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="3"
+                      max="12"
+                      step="0.5"
+                      value={dayForm.sleep || 7}
+                      onChange={(e) => setDayForm({ ...dayForm, sleep: parseFloat(e.target.value) })}
+                      className="w-full accent-[#a8dadc]"
+                    />
+                    <div className="flex justify-between text-xs text-white/30">
+                      <span>3h</span><span>7h30</span><span>12h</span>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[5, 6, 7, 8, 9, 10, 11, 12].map(h => (
+                        <motion.button
+                          key={h}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => setDayForm({ ...dayForm, sleep: h })}
+                          className="py-2 rounded-xl text-sm font-bold transition-all"
+                          style={{
+                            background: dayForm.sleep === h ? `${modalColors.sono}22` : 'rgba(255,255,255,0.05)',
+                            border: `1px solid ${dayForm.sleep === h ? modalColors.sono : 'rgba(255,255,255,0.08)'}`,
+                            color: dayForm.sleep === h ? modalColors.sono : 'rgba(255,255,255,0.6)',
+                          }}
+                        >
+                          {h}h
+                        </motion.button>
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => saveQuickField({ sleep: dayForm.sleep })}
+                      className="w-full py-3 rounded-2xl font-bold text-black transition-all"
+                      style={{ background: modalColors.sono }}
+                    >
+                      Salvar
+                    </button>
+                  </div>
+                )}
+              </motion.div>
+            </div>
+          );
+        })()}
       </AnimatePresence>
 
       {/* Modal de Configurações de Perfil */}
