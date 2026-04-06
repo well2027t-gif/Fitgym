@@ -150,6 +150,7 @@ export default function WorkoutActive() {
   const handleUpdateWeight = (delta: number) => {
     if (!activeExercise) return;
     const current = exerciseState[activeExercise.id];
+    if (!current) return;
     setExerciseState(prev => ({
       ...prev,
       [activeExercise.id]: { ...current, weight: Math.max(0, current.weight + delta) },
@@ -170,7 +171,13 @@ export default function WorkoutActive() {
     );
   }
 
-  const currentProgress = exerciseState[activeExercise.id];
+  const currentProgress = exerciseState[activeExercise.id] || {
+    completedSets: 0,
+    weight: activeExercise.weight,
+    reps: activeExercise.reps,
+    skipped: false
+  };
+  
   const progressBars = Array.from({ length: activeExercise.sets }, (_, i) => i < currentProgress.completedSets);
 
   return (
