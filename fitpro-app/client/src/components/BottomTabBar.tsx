@@ -222,9 +222,6 @@ export default function BottomTabBar() {
             >
               <Plus size={32} className="text-black" strokeWidth={3} />
             </motion.button>
-            <div className="text-center mt-1.5 whitespace-nowrap">
-              <span className="text-[9px] font-black text-white/60 uppercase tracking-widest">Registrar</span>
-            </div>
           </div>
         </div>
       </div>
