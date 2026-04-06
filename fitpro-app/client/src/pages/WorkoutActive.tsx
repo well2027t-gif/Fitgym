@@ -1,6 +1,7 @@
 /**
  * FitPro — WorkoutActive Page
  * Layout compacto: tudo visível em uma única tela de celular
+ * Cronômetro fixo, sem notificações, botão dinâmico
  */
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
@@ -20,8 +21,8 @@ import {
   Play,
   CheckCircle2,
   Info,
+  ChevronRight,
 } from 'lucide-react';
-import { toast } from 'sonner';
 import { useLocation, useParams } from '@/lib/router';
 import { useApp } from '@/contexts/AppContext';
 
@@ -90,11 +91,15 @@ export default function WorkoutActive() {
     });
   }, [workout]);
 
+  // Timer de descanso: só conta quando restTimeRemaining !== null
   useEffect(() => {
     if (restTimeRemaining === null || restTimeRemaining <= 0) return;
     const interval = setInterval(() => {
       setRestTimeRemaining(prev => {
-        if (prev === null || prev <= 1) { clearInterval(interval); toast.success('Descanso concluído!'); return null; }
+        if (prev === null || prev <= 1) {
+          clearInterval(interval);
+          return null; // Descanso terminou, sem notificação
+        }
         return prev - 1;
       });
     }, 1000);
@@ -132,9 +137,9 @@ export default function WorkoutActive() {
     if (newSets < activeExercise.sets) {
       setRestTimeTotal(activeExercise.restSeconds);
       setRestTimeRemaining(activeExercise.restSeconds);
-      toast.success(`Série ${newSets}/${activeExercise.sets} concluída!`);
+      // Sem notificação
     } else {
-      toast.success(`Exercício concluído! ${activeExercise.sets}/${activeExercise.sets}`);
+      // Exercício completo, sem notificação
       setTimeout(() => goToNextPendingExercise(), 500);
     }
   };
@@ -158,6 +163,7 @@ export default function WorkoutActive() {
   const progressBars = Array.from({ length: activeExercise.sets }, (_, i) => i < currentProgress.completedSets);
   const restProgress = restTimeTotal > 0 && restTimeRemaining !== null ? restTimeRemaining / restTimeTotal : 0;
   const instructionText = activeExercise.instructions || 'Mantenha a postura correta e controle o movimento.';
+  const isResting = restTimeRemaining !== null && restTimeRemaining > 0;
 
   const renderInstruction = (text: string) => {
     const keywords = ['peito aberto', 'escápulas encaixadas', 'trajetória controlada', 'abdômen firme', 'coluna neutra', 'controle', 'o tronco', 'ombros encaixados', 'pés firmes', 'linha reta'];
@@ -175,8 +181,8 @@ export default function WorkoutActive() {
     return parts.map((p, i) => p.highlight ? <span key={i} style={{ color: '#fbbf24', fontWeight: 600 }}>{p.text}</span> : <span key={i}>{p.text}</span>);
   };
 
-  const isResting = restTimeRemaining !== null;
   const font = 'Space Grotesk, sans-serif';
+  const isExerciseComplete = currentProgress.completedSets >= activeExercise.sets;
 
   return (
     <div className="h-[100dvh] bg-[#0d0d0f] flex flex-col overflow-hidden">
@@ -233,7 +239,7 @@ export default function WorkoutActive() {
           <div className="absolute inset-0 -z-10" style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }} />
         </div>
 
-        {/* DICA DE TÉCNICA — ícone Info ao invés do boneco */}
+        {/* DICA DE TÉCNICA */}
         <div className="rounded-lg px-3 py-2.5 flex items-start gap-2.5"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
           <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center mt-0.5"
@@ -303,7 +309,7 @@ export default function WorkoutActive() {
           </div>
         </div>
 
-        {/* BOTÃO CONCLUIR SÉRIE */}
+        {/* BOTÃO DINÂMICO: Concluir série / Próxima série */}
         <motion.button whileTap={{ scale: 0.97 }} onClick={handleCompleteSeries}
           className="w-full py-3 rounded-xl font-bold text-base flex items-center justify-center gap-2"
           style={{
@@ -311,55 +317,68 @@ export default function WorkoutActive() {
             color: '#0d0d0f',
             boxShadow: '0 8px 24px rgba(74,222,128,0.25)',
             fontFamily: font,
+            opacity: isResting ? 0.5 : 1,
+            pointerEvents: isResting ? 'none' : 'auto',
           }}>
-          <CheckCircle2 size={18} /> Concluir série
+          {isExerciseComplete ? (
+            <>
+              <ChevronRight size={18} /> Próxima série
+            </>
+          ) : (
+            <>
+              <CheckCircle2 size={18} /> Concluir série
+            </>
+          )}
         </motion.button>
 
         {/* Texto informativo */}
-        <p className="text-center text-[10px]" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit, sans-serif' }}>
-          Ao concluir, o descanso será iniciado.
-        </p>
+        {!isResting && (
+          <p className="text-center text-[10px]" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit, sans-serif' }}>
+            Ao concluir, o descanso será iniciado.
+          </p>
+        )}
+      </div>
 
-        {/* TIMER DE DESCANSO — layout compacto horizontal */}
-        <AnimatePresence>
+      {/* ── CRONÔMETRO DE DESCANSO FIXO (sempre visível) ── */}
+      <div className="flex-shrink-0 px-3 py-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.05)', background: '#0d0d0f' }}>
+        <div className="rounded-xl px-3 py-3 flex items-center gap-3"
+          style={{
+            background: isResting ? 'rgba(74,222,128,0.08)' : 'rgba(255,255,255,0.02)',
+            border: `1px solid ${isResting ? 'rgba(74,222,128,0.2)' : 'rgba(255,255,255,0.05)'}`,
+            transition: 'all 0.3s ease',
+          }}
+        >
+          {/* Gráfico circular */}
+          <div className="flex-shrink-0 relative">
+            <RestCircle progress={restProgress} size={44} />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Timer size={14} style={{ color: isResting ? '#4ade80' : 'rgba(255,255,255,0.3)' }} />
+            </div>
+          </div>
+
+          {/* Timer + label */}
+          <div className="flex-1">
+            <p className="text-[9px] font-bold tracking-wider" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: font }}>DESCANSO</p>
+            <p className="text-xl font-bold" style={{ fontFamily: font }}>
+              <span style={{ color: isResting ? '#4ade80' : 'rgba(255,255,255,0.3)' }}>
+                {String(Math.floor((restTimeRemaining || 0) / 60)).padStart(2, '0')}
+              </span>
+              <span style={{ color: 'rgba(255,255,255,0.15)' }}>:</span>
+              <span style={{ color: isResting ? '#4ade80' : 'rgba(255,255,255,0.3)' }}>
+                {String((restTimeRemaining || 0) % 60).padStart(2, '0')}
+              </span>
+            </p>
+          </div>
+
+          {/* Botão pular (só visível quando descansando) */}
           {isResting && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="rounded-xl px-3 py-3 flex items-center gap-3"
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(74,222,128,0.15)',
-              }}
-            >
-              {/* Gráfico circular pequeno */}
-              <div className="flex-shrink-0 relative">
-                <RestCircle progress={restProgress} size={44} />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Timer size={14} style={{ color: '#4ade80' }} />
-                </div>
-              </div>
-
-              {/* Timer + label */}
-              <div className="flex-1">
-                <p className="text-[9px] font-bold tracking-wider" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: font }}>DESCANSO</p>
-                <p className="text-xl font-bold" style={{ fontFamily: font }}>
-                  <span style={{ color: '#4ade80' }}>{String(Math.floor((restTimeRemaining || 0) / 60)).padStart(2, '0')}</span>
-                  <span style={{ color: 'rgba(255,255,255,0.25)' }}>:</span>
-                  <span style={{ color: '#4ade80' }}>{String((restTimeRemaining || 0) % 60).padStart(2, '0')}</span>
-                </p>
-              </div>
-
-              {/* Botão pular */}
-              <button onClick={handleSkipRest}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[10px] font-semibold"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.55)', fontFamily: font }}>
-                <SkipForward size={12} /> Pular
-              </button>
-            </motion.div>
+            <button onClick={handleSkipRest}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[10px] font-semibold"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.55)', fontFamily: font }}>
+              <SkipForward size={12} /> Pular
+            </button>
           )}
-        </AnimatePresence>
+        </div>
       </div>
 
       {/* ── RODAPÉ FIXO ── */}
