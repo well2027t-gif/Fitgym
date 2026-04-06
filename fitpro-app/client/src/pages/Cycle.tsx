@@ -405,7 +405,7 @@ Consulte seu médico para análise profissional.
               className="rounded-2xl gap-2 bg-white/5 hover:bg-white/10 text-white"
             >
               <Settings size={16} />
-              Config
+              Perfil
             </Button>
             <Button 
               onClick={handleExportReport}
@@ -1019,8 +1019,8 @@ Consulte seu médico para análise profissional.
             >
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Settings size={20} className="text-pink-500" />
-                  Configurações de Ciclo
+                  <Heart size={20} className="text-pink-500" />
+                  Meu Perfil Biológico
                 </h3>
                 <button 
                   onClick={() => setShowSettingsModal(false)}

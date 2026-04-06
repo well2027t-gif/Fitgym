@@ -336,8 +336,71 @@ const defaultState: AppState = {
     stepTrackingEnabled: true,
     dailyStepGoal: 8000,
   },
-  cycleEntries: [],
-  cycleProfile: null,
+  cycleEntries: [
+    {
+      id: nanoid(),
+      startDate: new Date(Date.now() - 25 * 86400000).toISOString().split('T')[0],
+      cycleLengthDays: 28,
+      dayEntries: [
+        // Menstruação (Dias 1-5)
+        ...Array.from({ length: 5 }, (_, i) => ({
+          id: nanoid(),
+          date: new Date(Date.now() - (25 - i) * 86400000).toISOString().split('T')[0],
+          flow: i < 2 ? 'heavy' : i < 4 ? 'medium' : 'light',
+          symptoms: i < 3 ? ['colica', 'fadiga', 'inchaco'] : ['fadiga'],
+          mood: 'normal',
+          energy: 'baixa',
+          libido: 'baixa',
+          sleep: 7.5 + Math.random() * 1,
+          temperature: 36.4 + Math.random() * 0.3,
+          notes: i === 0 ? 'Primeiro dia de menstruação' : undefined,
+        })),
+        // Folicular (Dias 6-13)
+        ...Array.from({ length: 8 }, (_, i) => ({
+          id: nanoid(),
+          date: new Date(Date.now() - (20 - i) * 86400000).toISOString().split('T')[0],
+          symptoms: [],
+          mood: 'feliz',
+          energy: 'alta',
+          libido: 'normal',
+          sleep: 8 + Math.random() * 0.5,
+          temperature: 36.5 + Math.random() * 0.2,
+          notes: i === 7 ? 'Energia em alta!' : undefined,
+        })),
+        // Ovulatória (Dias 14-16)
+        ...Array.from({ length: 3 }, (_, i) => ({
+          id: nanoid(),
+          date: new Date(Date.now() - (12 - i) * 86400000).toISOString().split('T')[0],
+          symptoms: [],
+          mood: 'feliz',
+          energy: 'alta',
+          libido: 'alta',
+          sleep: 7.8 + Math.random() * 0.4,
+          temperature: 36.7 + Math.random() * 0.2,
+          notes: i === 1 ? 'Dia da ovulação - pico de energia!' : undefined,
+        })),
+        // Lútea (Dias 17-25)
+        ...Array.from({ length: 9 }, (_, i) => ({
+          id: nanoid(),
+          date: new Date(Date.now() - (9 - i) * 86400000).toISOString().split('T')[0],
+          symptoms: i > 4 ? ['inchaco', 'acne'] : [],
+          mood: i > 5 ? 'irritada' : 'normal',
+          energy: i > 5 ? 'baixa' : 'normal',
+          libido: 'normal',
+          sleep: 7.5 + Math.random() * 0.8,
+          temperature: 36.6 + Math.random() * 0.3,
+          notes: i === 8 ? 'Últimos dias antes da menstruação' : undefined,
+        })),
+      ],
+    },
+  ],
+  cycleProfile: {
+    cycleLengthDays: 28,
+    menstruationDays: 5,
+    useContraceptive: false,
+    objective: 'performance',
+    lastMenstruationDate: new Date(Date.now() - 25 * 86400000).toISOString().split('T')[0],
+  },
 };
 
 // ─── Context ──────────────────────────────────────────────────────────────────
