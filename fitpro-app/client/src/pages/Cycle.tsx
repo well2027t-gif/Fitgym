@@ -735,7 +735,7 @@ Consulte seu médico para análise profissional.
                           isSelected
                             ? 'bg-white/15 border-white/40 shadow-lg shadow-white/20'
                             : isToday
-                            ? 'bg-transparent border-transparent'
+                            ? 'bg-gradient-to-br from-pink-500/30 to-rose-500/20 border-pink-500/40 shadow-lg shadow-pink-500/10'
                             : dayOfCycle
                             ? `${phaseBg} ${phaseBorder} hover:bg-opacity-20`
                             : 'bg-white/[0.02] border-white/5 hover:bg-white/5 hover:border-white/15'
@@ -743,8 +743,6 @@ Consulte seu médico para análise profissional.
                         whileHover={{ scale: 1.03 }}
                         whileTap={{ scale: 0.96 }}
                         animate={isToday ? { 
-                          scale: [1, 1.1, 1],
-                          opacity: [0.7, 1, 0.7],
                           color: ['#ffffff', '#ff8fab', '#ffffff']
                         } : {}}
                         transition={isToday ? { duration: 2, repeat: Infinity } : {}}
