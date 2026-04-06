@@ -1,4 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { getProfessionalById } from '@/lib/professionals';
+
 
 export interface Professional {
   id: string;
@@ -192,6 +194,24 @@ export function ProfessionalChatProvider({ children }: { children: ReactNode }) 
       });
     },
     setCurrentSession(professionalId) {
+      setSessions((prev) => {
+        const existing = prev[professionalId];
+        if (existing) return prev;
+
+        const professional = getProfessionalById(professionalId);
+        if (!professional) return prev;
+
+        return {
+          ...prev,
+          [professionalId]: {
+            professionalId,
+            professional,
+            messages: [],
+            createdAt: new Date().toISOString(),
+          },
+        };
+      });
+
       setCurrentSessionId(professionalId);
     },
     clearChat(professionalId) {

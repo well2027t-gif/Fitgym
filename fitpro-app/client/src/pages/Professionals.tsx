@@ -8,40 +8,8 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Award, ChevronLeft, MessageCircle, Star } from 'lucide-react';
 import { useLocation } from '@/lib/router';
-import { useProfessionalChat, type Professional } from '@/contexts/ProfessionalChatContext';
-
-const PROFESSIONALS = [
-  {
-    id: '1',
-    name: 'Coach Rafael',
-    type: 'personal' as const,
-    rating: 4.9,
-    availability: 'Disponível agora',
-    specialties: ['Hipertrofia', 'Força'],
-    description: 'Especialista em hipertrofia e recomposição corporal.',
-    avatar: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663450499537/mCgZF8gjzvqAzH2XF2CQPp/fitpro-personal-trainer-1-46XbjRsmYzG6EzLMGRnLbY.webp',
-  },
-  {
-    id: '2',
-    name: 'Nutricionista Ana',
-    type: 'nutritionist' as const,
-    rating: 4.8,
-    availability: 'Disponível em 2h',
-    specialties: ['Emagrecimento', 'Performance'],
-    description: 'Especialista em nutrição esportiva e reedução alimentar.',
-    avatar: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663450499537/mCgZF8gjzvqAzH2XF2CQPp/fitpro-nutritionist-1-D25pGxWWEMx3uymsS2wo4v.webp',
-  },
-  {
-    id: '3',
-    name: 'Coach Marina',
-    type: 'personal' as const,
-    rating: 4.7,
-    availability: 'Disponível amanhã',
-    specialties: ['Funcional', 'Mobilidade'],
-    description: 'Especialista em treinos funcionais e prevenção de lesões.',
-    avatar: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663450499537/mCgZF8gjzvqAzH2XF2CQPp/fitpro-personal-trainer-2-NFpGk9rxkh9vri2kzMzLd5.webp',
-  },
-];
+import { useProfessionalChat } from '@/contexts/ProfessionalChatContext';
+import { PROFESSIONALS } from '@/lib/professionals';
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -227,7 +195,7 @@ export default function Professionals() {
                 <motion.button
                   whileTap={{ scale: 0.96 }}
                   onClick={() => {
-                    startChat(professional as Professional);
+                    startChat(professional);
                     navigate(`/profissionais/chat/${professional.id}`);
                   }}
                   className="flex w-full items-center justify-center gap-2 rounded-[18px] py-3 text-sm font-bold"
