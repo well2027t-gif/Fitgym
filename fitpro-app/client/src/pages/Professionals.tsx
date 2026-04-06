@@ -19,7 +19,7 @@ const PROFESSIONALS = [
     availability: 'Disponível agora',
     specialties: ['Hipertrofia', 'Força'],
     description: 'Especialista em hipertrofia e recomposição corporal.',
-    avatar: '👨‍🏫',
+    avatar: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663450499537/mCgZF8gjzvqAzH2XF2CQPp/fitpro-personal-trainer-1-46XbjRsmYzG6EzLMGRnLbY.webp',
   },
   {
     id: '2',
@@ -28,8 +28,8 @@ const PROFESSIONALS = [
     rating: 4.8,
     availability: 'Disponível em 2h',
     specialties: ['Emagrecimento', 'Performance'],
-    description: 'Especialista em nutrição esportiva e reeducação alimentar.',
-    avatar: '👩‍⚕️',
+    description: 'Especialista em nutrição esportiva e reedução alimentar.',
+    avatar: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663450499537/mCgZF8gjzvqAzH2XF2CQPp/fitpro-nutritionist-1-D25pGxWWEMx3uymsS2wo4v.webp',
   },
   {
     id: '3',
@@ -39,7 +39,7 @@ const PROFESSIONALS = [
     availability: 'Disponível amanhã',
     specialties: ['Funcional', 'Mobilidade'],
     description: 'Especialista em treinos funcionais e prevenção de lesões.',
-    avatar: '👩‍🏫',
+    avatar: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663450499537/mCgZF8gjzvqAzH2XF2CQPp/fitpro-personal-trainer-2-NFpGk9rxkh9vri2kzMzLd5.webp',
   },
 ];
 
@@ -181,12 +181,12 @@ export default function Professionals() {
                 }}
               >
                 <div className="mb-3 flex items-start gap-3">
-                  <div
-                    className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-[20px] text-3xl"
-                    style={{ background: 'rgba(255,255,255,0.055)', border: '1px solid rgba(255,255,255,0.05)' }}
-                  >
-                    {professional.avatar}
-                  </div>
+                  <img
+                    src={professional.avatar}
+                    alt={professional.name}
+                    className="h-14 w-14 flex-shrink-0 rounded-[20px] object-cover"
+                    style={{ border: '1px solid rgba(255,255,255,0.05)' }}
+                  />
                   <div className="min-w-0 flex-1">
                     <div className="mb-1 flex items-center justify-between gap-3">
                       <h3 className="truncate text-sm font-bold" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>

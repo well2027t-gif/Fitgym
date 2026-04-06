@@ -219,15 +219,12 @@ export default function ProfessionalChat() {
           <ChevronLeft size={22} style={{ color: 'rgba(255,255,255,0.8)' }} />
         </motion.button>
 
-        <div
-          className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-xl"
-          style={{
-            background: 'rgba(64,208,160,0.14)',
-            border: '2px solid rgba(64,208,160,0.2)',
-          }}
-        >
-          {professional.avatar}
-        </div>
+        <img
+          src={professional.avatar}
+          alt={professional.name}
+          className="h-10 w-10 flex-shrink-0 rounded-full object-cover"
+          style={{ border: '2px solid rgba(64,208,160,0.2)' }}
+        />
 
         <div className="ml-1 min-w-0 flex-1">
           <h1 className="truncate text-[15px] font-bold text-white" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
