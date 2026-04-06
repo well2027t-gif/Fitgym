@@ -1,7 +1,7 @@
 /**
  * FitPro — BottomTabBar
- * Design: Premium Dark Fitness / Floating Pill Layout
- * Mobile-first bottom navigation with floating center button and rounded pill style.
+ * Design: Glassmorphism Dark / Curved Indicator
+ * Menu inferior com indicador animado, glassmorphism e drawer lateral premium.
  */
 
 import { useEffect, useState } from 'react';
@@ -14,14 +14,13 @@ import {
   Droplets,
   Calculator,
   Share2,
-  ChevronRight,
   X,
-  Plus,
-  Building2
+  Building2,
+  ChevronRight,
+  MoreHorizontal,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Tabs conforme a foto: Início, Treinos, Academia, Perfil
 const tabs = [
   { path: '/', icon: Home, label: 'Início' },
   { path: '/treinos', icon: Dumbbell, label: 'Treinos' },
@@ -30,18 +29,18 @@ const tabs = [
 ];
 
 const menuItems = [
-  { path: '/perfil', icon: User, label: 'Perfil', description: 'Dados pessoais e preferências' },
-  { path: '/progresso', icon: TrendingUp, label: 'Progresso', description: 'Evolução e resultados' },
-  { path: '/ciclo', icon: Droplets, label: 'Saúde Feminina', description: 'Acompanhamento de ciclo menstrual' },
-  { path: '/historico', icon: TrendingUp, label: 'Histórico', description: 'Ver registros e evolução' },
-  { path: '/1rm', icon: Calculator, label: 'Calculadora 1RM', description: 'Estimativa de carga máxima' },
-  { path: '/compartilhar', icon: Share2, label: 'Compartilhar', description: 'Enviar resultados e progresso' },
+  { path: '/perfil', icon: User, label: 'Perfil', description: 'Dados pessoais e preferências', color: '#818cf8' },
+  { path: '/progresso', icon: TrendingUp, label: 'Progresso', description: 'Evolução e resultados', color: '#34d399' },
+  { path: '/ciclo', icon: Droplets, label: 'Saúde Feminina', description: 'Acompanhamento de ciclo menstrual', color: '#f472b6' },
+  { path: '/historico', icon: TrendingUp, label: 'Histórico', description: 'Ver registros e evolução', color: '#fb923c' },
+  { path: '/1rm', icon: Calculator, label: 'Calculadora 1RM', description: 'Estimativa de carga máxima', color: '#38bdf8' },
+  { path: '/compartilhar', icon: Share2, label: 'Compartilhar', description: 'Enviar resultados e progresso', color: '#c5ff22' },
 ];
 
 export default function BottomTabBar() {
   const [location, navigate] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-  
+
   const isInProfessionalChat = location.startsWith('/profissionais/chat/');
 
   useEffect(() => {
@@ -65,165 +64,259 @@ export default function BottomTabBar() {
     setTimeout(() => navigate(path), 140);
   };
 
+  const getActiveIndex = () => {
+    for (let i = tabs.length - 1; i >= 0; i--) {
+      const t = tabs[i];
+      if (t.path === '/' ? location === '/' : location.startsWith(t.path)) return i;
+    }
+    return 0;
+  };
+
+  const activeIndex = getActiveIndex();
+
   return (
     <>
-      {/* ── SIDE MENU MODAL ── */}
+      {/* ── DRAWER LATERAL ── */}
       <AnimatePresence>
         {menuOpen && (
           <>
-            <motion.button
-              type="button"
+            {/* Overlay */}
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-40"
+              style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)' }}
               onClick={() => setMenuOpen(false)}
             />
 
+            {/* Drawer */}
             <motion.aside
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 z-50 h-[100dvh] w-[85%] max-w-sm bg-[#0d0d0f] border-l border-white/10 shadow-2xl flex flex-col"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 260 }}
+              className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl overflow-hidden"
+              style={{
+                background: 'linear-gradient(180deg, #16161a 0%, #0d0d0f 100%)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderBottom: 'none',
+                maxWidth: '480px',
+                margin: '0 auto',
+              }}
             >
-              <div className="p-6 flex items-center justify-between border-b border-white/5">
-                <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>Menu</h3>
-                <button 
+              {/* Handle */}
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }} />
+              </div>
+
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4">
+                <div>
+                  <h3 className="text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                    Mais opções
+                  </h3>
+                  <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                    Acesse recursos adicionais
+                  </p>
+                </div>
+                <button
                   onClick={() => setMenuOpen(false)}
-                  className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center"
+                  className="w-9 h-9 rounded-full flex items-center justify-center"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
                 >
-                  <X size={20} className="text-white" />
+                  <X size={16} className="text-white" />
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                {menuItems.map(({ path, icon: Icon, label, description }) => {
+              {/* Grid de itens */}
+              <div className="px-4 pb-6 grid grid-cols-2 gap-3">
+                {menuItems.map(({ path, icon: Icon, label, description, color }, idx) => {
                   const active = location === path;
                   return (
-                    <button
+                    <motion.button
                       key={path}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
                       onClick={() => handleMenuNavigate(path)}
-                      className={`w-full p-4 rounded-2xl flex items-center gap-4 transition-all ${
-                        active ? 'bg-[#c5ff22]/10 border border-[#c5ff22]/20' : 'bg-white/5 border border-transparent'
-                      }`}
+                      className="relative flex flex-col items-start gap-2 p-4 rounded-2xl text-left overflow-hidden"
+                      style={{
+                        background: active
+                          ? `${color}18`
+                          : 'rgba(255,255,255,0.04)',
+                        border: `1px solid ${active ? `${color}40` : 'rgba(255,255,255,0.07)'}`,
+                      }}
                     >
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${active ? 'bg-[#c5ff22] text-black' : 'bg-white/5 text-white/60'}`}>
-                        <Icon size={20} />
+                      {/* Glow de fundo no ativo */}
+                      {active && (
+                        <div
+                          className="absolute inset-0 pointer-events-none"
+                          style={{
+                            background: `radial-gradient(circle at top left, ${color}20 0%, transparent 70%)`,
+                          }}
+                        />
+                      )}
+
+                      <div
+                        className="w-9 h-9 rounded-xl flex items-center justify-center"
+                        style={{
+                          background: active ? color : 'rgba(255,255,255,0.07)',
+                        }}
+                      >
+                        <Icon size={18} style={{ color: active ? '#000' : color }} />
                       </div>
-                      <div className="text-left">
-                        <p className={`font-bold ${active ? 'text-[#c5ff22]' : 'text-white'}`}>{label}</p>
-                        <p className="text-[11px] text-white/40">{description}</p>
+
+                      <div>
+                        <p
+                          className="text-sm font-semibold leading-tight"
+                          style={{ color: active ? color : 'rgba(255,255,255,0.85)' }}
+                        >
+                          {label}
+                        </p>
+                        <p className="text-[10px] mt-0.5 leading-tight" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                          {description}
+                        </p>
                       </div>
-                    </button>
+
+                      <ChevronRight
+                        size={14}
+                        className="absolute right-3 top-1/2 -translate-y-1/2"
+                        style={{ color: 'rgba(255,255,255,0.2)' }}
+                      />
+                    </motion.button>
                   );
                 })}
               </div>
+
+              {/* Safe area bottom */}
+              <div style={{ height: 'env(safe-area-inset-bottom, 0px)' }} />
             </motion.aside>
           </>
         )}
       </AnimatePresence>
 
-      {/* ── FLOATING PILL BOTTOM TAB BAR ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 flex items-end justify-center pb-4 pointer-events-none">
-        <div className="relative w-full flex justify-center">
-          {/* Pílula com abas */}
-          <nav
-            className="relative h-24 bg-[#1a1a1d]/95 backdrop-blur-xl border border-white/10 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-between px-6 pointer-events-auto"
-            style={{ width: 'calc(100% - 32px)', maxWidth: '480px', marginLeft: '16px', marginRight: '16px' }}
+      {/* ── BARRA INFERIOR ── */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-30"
+        style={{ maxWidth: '480px', margin: '0 auto', left: 0, right: 0 }}
+      >
+        {/* Gradiente de fade acima da barra */}
+        <div
+          className="pointer-events-none"
+          style={{
+            height: '32px',
+            background: 'linear-gradient(to top, #0d0d0f, transparent)',
+          }}
+        />
+
+        <nav
+          className="relative flex items-center"
+          style={{
+            background: 'rgba(18,18,22,0.96)',
+            backdropFilter: 'blur(20px)',
+            borderTop: '1px solid rgba(255,255,255,0.07)',
+            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          }}
+        >
+          {/* Indicador deslizante */}
+          <motion.div
+            className="absolute top-0 h-[2px] rounded-full"
+            style={{ background: '#c5ff22', width: `${100 / 5}%` }}
+            animate={{ left: `${(activeIndex * 100) / 5}%` }}
+            transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+          />
+
+          {/* Tabs */}
+          {tabs.map((tab, idx) => {
+            const isActive = idx === activeIndex;
+            const Icon = tab.icon;
+            return (
+              <Link
+                key={tab.path}
+                href={tab.path}
+                className="flex flex-col items-center justify-center gap-1 py-3 flex-1"
+                style={{ minHeight: '60px' }}
+              >
+                <motion.div
+                  animate={isActive ? { scale: 1.12 } : { scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  className="relative flex items-center justify-center"
+                >
+                  {/* Halo ativo */}
+                  {isActive && (
+                    <motion.div
+                      layoutId="tab-halo"
+                      className="absolute inset-0 rounded-full"
+                      style={{
+                        background: 'rgba(197,255,34,0.12)',
+                        width: '40px',
+                        height: '40px',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                      }}
+                    />
+                  )}
+                  <Icon
+                    size={22}
+                    style={{
+                      color: isActive ? '#c5ff22' : 'rgba(255,255,255,0.38)',
+                      strokeWidth: isActive ? 2.5 : 1.8,
+                      position: 'relative',
+                      zIndex: 1,
+                    }}
+                  />
+                </motion.div>
+                <span
+                  className="text-[9px] font-semibold tracking-wide"
+                  style={{
+                    color: isActive ? '#c5ff22' : 'rgba(255,255,255,0.35)',
+                    letterSpacing: '0.04em',
+                  }}
+                >
+                  {tab.label}
+                </span>
+              </Link>
+            );
+          })}
+
+          {/* Botão "Mais" */}
+          <button
+            onClick={() => setMenuOpen(true)}
+            className="flex flex-col items-center justify-center gap-1 py-3 flex-1"
+            style={{ minHeight: '60px' }}
           >
-            {/* Primeira aba (Início) */}
-            <Link href={tabs[0].path} className="flex flex-col items-center gap-1 flex-1 py-2">
-              {(() => {
-                const isActive = location === tabs[0].path || (tabs[0].path !== '/' && location.startsWith(tabs[0].path));
-                const Icon = tabs[0].icon;
-                return (
-                  <>
-                    <Icon 
-                      size={26} 
-                      className={isActive ? 'text-[#c5ff22]' : 'text-white/45'} 
-                      strokeWidth={isActive ? 2.5 : 2}
-                    />
-                    <span className={`text-[9px] font-bold tracking-tight ${isActive ? 'text-[#c5ff22]' : 'text-white/45'}`}>
-                      {tabs[0].label}
-                    </span>
-                  </>
-                );
-              })()}
-            </Link>
-
-            {/* Segunda aba (Treinos) */}
-            <Link href={tabs[1].path} className="flex flex-col items-center gap-1 flex-1 py-2">
-              {(() => {
-                const isActive = location === tabs[1].path || location.startsWith(tabs[1].path);
-                const Icon = tabs[1].icon;
-                return (
-                  <>
-                    <Icon 
-                      size={26} 
-                      className={isActive ? 'text-[#c5ff22]' : 'text-white/45'} 
-                      strokeWidth={isActive ? 2.5 : 2}
-                    />
-                    <span className={`text-[9px] font-bold tracking-tight ${isActive ? 'text-[#c5ff22]' : 'text-white/45'}`}>
-                      {tabs[1].label}
-                    </span>
-                  </>
-                );
-              })()}
-            </Link>
-
-            {/* Terceira aba (Academia) */}
-            <Link href={tabs[2].path} className="flex flex-col items-center gap-1 flex-1 py-2">
-              {(() => {
-                const isActive = location === tabs[2].path || location.startsWith(tabs[2].path);
-                const Icon = tabs[2].icon;
-                return (
-                  <>
-                    <Icon 
-                      size={26} 
-                      className={isActive ? 'text-[#c5ff22]' : 'text-white/45'} 
-                      strokeWidth={isActive ? 2.5 : 2}
-                    />
-                    <span className={`text-[9px] font-bold tracking-tight ${isActive ? 'text-[#c5ff22]' : 'text-white/45'}`}>
-                      {tabs[2].label}
-                    </span>
-                  </>
-                );
-              })()}
-            </Link>
-
-            {/* Quarta aba (Perfil) */}
-            <Link href={tabs[3].path} className="flex flex-col items-center gap-1 flex-1 py-2">
-              {(() => {
-                const isActive = location === tabs[3].path || location.startsWith(tabs[3].path);
-                const Icon = tabs[3].icon;
-                return (
-                  <>
-                    <Icon 
-                      size={26} 
-                      className={isActive ? 'text-[#c5ff22]' : 'text-white/45'} 
-                      strokeWidth={isActive ? 2.5 : 2}
-                    />
-                    <span className={`text-[9px] font-bold tracking-tight ${isActive ? 'text-[#c5ff22]' : 'text-white/45'}`}>
-                      {tabs[3].label}
-                    </span>
-                  </>
-                );
-              })()}
-            </Link>
-          </nav>
-
-          {/* Botão Central (+) - Flutuante acima da pílula */}
-          <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 pointer-events-auto">
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setMenuOpen(true)}
-              className="w-16 h-16 rounded-full bg-[#c5ff22] shadow-[0_10px_35px_rgba(197,255,34,0.45)] flex items-center justify-center border-[4px] border-[#000000] hover:scale-105 transition-transform"
+            <motion.div
+              whileTap={{ scale: 0.88 }}
+              className="w-9 h-9 rounded-2xl flex items-center justify-center"
+              style={{
+                background: menuOpen
+                  ? 'rgba(197,255,34,0.18)'
+                  : 'rgba(255,255,255,0.07)',
+                border: `1px solid ${menuOpen ? 'rgba(197,255,34,0.35)' : 'rgba(255,255,255,0.1)'}`,
+              }}
             >
-              <Plus size={32} className="text-black" strokeWidth={3} />
-            </motion.button>
-          </div>
-        </div>
+              <MoreHorizontal
+                size={20}
+                style={{
+                  color: menuOpen ? '#c5ff22' : 'rgba(255,255,255,0.5)',
+                  strokeWidth: 2,
+                }}
+              />
+            </motion.div>
+            <span
+              className="text-[9px] font-semibold tracking-wide"
+              style={{
+                color: menuOpen ? '#c5ff22' : 'rgba(255,255,255,0.35)',
+                letterSpacing: '0.04em',
+              }}
+            >
+              Mais
+            </span>
+          </button>
+        </nav>
       </div>
     </>
   );
