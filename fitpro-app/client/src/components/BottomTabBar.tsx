@@ -1,17 +1,15 @@
 /**
- * FitPro — PremiumBottomNavBar
+ * FitPro — PremiumBottomNavBar v2
  *
- * Barra de navegação inferior premium — clean, minimal, high-end.
- * Inspirada em apps iOS / fitness premium (Apple-level minimalism).
+ * Barra de navegação inferior premium — full-width, de borda a borda.
+ * Ícones com container visual, clean, minimal, high-end.
  *
- * Especificações:
- * - Background: #0B0F1A
- * - Cor ativa: #2F80ED
- * - Cor inativa: #6B7280
- * - Indicador ativo: linha 20px × 3px, cor #2F80ED
- * - Botão central: gradiente #2F80ED → #1E5EFF, 60×60px
- * - Animações suaves: 200ms
- * - SEM glow, SEM background no item ativo, SEM exageros visuais
+ * - Background: #0B0F1A — ocupa 100% da largura da tela
+ * - Cor ativa: #2F80ED | Inativa: #6B7280
+ * - Ícone ativo: container pill com fundo azul translúcido
+ * - Indicador ativo: linha 28px × 3px no topo da barra
+ * - Botão central: gradiente #2F80ED → #1E5EFF, 58×58px flutuante
+ * - Animações suaves 200ms
  */
 
 import { useState } from 'react';
@@ -23,53 +21,51 @@ import {
   BowlFood,
   UserCircleCheck,
   Plus,
-} from '@phosphor-icons/react';
-import {
   User,
-  TrendingUp,
-  Droplets,
+  ChartLineUp,
+  Drop,
   Calculator,
-  Share2,
-  X,
-  ChevronRight,
-} from 'lucide-react';
+  ShareNetwork,
+} from '@phosphor-icons/react';
+import { X, ChevronRight } from 'lucide-react';
 
 /* ─────────────────────────────────────────────
-   Paleta de cores
+   Paleta
 ───────────────────────────────────────────── */
-const COLORS = {
-  bg: '#0B0F1A',
-  active: '#2F80ED',
-  inactive: '#6B7280',
-  gradStart: '#2F80ED',
-  gradEnd: '#1E5EFF',
+const C = {
+  bg:         '#0B0F1A',
+  active:     '#2F80ED',
+  inactive:   '#6B7280',
+  activeBg:   'rgba(47,128,237,0.14)',
+  gradStart:  '#2F80ED',
+  gradEnd:    '#1E5EFF',
 };
 
 /* ─────────────────────────────────────────────
-   Itens do menu expandido (botão +)
+   Itens do quick-actions sheet
 ───────────────────────────────────────────── */
-const quickActionItems = [
-  { path: '/perfil',       Icon: User,        label: 'Perfil',            description: 'Dados pessoais e preferências' },
-  { path: '/progresso',    Icon: TrendingUp,  label: 'Progresso',         description: 'Evolução e resultados' },
-  { path: '/ciclo',        Icon: Droplets,    label: 'Saúde Feminina',    description: 'Acompanhamento de ciclo menstrual' },
-  { path: '/historico',    Icon: TrendingUp,  label: 'Histórico',         description: 'Ver registros e evolução' },
-  { path: '/1rm',          Icon: Calculator,  label: 'Calculadora 1RM',   description: 'Estimativa de carga máxima' },
-  { path: '/compartilhar', Icon: Share2,      label: 'Compartilhar',      description: 'Enviar resultados e progresso' },
+const QUICK_ITEMS = [
+  { path: '/perfil',       Icon: User,          label: 'Perfil',          description: 'Dados pessoais e preferências' },
+  { path: '/progresso',    Icon: ChartLineUp,   label: 'Progresso',       description: 'Evolução e resultados' },
+  { path: '/ciclo',        Icon: Drop,          label: 'Saúde Feminina',  description: 'Ciclo menstrual' },
+  { path: '/historico',    Icon: ChartLineUp,   label: 'Histórico',       description: 'Registros e evolução' },
+  { path: '/1rm',          Icon: Calculator,    label: 'Calculadora 1RM', description: 'Estimativa de carga máxima' },
+  { path: '/compartilhar', Icon: ShareNetwork,  label: 'Compartilhar',    description: 'Enviar resultados' },
 ];
 
 /* ─────────────────────────────────────────────
-   Definição dos 4 itens de navegação (sem o central)
+   Itens de navegação principal
 ───────────────────────────────────────────── */
 const NAV_ITEMS = [
-  { index: 0, href: '/',             label: 'Início',       Icon: House,            IconFill: House            },
-  { index: 1, href: '/treinos',      label: 'Treinos',      Icon: Barbell,          IconFill: Barbell          },
-  // index 2 = botão central
-  { index: 3, href: '/dieta',        label: 'Dieta',        Icon: BowlFood,         IconFill: BowlFood         },
-  { index: 4, href: '/profissionais',label: 'Profissionais',Icon: UserCircleCheck,  IconFill: UserCircleCheck  },
+  { href: '/',              label: 'Início',       Icon: House,           IconFill: House           },
+  { href: '/treinos',       label: 'Treinos',      Icon: Barbell,         IconFill: Barbell         },
+  // slot central = botão +
+  { href: '/dieta',         label: 'Dieta',        Icon: BowlFood,        IconFill: BowlFood        },
+  { href: '/profissionais', label: 'Profissionais',Icon: UserCircleCheck, IconFill: UserCircleCheck },
 ];
 
 /* ─────────────────────────────────────────────
-   NavItem — item individual de navegação
+   NavItem
 ───────────────────────────────────────────── */
 interface NavItemProps {
   href: string;
@@ -80,7 +76,7 @@ interface NavItemProps {
 }
 
 function NavItem({ href, label, Icon, IconFill, isActive }: NavItemProps) {
-  const color = isActive ? COLORS.active : COLORS.inactive;
+  const color = isActive ? C.active : C.inactive;
 
   return (
     <Link
@@ -89,65 +85,73 @@ function NavItem({ href, label, Icon, IconFill, isActive }: NavItemProps) {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-end',
         flex: 1,
         minWidth: 48,
-        minHeight: 48,
+        minHeight: 56,
         textDecoration: 'none',
-        padding: '8px 4px',
-        gap: 2,
+        paddingBottom: 10,
         WebkitTapHighlightColor: 'transparent',
+        position: 'relative',
       }}
     >
-      {/* Ícone com transição suave */}
+      {/* Indicador superior — linha no topo da barra */}
       <motion.div
-        whileTap={{ scale: 0.88 }}
+        animate={{ width: isActive ? 28 : 0, opacity: isActive ? 1 : 0 }}
+        transition={{ duration: 0.22, ease: 'easeInOut' }}
+        style={{
+          position: 'absolute',
+          top: 0,
+          height: 3,
+          borderRadius: '0 0 3px 3px',
+          background: C.active,
+        }}
+      />
+
+      {/* Container do ícone com pill ativo */}
+      <motion.div
+        whileTap={{ scale: 0.84 }}
         transition={{ duration: 0.12 }}
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        style={{
+          width: 44,
+          height: 30,
+          borderRadius: 15,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: isActive ? C.activeBg : 'transparent',
+          transition: 'background 200ms ease',
+          marginBottom: 4,
+        }}
       >
         {isActive
-          ? <IconFill size={24} weight="fill" color={color} />
-          : <Icon      size={24} weight="regular" color={color} />
+          ? <IconFill size={22} weight="fill" color={color} />
+          : <Icon     size={22} weight="regular" color={color} />
         }
       </motion.div>
 
       {/* Label */}
       <span
         style={{
-          fontSize: 11,
-          fontWeight: isActive ? 600 : 400,
+          fontSize: 10.5,
+          fontWeight: isActive ? 700 : 400,
           color,
           lineHeight: 1,
-          letterSpacing: '0.01em',
-          transition: 'color 200ms ease',
+          letterSpacing: '0.02em',
+          transition: 'color 200ms ease, font-weight 200ms ease',
+          whiteSpace: 'nowrap',
         }}
       >
         {label}
       </span>
-
-      {/* Indicador ativo — linha 20px × 3px */}
-      <motion.div
-        animate={{ width: isActive ? 20 : 0, opacity: isActive ? 1 : 0 }}
-        transition={{ duration: 0.2, ease: 'easeInOut' }}
-        style={{
-          height: 3,
-          borderRadius: 1.5,
-          background: COLORS.active,
-          overflow: 'hidden',
-        }}
-      />
     </Link>
   );
 }
 
 /* ─────────────────────────────────────────────
-   CenterButton — botão flutuante central (+)
+   CenterButton
 ───────────────────────────────────────────── */
-interface CenterButtonProps {
-  onPress: () => void;
-}
-
-function CenterButton({ onPress }: CenterButtonProps) {
+function CenterButton({ onPress }: { onPress: () => void }) {
   return (
     <div
       style={{
@@ -155,28 +159,29 @@ function CenterButton({ onPress }: CenterButtonProps) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        minWidth: 48,
+        minWidth: 64,
+        paddingBottom: 6,
       }}
     >
       <motion.button
-        whileTap={{ scale: 0.92 }}
+        whileTap={{ scale: 0.90 }}
         transition={{ duration: 0.12 }}
         onClick={onPress}
         style={{
-          width: 60,
-          height: 60,
+          width: 58,
+          height: 58,
           borderRadius: '50%',
-          background: `linear-gradient(135deg, ${COLORS.gradStart} 0%, ${COLORS.gradEnd} 100%)`,
-          border: 'none',
+          background: `linear-gradient(145deg, ${C.gradStart} 0%, ${C.gradEnd} 100%)`,
+          border: `3px solid ${C.bg}`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'pointer',
-          marginBottom: 8,
+          marginTop: -22,
           outline: 'none',
           padding: 0,
           WebkitTapHighlightColor: 'transparent',
-          boxShadow: '0 4px 12px rgba(47,128,237,0.25)',
+          boxShadow: '0 6px 20px rgba(47,128,237,0.30)',
         }}
       >
         <Plus size={26} weight="bold" color="#fff" />
@@ -186,7 +191,7 @@ function CenterButton({ onPress }: CenterButtonProps) {
 }
 
 /* ─────────────────────────────────────────────
-   PremiumBottomNavBar — componente principal
+   Componente principal
 ───────────────────────────────────────────── */
 export default function BottomTabBar() {
   const [location, navigate] = useLocation();
@@ -197,12 +202,8 @@ export default function BottomTabBar() {
 
   if (isInProfessionalChat || isInWorkoutMode) return null;
 
-  const isTabActive = (path: string) => {
-    if (path === '/') return location === '/';
-    return location.startsWith(path);
-  };
-
-  const openQuickActions = () => setMenuOpen(true);
+  const isTabActive = (path: string) =>
+    path === '/' ? location === '/' : location.startsWith(path);
 
   const handleMenuNavigate = (path: string) => {
     setMenuOpen(false);
@@ -215,8 +216,8 @@ export default function BottomTabBar() {
       <AnimatePresence>
         {menuOpen && (
           <>
-            {/* Overlay */}
             <motion.div
+              key="overlay"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -226,14 +227,14 @@ export default function BottomTabBar() {
                 position: 'fixed',
                 inset: 0,
                 zIndex: 9998,
-                background: 'rgba(0,0,0,0.65)',
-                backdropFilter: 'blur(4px)',
-                WebkitBackdropFilter: 'blur(4px)',
+                background: 'rgba(0,0,0,0.68)',
+                backdropFilter: 'blur(5px)',
+                WebkitBackdropFilter: 'blur(5px)',
               }}
             />
 
-            {/* Sheet */}
             <motion.aside
+              key="sheet"
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
@@ -244,10 +245,10 @@ export default function BottomTabBar() {
                 left: 0,
                 right: 0,
                 zIndex: 9999,
-                borderTopLeftRadius: 24,
-                borderTopRightRadius: 24,
+                borderTopLeftRadius: 26,
+                borderTopRightRadius: 26,
                 background: 'linear-gradient(180deg, #141820 0%, #0B0F1A 100%)',
-                border: '1px solid rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.07)',
                 borderBottom: 'none',
                 maxWidth: 480,
                 margin: '0 auto',
@@ -260,20 +261,20 @@ export default function BottomTabBar() {
               </div>
 
               {/* Header */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 22px' }}>
                 <div>
-                  <h3 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 18, fontWeight: 700, color: '#fff', margin: 0 }}>
+                  <h3 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 17, fontWeight: 700, color: '#fff', margin: 0 }}>
                     Ações rápidas
                   </h3>
-                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: '4px 0 0' }}>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: '3px 0 0' }}>
                     Acesse recursos adicionais
                   </p>
                 </div>
                 <button
                   onClick={() => setMenuOpen(false)}
                   style={{
-                    width: 36,
-                    height: 36,
+                    width: 34,
+                    height: 34,
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
@@ -283,18 +284,18 @@ export default function BottomTabBar() {
                     cursor: 'pointer',
                   }}
                 >
-                  <X size={16} color="#fff" />
+                  <X size={15} color="#fff" />
                 </button>
               </div>
 
-              {/* Grid de itens */}
-              <div style={{ padding: '0 16px 24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                {quickActionItems.map(({ path, Icon, label, description }, idx) => {
+              {/* Grid */}
+              <div style={{ padding: '0 14px 24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                {QUICK_ITEMS.map(({ path, Icon, label, description }, idx) => {
                   const active = location === path;
                   return (
                     <motion.button
                       key={path}
-                      initial={{ opacity: 0, y: 16 }}
+                      initial={{ opacity: 0, y: 14 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.04 }}
                       onClick={() => handleMenuNavigate(path)}
@@ -304,40 +305,40 @@ export default function BottomTabBar() {
                         flexDirection: 'column',
                         alignItems: 'flex-start',
                         gap: 8,
-                        padding: 16,
+                        padding: 14,
                         borderRadius: 16,
                         textAlign: 'left',
                         background: active ? 'rgba(47,128,237,0.1)' : 'rgba(255,255,255,0.04)',
-                        border: `1px solid ${active ? 'rgba(47,128,237,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                        border: `1px solid ${active ? 'rgba(47,128,237,0.28)' : 'rgba(255,255,255,0.06)'}`,
                         cursor: 'pointer',
                         overflow: 'hidden',
                       }}
                     >
                       <div
                         style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: 12,
+                          width: 34,
+                          height: 34,
+                          borderRadius: 10,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          background: active ? COLORS.active : 'rgba(255,255,255,0.07)',
+                          background: active ? C.active : 'rgba(255,255,255,0.07)',
                         }}
                       >
-                        <Icon size={18} color={active ? '#fff' : 'rgba(255,255,255,0.55)'} />
+                        <Icon size={17} weight={active ? 'fill' : 'regular'} color={active ? '#fff' : 'rgba(255,255,255,0.55)'} />
                       </div>
                       <div>
-                        <p style={{ fontSize: 13, fontWeight: 600, color: active ? COLORS.active : 'rgba(255,255,255,0.85)', margin: 0, lineHeight: 1.3 }}>
+                        <p style={{ fontSize: 12.5, fontWeight: 600, color: active ? C.active : 'rgba(255,255,255,0.85)', margin: 0, lineHeight: 1.3 }}>
                           {label}
                         </p>
-                        <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: '2px 0 0', lineHeight: 1.3 }}>
+                        <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.32)', margin: '2px 0 0', lineHeight: 1.3 }}>
                           {description}
                         </p>
                       </div>
                       <ChevronRight
-                        size={14}
-                        color="rgba(255,255,255,0.2)"
-                        style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)' }}
+                        size={13}
+                        color="rgba(255,255,255,0.18)"
+                        style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)' }}
                       />
                     </motion.button>
                   );
@@ -350,7 +351,7 @@ export default function BottomTabBar() {
         )}
       </AnimatePresence>
 
-      {/* ── BARRA INFERIOR FIXA ── */}
+      {/* ── BARRA INFERIOR — FULL WIDTH, DE BORDA A BORDA ── */}
       <div
         style={{
           position: 'fixed',
@@ -362,57 +363,55 @@ export default function BottomTabBar() {
           WebkitTransform: 'translate3d(0,0,0)',
         }}
       >
-        <div
+        {/* Sem margin, sem padding lateral — ocupa 100% da tela */}
+        <nav
           style={{
-            maxWidth: 480,
-            margin: '0 auto',
-            padding: '0 12px 10px',
+            width: '100%',
+            background: C.bg,
+            display: 'flex',
+            alignItems: 'stretch',
+            justifyContent: 'space-evenly',
+            height: 72,
+            overflow: 'visible',
+            /* Sombra sutil no topo */
+            boxShadow: '0 -1px 0 rgba(255,255,255,0.05), 0 -8px 24px rgba(0,0,0,0.30)',
           }}
         >
-          {/* Container principal — rounded, background #0B0F1A */}
-          <nav
-            style={{
-              position: 'relative',
-              borderRadius: 30,
-              background: COLORS.bg,
-              height: 72,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-evenly',
-              overflow: 'visible',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
-              paddingTop: 10,
-              paddingBottom: 10,
-            }}
-          >
-            {NAV_ITEMS.slice(0, 2).map(({ index, href, label, Icon, IconFill }) => (
-              <NavItem
-                key={href}
-                href={href}
-                label={label}
-                Icon={Icon}
-                IconFill={IconFill}
-                isActive={isTabActive(href)}
-              />
-            ))}
+          {/* Início + Treinos */}
+          {NAV_ITEMS.slice(0, 2).map(({ href, label, Icon, IconFill }) => (
+            <NavItem
+              key={href}
+              href={href}
+              label={label}
+              Icon={Icon}
+              IconFill={IconFill}
+              isActive={isTabActive(href)}
+            />
+          ))}
 
-            <CenterButton onPress={openQuickActions} />
+          {/* Botão central (+) */}
+          <CenterButton onPress={() => setMenuOpen(true)} />
 
-            {NAV_ITEMS.slice(2).map(({ index, href, label, Icon, IconFill }) => (
-              <NavItem
-                key={href}
-                href={href}
-                label={label}
-                Icon={Icon}
-                IconFill={IconFill}
-                isActive={isTabActive(href)}
-              />
-            ))}
-          </nav>
+          {/* Dieta + Profissionais */}
+          {NAV_ITEMS.slice(2).map(({ href, label, Icon, IconFill }) => (
+            <NavItem
+              key={href}
+              href={href}
+              label={label}
+              Icon={Icon}
+              IconFill={IconFill}
+              isActive={isTabActive(href)}
+            />
+          ))}
+        </nav>
 
-          {/* Safe area para iPhone */}
-          <div style={{ height: 'env(safe-area-inset-bottom, 0px)' }} />
-        </div>
+        {/* Safe area iPhone */}
+        <div
+          style={{
+            background: C.bg,
+            height: 'env(safe-area-inset-bottom, 0px)',
+          }}
+        />
       </div>
     </>
   );
