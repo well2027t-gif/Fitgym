@@ -1,7 +1,7 @@
 /**
- * FitPro — WorkoutActive Page (Fidelity to Reference Design FDD6BB50)
- * Design: Exatamente como a imagem de referência
- * Layout com timer inferior tripartido (cronômetro | círculo | botão pular)
+ * FitPro — WorkoutActive Page (Fidelity to Reference Design 44C3F156)
+ * Design: Exatamente como a nova imagem de referência
+ * Com selo técnica, ícone de anatomia, timer tracejado e rodapé
  */
 
 import { useEffect, useMemo, useState } from 'react';
@@ -61,7 +61,7 @@ export default function WorkoutActive() {
       setRestTimeRemaining(prev => {
         const next = (prev ?? 0) - 1;
         if (next <= 0) {
-          toast.success('Descanso concluído! Próxima série.');
+          toast.success('Descanso concluído!');
         }
         return next;
       });
@@ -291,7 +291,7 @@ export default function WorkoutActive() {
               {activeExercise?.name ?? 'Treino concluído'}
             </h1>
             <p className="text-xs" style={{ color: 'rgba(255,255,255,0.48)', fontFamily: 'Space Grotesk' }}>
-              {currentExerciseIndex + 1} de {allExercises.length}
+              {currentExerciseIndex + 1} de {allExercises.length} exercícios
             </p>
           </div>
 
@@ -325,8 +325,22 @@ export default function WorkoutActive() {
             transition={{ duration: 0.2 }}
             className="flex-1 flex flex-col overflow-hidden px-4 py-3"
           >
-            {/* VÍDEO */}
+            {/* VÍDEO COM SELO TÉCNICA */}
             <div className="relative rounded-[20px] overflow-hidden bg-black aspect-video border mb-3" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+              {/* SELO TÉCNICA - Canto superior esquerdo */}
+              <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 rounded-full px-3 py-1.5" style={{ background: 'rgba(74, 222, 128, 0.15)', border: '1px solid rgba(74, 222, 128, 0.3)' }}>
+                <Lightbulb size={14} style={{ color: '#4ade80' }} />
+                <span className="text-xs font-semibold text-white" style={{ fontFamily: 'Space Grotesk', color: '#4ade80' }}>Técnica</span>
+              </div>
+
+              {/* BOTÃO EXPANDIR - Canto inferior direito */}
+              <div className="absolute bottom-3 right-3 z-10 flex size-8 items-center justify-center rounded-full" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                  <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                </svg>
+              </div>
+
+              {/* PLAY BUTTON */}
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40 flex items-center justify-center">
                 <div className="flex size-16 items-center justify-center rounded-full border-2 border-white">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
@@ -334,6 +348,7 @@ export default function WorkoutActive() {
                   </svg>
                 </div>
               </div>
+
               {activeExercise.videoUrl && (
                 <img
                   src={activeExercise.videoUrl}
@@ -343,22 +358,32 @@ export default function WorkoutActive() {
               )}
             </div>
 
-            {/* CAIXA DE DICAS */}
+            {/* CAIXA DE DICAS COM ÍCONE DE ANATOMIA */}
             <div className="rounded-[20px] border p-4 flex gap-3 mb-3" style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.08)' }}>
               <div className="flex-shrink-0 flex size-8 items-center justify-center rounded-lg" style={{ background: 'rgba(74, 222, 128, 0.2)' }}>
-                <Lightbulb size={18} style={{ color: '#4ade80' }} />
+                {/* Ícone de anatomia (corpo com destaque) */}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2">
+                  <circle cx="12" cy="4" r="1.5" />
+                  <path d="M9 8h6M7 10v6a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-6M9 16h6M10 10v6M14 10v6" />
+                </svg>
               </div>
-              <p className="text-sm leading-relaxed text-white" style={{ fontFamily: 'Outfit' }}>
-                {activeExercise.instructions || 'Execute o exercício com controle e técnica adequada.'}
-              </p>
+              <div className="flex-1">
+                <p className="text-sm leading-relaxed text-white" style={{ fontFamily: 'Outfit' }}>
+                  {activeExercise.instructions || 'Execute o exercício com controle e técnica adequada.'}
+                </p>
+                {/* Destaque em verde nas palavras-chave */}
+                <style>{`
+                  .instruction-text strong { color: #4ade80; }
+                `}</style>
+              </div>
             </div>
 
             {/* 4 CARDS DE MÉTRICAS */}
             <div className="grid grid-cols-4 gap-2 mb-3">
               {/* Série */}
-              <div className="rounded-[20px] border p-3 text-center" style={{ background: 'rgba(74, 222, 128, 0.12)', borderColor: 'rgba(74, 222, 128, 0.25)' }}>
+              <div className="rounded-[20px] border p-3 text-center" style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.08)' }}>
                 <div className="flex justify-center mb-2">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2">
                     <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M3 21v-5h5" />
                   </svg>
                 </div>
@@ -394,10 +419,8 @@ export default function WorkoutActive() {
               <div className="rounded-[20px] border p-3 text-center" style={{ background: 'rgba(74, 222, 128, 0.12)', borderColor: 'rgba(74, 222, 128, 0.25)' }}>
                 <div className="flex justify-center mb-2">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2">
-                    <circle cx="12" cy="12" r="1" />
-                    <circle cx="19" cy="12" r="1" />
-                    <circle cx="5" cy="12" r="1" />
-                    <path d="M12 2v20M2 12h20" />
+                    <circle cx="12" cy="12" r="8" />
+                    <path d="M12 8v8M8 12h8" />
                   </svg>
                 </div>
                 <p className="text-[10px] uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Carga</p>
@@ -447,16 +470,17 @@ export default function WorkoutActive() {
               </div>
             </div>
 
-            {/* BOTÃO PRINCIPAL VERDE */}
+            {/* BOTÃO PRINCIPAL VERDE COM GRADIENTE */}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => handleCompleteSet(activeExercise.id)}
               className="w-full rounded-2xl px-4 py-4 text-lg font-bold flex items-center justify-center gap-2 mb-1"
               style={{
-                background: '#4ade80',
+                background: 'linear-gradient(135deg, #4ade80 0%, #22c55e 100%)',
                 color: '#0d0d0f',
                 fontFamily: 'Space Grotesk',
+                boxShadow: '0 8px 24px rgba(74, 222, 128, 0.3)',
               }}
             >
               <Check size={20} />
@@ -466,18 +490,17 @@ export default function WorkoutActive() {
               Ao concluir, o descanso será iniciado.
             </p>
 
-            {/* TIMER DE DESCANSO INFERIOR (Tripartido) */}
+            {/* TIMER DE DESCANSO INFERIOR COM CÍRCULO TRACEJADO */}
             <AnimatePresence>
               {restTimeRemaining !== null && restTimeRemaining > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="rounded-[20px] border p-4"
+                  className="rounded-[20px] border p-4 mb-2"
                   style={{
                     background: 'rgba(255,255,255,0.04)',
                     borderColor: 'rgba(255,255,255,0.08)',
-                    marginBottom: '8px',
                   }}
                 >
                   <p className="text-xs uppercase tracking-[0.16em] mb-3" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>
@@ -486,26 +509,27 @@ export default function WorkoutActive() {
                   <div className="flex items-center justify-between gap-4">
                     {/* Cronômetro à esquerda */}
                     <div>
-                      <p className="text-4xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                      <p className="text-4xl font-bold text-white" style={{ fontFamily: 'Space Grotesk', color: '#4ade80' }}>
                         {restDisplay}
                       </p>
+                      <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Outfit' }}>Tempo restante</p>
                     </div>
 
-                    {/* Círculo no meio */}
+                    {/* Círculo tracejado no meio */}
                     <div className="relative size-24">
                       <svg width="96" height="96" viewBox="0 0 96 96" className="-rotate-90">
-                        <circle cx="48" cy="48" r="40" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="6" />
+                        <circle cx="48" cy="48" r="40" fill="none" stroke="rgba(74, 222, 128, 0.2)" strokeWidth="5" strokeDasharray="8 4" />
                         <motion.circle
                           cx="48"
                           cy="48"
                           r="40"
                           fill="none"
                           stroke="#4ade80"
-                          strokeWidth="6"
+                          strokeWidth="5"
                           strokeLinecap="round"
                           strokeDasharray={2 * Math.PI * 40}
                           strokeDashoffset={2 * Math.PI * 40 * (1 - restProgress)}
-                          style={{ filter: 'drop-shadow(0 0 6px rgba(74, 222, 128, 0.6))' }}
+                          style={{ filter: 'drop-shadow(0 0 8px rgba(74, 222, 128, 0.8))' }}
                         />
                       </svg>
                     </div>
@@ -568,7 +592,7 @@ export default function WorkoutActive() {
               onClick={finishWorkout}
               className="w-full rounded-2xl px-4 py-4 text-base font-bold flex items-center justify-center gap-2"
               style={{
-                background: '#4ade80',
+                background: 'linear-gradient(135deg, #4ade80 0%, #22c55e 100%)',
                 color: '#0d0d0f',
                 fontFamily: 'Space Grotesk',
               }}
@@ -579,6 +603,13 @@ export default function WorkoutActive() {
           </motion.div>
         ) : null}
       </AnimatePresence>
+
+      {/* RODAPÉ COM FOCO • EXECUÇÃO • EVOLUÇÃO */}
+      <div className="flex-shrink-0 text-center py-2 border-t" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+        <p className="text-xs uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.36)', fontFamily: 'Space Grotesk' }}>
+          FOCO • EXECUÇÃO • EVOLUÇÃO
+        </p>
+      </div>
     </div>
   );
 }
