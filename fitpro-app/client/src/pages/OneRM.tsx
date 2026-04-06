@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { motion } from 'framer-motion';
 import { Calculator, TrendingUp, ArrowLeft } from 'lucide-react';
-import { useLocation } from 'wouter';
+import { useLocation } from '@/lib/router';
 import { toast } from 'sonner';
 import { calculateOneRMEpley, calculateOneRMBrzycki } from '@/contexts/AppContext';
 

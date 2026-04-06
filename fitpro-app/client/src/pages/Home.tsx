@@ -6,7 +6,7 @@
  */
 
 import { useApp } from '@/contexts/AppContext';
-import { useLocation } from 'wouter';
+import { useLocation } from '@/lib/router';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import GamificationCard from '@/components/GamificationCard';

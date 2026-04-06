@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { motion } from 'framer-motion';
 import { Share2, Copy, Check, Trophy, ArrowLeft } from 'lucide-react';
-import { useLocation } from 'wouter';
+import { useLocation } from '@/lib/router';
 import { toast } from 'sonner';
 
 export default function Share() {

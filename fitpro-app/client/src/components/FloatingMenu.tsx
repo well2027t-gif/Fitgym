@@ -5,16 +5,13 @@
  */
 
 import { useState } from 'react';
-import { useLocation } from 'wouter';
+import { useLocation } from '@/lib/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   TrendingUp,
   BookOpen,
   Calculator,
   Share2,
-  Sparkles,
-  MessageSquareText,
-  ScanSearch,
   X,
 } from 'lucide-react';
 
@@ -40,9 +37,6 @@ function WeightPlateIcon({ size = 22, color = 'white' }: { size?: number; color?
 }
 
 const MENU_ITEMS = [
-  { icon: Sparkles, label: 'Gerar Plano IA', path: '/personal/plano', color: 'var(--theme-accent)' },
-  { icon: MessageSquareText, label: 'Chat Personal', path: '/personal/chat', color: 'var(--theme-accent)' },
-  { icon: ScanSearch, label: 'Evolução IA', path: '/personal/evolucao', color: 'var(--theme-accent)' },
   { icon: TrendingUp, label: 'Histórico', path: '/historico', color: 'var(--theme-accent)' },
   { icon: BookOpen, label: 'Planos', path: '/planos', color: 'var(--theme-accent)' },
   { icon: Calculator, label: '1RM', path: '/1rm', color: 'var(--theme-accent)' },

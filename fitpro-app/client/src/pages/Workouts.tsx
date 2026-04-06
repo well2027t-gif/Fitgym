@@ -6,7 +6,7 @@
 
 import { useState, useRef } from 'react';
 import { useApp, Workout, Exercise } from '@/contexts/AppContext';
-import { useLocation } from 'wouter';
+import { useLocation } from '@/lib/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, Dumbbell, ChevronRight, Trash2, Edit3, Play,

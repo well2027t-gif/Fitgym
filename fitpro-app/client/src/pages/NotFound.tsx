@@ -3,7 +3,7 @@
  * Design: Premium Dark Fitness (consistente com o restante do app)
  */
 
-import { useLocation } from 'wouter';
+import { useLocation } from '@/lib/router';
 import { motion } from 'framer-motion';
 import { Home, AlertCircle } from 'lucide-react';
 

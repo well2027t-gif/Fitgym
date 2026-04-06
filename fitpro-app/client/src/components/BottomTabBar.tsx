@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'wouter';
+import { Link, useLocation } from '@/lib/router';
 import {
   Home,
   Dumbbell,
@@ -13,9 +13,6 @@ import {
   TrendingUp,
   Menu,
   User,
-  Sparkles,
-  MessageSquareText,
-  ScanSearch,
   BookOpen,
   Calculator,
   Share2,
@@ -34,9 +31,6 @@ const tabs = [
 
 const menuItems = [
   { path: '/perfil', icon: User, label: 'Perfil', description: 'Dados pessoais e preferências' },
-  { path: '/personal/plano', icon: Sparkles, label: 'Plano IA', description: 'Gerar plano inteligente' },
-  { path: '/personal/chat', icon: MessageSquareText, label: 'Chat Personal', description: 'Tirar dúvidas e ajustar rotina' },
-  { path: '/personal/evolucao', icon: ScanSearch, label: 'Evolução IA', description: 'Acompanhar fotos e progresso' },
   { path: '/ciclo', icon: Droplets, label: 'Saúde Feminina', description: 'Acompanhamento de ciclo menstrual' },
   { path: '/historico', icon: TrendingUp, label: 'Histórico', description: 'Ver registros e evolução' },
   { path: '/planos', icon: BookOpen, label: 'Planos', description: 'Gerenciar planos de treino' },

@@ -7,7 +7,7 @@
 import { useApp, ThemeColor } from '@/contexts/AppContext';
 import { motion } from 'framer-motion';
 import { Palette, Check, ArrowLeft } from 'lucide-react';
-import { useLocation } from 'wouter';
+import { useLocation } from '@/lib/router';
 
 const THEMES: Array<{ value: ThemeColor; label: string; color: string; gradient: string }> = [
   { value: 'green', label: 'Verde', color: 'var(--theme-accent)', gradient: 'linear-gradient(135deg, var(--theme-accent) 0%, var(--theme-accent) 100%)' },

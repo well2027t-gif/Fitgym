@@ -6,7 +6,7 @@
 
 import { ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLocation } from 'wouter';
+import { useLocation } from '@/lib/router';
 import BottomTabBar from './BottomTabBar';
 
 interface AppLayoutProps {

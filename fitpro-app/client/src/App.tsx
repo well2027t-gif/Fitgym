@@ -6,7 +6,7 @@
 
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { Route, Switch } from 'wouter';
+import { Route, Switch } from './lib/router';
 import ErrorBoundary from './components/ErrorBoundary';
 import AppLayout from './components/AppLayout';
 import { AppProvider, useApp } from './contexts/AppContext';
@@ -19,9 +19,6 @@ import History from './pages/History';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
 import OneRM from './pages/OneRM';
-import PersonalChat from './pages/PersonalChat';
-import PersonalEvolution from './pages/PersonalEvolution';
-import PersonalPlan from './pages/PersonalPlan';
 import Profile from './pages/Profile';
 import Progress from './pages/Progress';
 import Share from './pages/Share';
@@ -47,9 +44,6 @@ function Router() {
         <Route path="/1rm" component={OneRM} />
         <Route path="/temas" component={Themes} />
         <Route path="/compartilhar" component={Share} />
-        <Route path="/personal/plano" component={PersonalPlan} />
-        <Route path="/personal/chat" component={PersonalChat} />
-        <Route path="/personal/evolucao" component={PersonalEvolution} />
         <Route path="/ciclo" component={Cycle} />
         <Route component={NotFound} />
       </Switch>

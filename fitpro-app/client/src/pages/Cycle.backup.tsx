@@ -32,7 +32,7 @@ import {
 import { useApp, CycleDayEntry, CycleProfile } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { useLocation } from 'wouter';
+import { useLocation } from '@/lib/router';
 import { toast } from 'sonner';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
