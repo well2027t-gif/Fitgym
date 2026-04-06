@@ -155,7 +155,7 @@ export default function Workouts() {
             <CalendarDays size={16} className="inline mr-2" />
             Selecione o Dia
           </h2>
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="grid grid-cols-7 gap-1">
             {DAYS_OF_WEEK.map((day, index) => (
               <motion.button
                 key={day}
@@ -164,7 +164,7 @@ export default function Workouts() {
                   setSelectedDay(index);
                   setMode('select');
                 }}
-                className="flex-shrink-0 rounded-lg px-3 py-2 text-xs font-bold transition-all"
+                className="rounded-lg px-1 py-2 text-[10px] font-bold transition-all"
                 style={{
                   background: selectedDay === index ? '#4ade80' : 'rgba(255,255,255,0.08)',
                   color: selectedDay === index ? '#0d0d0f' : 'rgba(255,255,255,0.6)',
@@ -172,7 +172,7 @@ export default function Workouts() {
                   fontFamily: 'Space Grotesk',
                 }}
               >
-                {day}
+                {day.substring(0, 3)}
               </motion.button>
             ))}
           </div>

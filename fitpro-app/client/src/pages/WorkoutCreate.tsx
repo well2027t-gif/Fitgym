@@ -126,13 +126,13 @@ export default function WorkoutCreate() {
         {/* SELETOR DE DIA */}
         <div className="mb-4 rounded-lg border p-3" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)' }}>
           <p className="text-xs font-bold text-white mb-2" style={{ fontFamily: 'Space Grotesk' }}>Selecione o dia:</p>
-          <div className="flex gap-1 overflow-x-auto pb-1">
+          <div className="grid grid-cols-7 gap-1">
             {DAYS_OF_WEEK.map((day, index) => (
               <motion.button
                 key={day}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setSelectedDay(index)}
-                className="flex-shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all"
+                className="rounded-lg px-1 py-2 text-[10px] font-bold transition-all"
                 style={{
                   background: selectedDay === index ? '#4ade80' : 'rgba(255,255,255,0.08)',
                   color: selectedDay === index ? '#0d0d0f' : 'rgba(255,255,255,0.6)',
@@ -140,7 +140,7 @@ export default function WorkoutCreate() {
                   fontFamily: 'Space Grotesk',
                 }}
               >
-                {day}
+                {day.substring(0, 3)}
               </motion.button>
             ))}
           </div>
