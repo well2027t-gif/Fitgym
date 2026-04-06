@@ -23,10 +23,12 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useProfessionalChat } from '@/contexts/ProfessionalChatContext';
+import { getProfessionalById } from '@/lib/professionals';
 import { useLocation, useParams } from '@/lib/router';
 
 export default function ProfessionalChat() {
   const { id: professionalId } = useParams<{ id: string }>();
+  const safeProfessionalId = professionalId?.split('?')[0] ?? '';
   const [, navigate] = useLocation();
   const { sessions, setCurrentSession, addMessage, clearChat } = useProfessionalChat();
   const [isLoading, setIsLoading] = useState(false);
@@ -40,10 +42,10 @@ export default function ProfessionalChat() {
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    if (professionalId) setCurrentSession(professionalId);
-  }, [professionalId, setCurrentSession]);
+    if (safeProfessionalId) setCurrentSession(safeProfessionalId);
+  }, [safeProfessionalId, setCurrentSession]);
 
-  const session = professionalId ? (sessions[professionalId] ?? null) : null;
+  const session = safeProfessionalId ? (sessions[safeProfessionalId] ?? null) : null;
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -64,9 +66,9 @@ export default function ProfessionalChat() {
   }, []);
 
   const handleSend = async (content: string) => {
-    if (!content.trim() || !professionalId || !session) return;
+    if (!content.trim() || !safeProfessionalId || !professional) return;
 
-    addMessage(professionalId, {
+    addMessage(safeProfessionalId, {
       role: 'user',
       content: content.trim(),
       createdAt: new Date().toISOString(),
@@ -78,10 +80,10 @@ export default function ProfessionalChat() {
     try {
       setIsLoading(true);
       await new Promise((resolve) => setTimeout(resolve, 1100));
-      addMessage(professionalId, {
+      addMessage(safeProfessionalId, {
         role: 'assistant',
         content:
-          session.professional.type === 'personal'
+          professional.type === 'personal'
             ? `Recebi sua mensagem sobre "${content.trim()}". Vamos ajustar sua estratégia de treino com base no seu objetivo e na sua rotina atual.`
             : `Recebi sua mensagem sobre "${content.trim()}". Vou organizar uma orientação nutricional prática para você seguir a partir daqui.`,
         createdAt: new Date().toISOString(),
@@ -159,7 +161,10 @@ export default function ProfessionalChat() {
 
   const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 
-  if (!session?.professional) {
+  const professional = session?.professional ?? getProfessionalById(safeProfessionalId);
+  const messages = session?.messages ?? [];
+
+  if (!professional) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-[#0d0d0f] px-6 text-center">
         <div
@@ -183,8 +188,6 @@ export default function ProfessionalChat() {
     );
   }
 
-  const professional = session.professional;
-  const messages = session.messages;
   const suggestions = [
     'Quero ajustar meu cronograma de treino desta semana.',
     'Como posso melhorar meu desempenho mantendo consistência?',
@@ -250,8 +253,8 @@ export default function ProfessionalChat() {
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={() => {
-            if (professionalId) {
-              clearChat(professionalId);
+            if (safeProfessionalId) {
+              clearChat(safeProfessionalId);
               toast.success('Chat limpo.');
             }
           }}
