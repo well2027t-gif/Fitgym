@@ -734,21 +734,17 @@ Consulte seu médico para análise profissional.
                         className={`aspect-square rounded-xl border transition-all flex flex-col items-center justify-center relative overflow-hidden ${
                           isSelected
                             ? 'bg-white/15 border-white/40 shadow-lg shadow-white/20'
+                            : isToday
+                            ? 'bg-gradient-to-br from-pink-500/30 to-purple-500/20 border-pink-400/40'
                             : dayOfCycle
                             ? `${phaseBg} ${phaseBorder} hover:bg-opacity-20`
                             : 'bg-white/[0.02] border-white/5 hover:bg-white/5 hover:border-white/15'
                         }`}
                         whileHover={{ scale: 1.03 }}
                         whileTap={{ scale: 0.96 }}
+                        animate={isToday ? { boxShadow: ['0 0 8px 1px rgba(236,72,153,0.4)', '0 0 16px 3px rgba(168,85,247,0.6)', '0 0 8px 1px rgba(236,72,153,0.4)'] } : {}}
+                        transition={isToday ? { duration: 2, repeat: Infinity } : {}}
                       >
-                        {/* Destaque do dia de hoje - anel sutil */}
-                        {isToday && (
-                          <div
-                            className="absolute inset-1 rounded-lg border-2 border-pink-400/60"
-                            style={{ boxShadow: '0 0 12px 2px rgba(244,114,182,0.25)' }}
-                          />
-                        )}
-
                         {/* Número do dia - centralizado e destacado */}
                         <span className={`text-base font-bold leading-none relative z-10 ${
                           isToday ? 'text-white drop-shadow-md' : isSelected ? 'text-white' : 'text-white/80'
