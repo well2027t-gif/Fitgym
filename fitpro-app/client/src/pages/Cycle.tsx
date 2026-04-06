@@ -460,101 +460,124 @@ Consulte seu médico para análise profissional.
           {/* TAB: VISÃO GERAL */}
           {activeTab === 'overview' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-              {/* Roda de Ciclo — Minimalismo de Luxo */}
+              {/* Hero Card — Arco Premium estilo Luna */}
               <div className="relative overflow-hidden rounded-3xl" style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.07)',
+                background: 'linear-gradient(160deg, #1a0a2e 0%, #0d0d1a 60%, #0a0a0f 100%)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                boxShadow: '0 24px 64px rgba(0,0,0,0.6)'
               }}>
-                {/* Orb único e sutil */}
-                <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(244,114,182,0.08) 0%, transparent 65%)' }} />
+                {/* Orbs atmosféricos */}
+                <div className="absolute" style={{ top: -40, left: '50%', transform: 'translateX(-50%)', width: 320, height: 320, background: 'radial-gradient(circle, rgba(255,143,171,0.12) 0%, transparent 65%)', filter: 'blur(20px)' }} />
+                <div className="absolute" style={{ bottom: 0, right: 0, width: 180, height: 180, background: 'radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%)', filter: 'blur(30px)' }} />
 
-                <div className="relative z-10 flex flex-col items-center py-8 px-6">
+                <div className="relative z-10 flex flex-col items-center pt-10 pb-8 px-6">
 
-                  {/* SVG da Roda — limpa e elegante */}
-                  <div className="relative mb-8" style={{ width: 220, height: 220 }}>
-                    <svg className="w-full h-full -rotate-90" viewBox="0 0 220 220">
+                  {/* Arco Grande — estilo Luna */}
+                  <div className="relative" style={{ width: 260, height: 260 }}>
+                    <svg className="w-full h-full" viewBox="0 0 260 260" style={{ transform: 'rotate(-210deg)' }}>
                       <defs>
-                        <linearGradient id="g-mens" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="#ff8fab" /><stop offset="100%" stopColor="#c9184a" />
+                        <linearGradient id="arc-base" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#ffd166" stopOpacity="0.15" />
+                          <stop offset="40%" stopColor="#ff8fab" stopOpacity="0.15" />
+                          <stop offset="100%" stopColor="#c77dff" stopOpacity="0.15" />
                         </linearGradient>
-                        <linearGradient id="g-fol" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="#90e0ef" /><stop offset="100%" stopColor="#0077b6" />
+                        <linearGradient id="arc-progress" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#ffd166" />
+                          <stop offset="35%" stopColor="#ff8fab" />
+                          <stop offset="70%" stopColor="#ff4d6d" />
+                          <stop offset="100%" stopColor="#c77dff" />
                         </linearGradient>
-                        <linearGradient id="g-ovu" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="#ffb3c6" /><stop offset="100%" stopColor="#ff4d6d" />
-                        </linearGradient>
-                        <linearGradient id="g-lut" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="#ffd166" /><stop offset="100%" stopColor="#ef8c4a" />
-                        </linearGradient>
-                        <filter id="f-glow" x="-20%" y="-20%" width="140%" height="140%">
-                          <feGaussianBlur stdDeviation="4" result="blur" />
+                        <filter id="arc-glow">
+                          <feGaussianBlur stdDeviation="5" result="blur" />
                           <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
                         </filter>
                       </defs>
 
-                      {/* Trilha de fundo */}
-                      <circle cx="110" cy="110" r="90" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="12" />
-
-                      {/* Menstruação: 5/28 do círculo */}
-                      <circle cx="110" cy="110" r="90" fill="none" stroke="url(#g-mens)" strokeWidth="12"
-                        strokeDasharray="101.3 464.9" strokeDashoffset="2"
+                      {/* Trilha de fundo — arco de 240° */}
+                      <circle cx="130" cy="130" r="110"
+                        fill="none"
+                        stroke="url(#arc-base)"
+                        strokeWidth="16"
                         strokeLinecap="round"
-                        opacity={currentPhaseInfo?.phase === 'Menstruação' ? 1 : 0.25}
-                        filter={currentPhaseInfo?.phase === 'Menstruação' ? 'url(#f-glow)' : undefined} />
+                        strokeDasharray="461.8 576.5"
+                        strokeDashoffset="0" />
 
-                      {/* Folicular: 8/28 */}
-                      <circle cx="110" cy="110" r="90" fill="none" stroke="url(#g-fol)" strokeWidth="12"
-                        strokeDasharray="162.1 464.9" strokeDashoffset="-101.3"
+                      {/* Progresso — baseado no dia do ciclo */}
+                      <circle cx="130" cy="130" r="110"
+                        fill="none"
+                        stroke="url(#arc-progress)"
+                        strokeWidth="16"
                         strokeLinecap="round"
-                        opacity={currentPhaseInfo?.phase === 'Folicular' ? 1 : 0.25}
-                        filter={currentPhaseInfo?.phase === 'Folicular' ? 'url(#f-glow)' : undefined} />
+                        strokeDasharray={`${Math.min((currentPhaseInfo ? parseInt(currentPhaseInfo.dayRange?.split('–')[0] || '1') : 1) / 28 * 461.8, 461.8)} 576.5`}
+                        strokeDashoffset="0"
+                        filter="url(#arc-glow)" />
 
-                      {/* Ovulação: 3/28 */}
-                      <circle cx="110" cy="110" r="90" fill="none" stroke="url(#g-ovu)" strokeWidth="12"
-                        strokeDasharray="60.8 464.9" strokeDashoffset="-263.4"
-                        strokeLinecap="round"
-                        opacity={currentPhaseInfo?.phase === 'Ovulatória' ? 1 : 0.25}
-                        filter={currentPhaseInfo?.phase === 'Ovulatória' ? 'url(#f-glow)' : undefined} />
-
-                      {/* Lútea: 12/28 */}
-                      <circle cx="110" cy="110" r="90" fill="none" stroke="url(#g-lut)" strokeWidth="12"
-                        strokeDasharray="243.5 464.9" strokeDashoffset="-324.2"
-                        strokeLinecap="round"
-                        opacity={currentPhaseInfo?.phase === 'Lútea' ? 1 : 0.25}
-                        filter={currentPhaseInfo?.phase === 'Lútea' ? 'url(#f-glow)' : undefined} />
+                      {/* Ponteiro — bolinha no final do progresso */}
+                      <circle cx="130" cy="20" r="7" fill="#ff8fab"
+                        style={{ filter: 'drop-shadow(0 0 8px #ff8fab)' }} />
                     </svg>
 
-                    {/* Centro — limpo e elegante */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <p className="text-[9px] uppercase tracking-[0.25em] mb-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Outfit' }}>hoje</p>
-                      <p className="text-2xl font-light text-white text-center leading-tight" style={{ fontFamily: 'Space Grotesk', letterSpacing: '-0.02em' }}>
-                        {currentPhaseInfo?.phase || 'Lútea'}
+                    {/* Conteúdo central */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ paddingBottom: 20 }}>
+                      <p className="text-[10px] uppercase tracking-[0.22em] mb-1" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>
+                        Dia {currentPhaseInfo?.dayRange?.split('–')[0] || '1'} do ciclo
                       </p>
-                      <p className="text-xs mt-1.5" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>
-                        {currentPhaseInfo?.dayRange || 'Dias 17–28'}
-                      </p>
+                      {(() => {
+                        const nextPeriod = lastCycle
+                          ? Math.max(0, (lastCycle.cycleLengthDays || 28) - (parseInt(currentPhaseInfo?.dayRange?.split('–')[0] || '1')))
+                          : null;
+                        return nextPeriod !== null ? (
+                          <>
+                            <p className="text-4xl font-bold text-white leading-none" style={{ fontFamily: 'Space Grotesk', letterSpacing: '-0.03em' }}>
+                              {nextPeriod}
+                            </p>
+                            <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'Outfit' }}>
+                              dias para a próxima
+                            </p>
+                            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'Outfit' }}>menstruação</p>
+                          </>
+                        ) : (
+                          <p className="text-2xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                            {currentPhaseInfo?.phase || 'Lútea'}
+                          </p>
+                        );
+                      })()}
                     </div>
                   </div>
 
-                  {/* Descrição minimalista */}
-                  {currentPhaseInfo && (
-                    <p className="text-sm text-center leading-relaxed mb-6" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Outfit', maxWidth: 280 }}>
-                      {currentPhaseInfo.description}
+                  {/* Fase atual + descrição */}
+                  <div className="text-center mt-2 mb-6">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-3" style={{ background: 'rgba(255,143,171,0.12)', border: '1px solid rgba(255,143,171,0.2)' }}>
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#ff8fab', boxShadow: '0 0 6px #ff8fab' }} />
+                      <span className="text-xs font-semibold" style={{ color: '#ff8fab', fontFamily: 'Outfit' }}>
+                        Você está na fase {currentPhaseInfo?.phase || 'Lútea'}
+                      </span>
+                    </div>
+                    <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Outfit', maxWidth: 260 }}>
+                      {currentPhaseInfo?.description}
                     </p>
-                  )}
+                  </div>
 
-                  {/* Legenda horizontal — 4 pontos */}
-                  <div className="flex items-center gap-5">
+                  {/* Atalhos rápidos — estilo Luna */}
+                  <div className="flex gap-5 justify-center">
                     {[
-                      { label: 'Mens.', color: '#ff8fab', active: currentPhaseInfo?.phase === 'Menstruação' },
-                      { label: 'Folicular', color: '#90e0ef', active: currentPhaseInfo?.phase === 'Folicular' },
-                      { label: 'Ovulação', color: '#ffb3c6', active: currentPhaseInfo?.phase === 'Ovulatória' },
-                      { label: 'Lútea', color: '#ffd166', active: currentPhaseInfo?.phase === 'Lútea' },
-                    ].map(p => (
-                      <div key={p.label} className="flex flex-col items-center gap-1">
-                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: p.color, opacity: p.active ? 1 : 0.3, boxShadow: p.active ? `0 0 8px ${p.color}` : 'none' }} />
-                        <span className="text-[9px] font-medium" style={{ color: p.active ? p.color : 'rgba(255,255,255,0.25)', fontFamily: 'Outfit' }}>{p.label}</span>
-                      </div>
+                      { icon: '😊', label: 'Humor' },
+                      { icon: '💧', label: 'Fluxo' },
+                      { icon: '⚡', label: 'Sintomas' },
+                      { icon: '💪', label: 'Treino' },
+                      { icon: '😴', label: 'Sono' },
+                    ].map(item => (
+                      <motion.button
+                        key={item.label}
+                        onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}
+                        className="flex flex-col items-center gap-1.5"
+                        whileTap={{ scale: 0.92 }}
+                      >
+                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                          {item.icon}
+                        </div>
+                        <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Outfit' }}>{item.label}</span>
+                      </motion.button>
                     ))}
                   </div>
                 </div>
@@ -564,45 +587,37 @@ Consulte seu médico para análise profissional.
               {currentPhaseInfo && (
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                    <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-3" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                      <Dumbbell size={16} style={{ color: 'rgba(255,255,255,0.6)' }} />
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ background: 'rgba(255,143,171,0.12)' }}>
+                      <Dumbbell size={16} style={{ color: '#ff8fab' }} />
                     </div>
-                    <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Outfit' }}>Treino</p>
+                    <p className="text-[10px] uppercase tracking-widest mb-1.5" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Outfit' }}>Treino</p>
                     <p className="text-xs leading-relaxed text-white" style={{ fontFamily: 'Outfit' }}>{currentPhaseInfo.trainingTip}</p>
                   </div>
                   <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                    <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-3" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                      <Apple size={16} style={{ color: 'rgba(255,255,255,0.6)' }} />
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ background: 'rgba(199,125,255,0.12)' }}>
+                      <Apple size={16} style={{ color: '#c77dff' }} />
                     </div>
-                    <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Outfit' }}>Nutrição</p>
+                    <p className="text-[10px] uppercase tracking-widest mb-1.5" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Outfit' }}>Nutrição</p>
                     <p className="text-xs leading-relaxed text-white" style={{ fontFamily: 'Outfit' }}>{currentPhaseInfo.nutritionTip}</p>
                   </div>
                 </div>
               )}
 
-              {/* Próximas datas — linha do tempo simples */}
-              <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                <p className="text-[10px] uppercase tracking-widest mb-4" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Outfit' }}>Próximas datas</p>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#ff8fab', boxShadow: '0 0 6px #ff8fab' }} />
-                      <span className="text-sm text-white" style={{ fontFamily: 'Outfit' }}>Próxima menstruação</span>
-                    </div>
-                    <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Space Grotesk' }}>
-                      {lastCycle ? new Date(new Date(lastCycle.startDate).getTime() + (lastCycle.cycleLengthDays || 28) * 86400000).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' }) : '--'}
-                    </span>
-                  </div>
-                  <div className="h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#ffb3c6', boxShadow: '0 0 6px #ffb3c6' }} />
-                      <span className="text-sm text-white" style={{ fontFamily: 'Outfit' }}>Próxima ovulação</span>
-                    </div>
-                    <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Space Grotesk' }}>
-                      {nextOvulation ? new Date(nextOvulation).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' }) : '--'}
-                    </span>
-                  </div>
+              {/* Próximas datas — cards compactos */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-2xl p-4" style={{ background: 'rgba(255,143,171,0.08)', border: '1px solid rgba(255,143,171,0.15)' }}>
+                  <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: 'rgba(255,143,171,0.7)', fontFamily: 'Outfit' }}>Menstruação</p>
+                  <p className="text-base font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                    {lastCycle ? new Date(new Date(lastCycle.startDate).getTime() + (lastCycle.cycleLengthDays || 28) * 86400000).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' }) : '--'}
+                  </p>
+                  <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>próximo ciclo</p>
+                </div>
+                <div className="rounded-2xl p-4" style={{ background: 'rgba(199,125,255,0.08)', border: '1px solid rgba(199,125,255,0.15)' }}>
+                  <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: 'rgba(199,125,255,0.7)', fontFamily: 'Outfit' }}>Ovulação</p>
+                  <p className="text-base font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                    {nextOvulation ? new Date(nextOvulation).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' }) : '--'}
+                  </p>
+                  <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>janela fértil</p>
                 </div>
               </div>
 
