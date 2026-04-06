@@ -227,9 +227,11 @@ export default function WorkoutActive() {
             muted
             loop
             playsInline
+            crossOrigin="anonymous"
             className="absolute inset-0 w-full h-full object-cover"
-            src={activeExercise.videoUrl}
+            src={activeExercise.videoUrl || 'https://videos.pexels.com/video-files/35585699/15079812_360_640_30fps.mp4'}
             style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}
+            onError={(e) => console.error('Erro ao carregar vídeo:', e)}
           />
           <div className="absolute top-2 left-2 z-10 px-2 py-1 rounded-md text-[10px] font-semibold flex items-center gap-1"
             style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(74,222,128,0.3)', color: '#4ade80', fontFamily: font }}>
