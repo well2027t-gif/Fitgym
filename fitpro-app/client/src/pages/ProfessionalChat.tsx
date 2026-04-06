@@ -164,29 +164,16 @@ export default function ProfessionalChat() {
   const professional = session?.professional ?? getProfessionalById(safeProfessionalId);
   const messages = session?.messages ?? [];
 
+  useEffect(() => {
+    if (!professional) {
+      navigate('/profissionais');
+    }
+  }, [professional, navigate]);
+
   if (!professional) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-[#0d0d0f] px-6 text-center">
-        <div
-          className="mb-4 flex h-16 w-16 items-center justify-center rounded-full"
-          style={{ background: 'rgba(64,208,160,0.1)', border: '1px solid rgba(64,208,160,0.16)' }}
-        >
-          <MessageCircle size={26} style={{ color: '#40d0a0' }} />
-        </div>
-        <p className="mb-4 text-sm" style={{ color: 'rgba(255,255,255,0.55)', fontFamily: 'Outfit, sans-serif' }}>
-          Selecione um profissional para iniciar o chat.
-        </p>
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={() => navigate('/profissionais')}
-          className="rounded-2xl px-6 py-3 text-sm font-bold"
-          style={{ background: '#40d0a0', color: '#08110e', fontFamily: 'Space Grotesk, sans-serif' }}
-        >
-          Voltar aos profissionais
-        </motion.button>
-      </div>
-    );
+    return null;
   }
+
 
   const suggestions = [
     'Quero ajustar meu cronograma de treino desta semana.',
