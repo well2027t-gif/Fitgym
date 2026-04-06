@@ -11,6 +11,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import AppLayout from './components/AppLayout';
 import { AppProvider, useApp } from './contexts/AppContext';
 import { PersonalTrainerProvider } from './contexts/PersonalTrainerContext';
+import { ProfessionalChatProvider } from './contexts/ProfessionalChatContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { useThemeManager } from './hooks/useThemeManager';
 
@@ -31,6 +32,7 @@ import Cycle from './pages/Cycle';
 import Hydration from './pages/Hydration';
 import Steps from './pages/Steps';
 import Professionals from './pages/Professionals';
+import ProfessionalChat from './pages/ProfessionalChat';
 
 function Router() {
   return (
@@ -51,6 +53,7 @@ function Router() {
         <Route path="/hidratacao" component={Hydration} />
         <Route path="/passos" component={Steps} />
         <Route path="/profissionais" component={Professionals} />
+        <Route path="/profissionais/chat/:id" component={ProfessionalChat} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>
@@ -84,7 +87,9 @@ export default function App() {
       <ThemeProvider defaultTheme="dark">
         <AppProvider>
           <PersonalTrainerProvider>
-            <AppContent />
+            <ProfessionalChatProvider>
+              <AppContent />
+            </ProfessionalChatProvider>
           </PersonalTrainerProvider>
         </AppProvider>
       </ThemeProvider>

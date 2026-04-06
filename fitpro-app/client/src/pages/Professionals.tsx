@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useLocation } from '@/lib/router';
 import { toast } from 'sonner';
+import { useProfessionalChat, type Professional } from '@/contexts/ProfessionalChatContext';
 
 const PROFESSIONALS = [
   {
@@ -56,6 +57,7 @@ const cardVariants = {
 export default function Professionals() {
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<'personais' | 'nutricionistas'>('personais');
+  const { startChat } = useProfessionalChat();
 
   const filteredProfessionals = PROFESSIONALS.filter(p => {
     if (activeTab === 'personais') return p.type === 'personal';
@@ -209,6 +211,8 @@ export default function Professionals() {
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   onClick={() => {
+                    startChat(prof as Professional);
+                    navigate(`/profissionais/chat/${prof.id}`);
                     toast.success(`Chat iniciado com ${prof.name}!`);
                   }}
                   className="w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all"
