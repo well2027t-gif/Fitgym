@@ -28,6 +28,11 @@ import {
   Info,
   Settings,
   X,
+  Shield,
+  Lock,
+  CheckCircle,
+  HelpCircle,
+  MessageCircle,
 } from 'lucide-react';
 import { useApp, CycleDayEntry, CycleProfile } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
@@ -65,6 +70,7 @@ interface PhaseInfo {
   nutritionTip: string;
   symptoms: string[];
   hormones: { name: string; level: string; description: string }[];
+  empowermentMessage?: string;
 }
 
 function getCyclePhaseInfo(dayOfCycle: number): PhaseInfo {
@@ -82,6 +88,7 @@ function getCyclePhaseInfo(dayOfCycle: number): PhaseInfo {
         { name: 'Estrogênio', level: 'Baixo', description: 'Níveis mínimos de estrogênio' },
         { name: 'Progesterona', level: 'Baixa', description: 'Queda de progesterona causa menstruação' },
       ],
+      empowermentMessage: 'Cuide de si mesma com gentileza. Seu corpo está se renovando e você merece repouso.',
     };
   } else if (dayOfCycle >= 6 && dayOfCycle <= 13) {
     return {
@@ -97,6 +104,7 @@ function getCyclePhaseInfo(dayOfCycle: number): PhaseInfo {
         { name: 'Estrogênio', level: 'Crescente', description: 'Aumento gradual de estrogênio' },
         { name: 'FSH', level: 'Alto', description: 'Hormônio folículo-estimulante em alta' },
       ],
+      empowermentMessage: 'Sua energia está no topo! É o momento perfeito para conquistar seus objetivos.',
     };
   } else if (dayOfCycle >= 14 && dayOfCycle <= 16) {
     return {
@@ -112,6 +120,7 @@ function getCyclePhaseInfo(dayOfCycle: number): PhaseInfo {
         { name: 'LH', level: 'Pico', description: 'Hormônio luteinizante em seu pico máximo' },
         { name: 'Estrogênio', level: 'Pico', description: 'Estrogênio atinge seu nível máximo' },
       ],
+      empowermentMessage: 'Você é imparável! Confiança, carisma e força em seu auge absoluto.',
     };
   } else {
     return {
@@ -127,6 +136,7 @@ function getCyclePhaseInfo(dayOfCycle: number): PhaseInfo {
         { name: 'Progesterona', level: 'Alta', description: 'Progesterona em níveis elevados' },
         { name: 'Estrogênio', level: 'Moderado', description: 'Estrogênio em níveis moderados' },
       ],
+      empowermentMessage: 'Introspectão e sabedoria. Ouça sua intuição e honre suas necessidades.',
     };
   }
 }
@@ -1166,6 +1176,100 @@ Consulte seu médico para análise profissional.
           </div>
         )}
       </AnimatePresence>
+
+      {/* Rodapé Premium */}
+      <div className="mt-12 pt-8 border-t border-white/5 space-y-6">
+        {/* Mensagem de Empoderamento */}
+        {currentPhaseInfo && (
+          <div className="px-4 py-4 rounded-2xl bg-gradient-to-r from-pink-500/10 to-rose-500/10 border border-pink-500/20">
+            <p className="text-sm text-white/80 text-center" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+              <span className="font-bold text-pink-400">💪 {currentPhaseInfo.phase}:</span> {currentPhaseInfo.empowermentMessage || 'Você é forte e capaz de conquistar seus objetivos!'}
+            </p>
+          </div>
+        )}
+
+        {/* Selos de Segurança e Privacidade */}
+        <div className="px-4">
+          <p className="text-[11px] uppercase tracking-wider text-white/40 font-bold mb-3">Segurança e Privacidade</p>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="flex flex-col items-center gap-2 p-3 rounded-xl bg-white/5 border border-white/10 hover:border-green-500/30 transition-colors">
+              <Shield size={20} className="text-green-500" />
+              <p className="text-[10px] text-white/60 text-center">Dados Criptografados</p>
+            </div>
+            <div className="flex flex-col items-center gap-2 p-3 rounded-xl bg-white/5 border border-white/10 hover:border-blue-500/30 transition-colors">
+              <Lock size={20} className="text-blue-500" />
+              <p className="text-[10px] text-white/60 text-center">Privacidade 100%</p>
+            </div>
+            <div className="flex flex-col items-center gap-2 p-3 rounded-xl bg-white/5 border border-white/10 hover:border-purple-500/30 transition-colors">
+              <CheckCircle size={20} className="text-purple-500" />
+              <p className="text-[10px] text-white/60 text-center">Verificado</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Links de Suporte Rápido */}
+        <div className="px-4">
+          <p className="text-[11px] uppercase tracking-wider text-white/40 font-bold mb-3">Suporte e Recursos</p>
+          <div className="grid grid-cols-2 gap-3">
+            <button className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-pink-500/30 transition-all text-left">
+              <div className="flex items-center gap-2 mb-1">
+                <HelpCircle size={16} className="text-pink-500" />
+                <p className="text-xs font-bold text-white">Dúvidas Frequentes</p>
+              </div>
+              <p className="text-[10px] text-white/50">Respostas rápidas</p>
+            </button>
+            <button className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-pink-500/30 transition-all text-left">
+              <div className="flex items-center gap-2 mb-1">
+                <MessageCircle size={16} className="text-pink-500" />
+                <p className="text-xs font-bold text-white">Conversar</p>
+              </div>
+              <p className="text-[10px] text-white/50">Com especialista</p>
+            </button>
+            <button className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-pink-500/30 transition-all text-left">
+              <div className="flex items-center gap-2 mb-1">
+                <BookOpen size={16} className="text-pink-500" />
+                <p className="text-xs font-bold text-white">Artigos</p>
+              </div>
+              <p className="text-[10px] text-white/50">Sobre saúde feminina</p>
+            </button>
+            <button className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-pink-500/30 transition-all text-left">
+              <div className="flex items-center gap-2 mb-1">
+                <AlertCircle size={16} className="text-pink-500" />
+                <p className="text-xs font-bold text-white">Emergência</p>
+              </div>
+              <p className="text-[10px] text-white/50">Contatos úteis</p>
+            </button>
+          </div>
+        </div>
+
+        {/* Estatísticas Pessoais */}
+        {lastCycle && lastCycle.dayEntries && lastCycle.dayEntries.length > 0 && (
+          <div className="px-4">
+            <p className="text-[11px] uppercase tracking-wider text-white/40 font-bold mb-3">Seu Histórico</p>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-pink-500/10 to-rose-500/10 border border-pink-500/20 text-center">
+                <p className="text-xl font-bold text-pink-400">{lastCycle.dayEntries.length}</p>
+                <p className="text-[10px] text-white/60 mt-1">Dias Registrados</p>
+              </div>
+              <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20 text-center">
+                <p className="text-xl font-bold text-blue-400">{lastCycle.cycleLengthDays}</p>
+                <p className="text-[10px] text-white/60 mt-1">Dias do Ciclo</p>
+              </div>
+              <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 text-center">
+                <p className="text-xl font-bold text-purple-400">{Math.round((lastCycle.dayEntries.length / lastCycle.cycleLengthDays) * 100)}%</p>
+                <p className="text-[10px] text-white/60 mt-1">Preenchimento</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Assinatura Premium */}
+        <div className="px-4 py-4 border-t border-white/5 text-center">
+          <p className="text-[11px] text-white/40 mb-2">FitPro Women's Edition</p>
+          <p className="text-[10px] text-white/30">Cuidando da sua saúde, ciclo após ciclo</p>
+          <p className="text-[9px] text-white/20 mt-2">© 2024 FitPro. Todos os direitos reservados.</p>
+        </div>
+      </div>
     </div>
   );
 }
