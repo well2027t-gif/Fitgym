@@ -9,7 +9,8 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft, Send, Mic, Trash2, Loader2,
-  User, Sparkles, Square, Phone, Video, MoreVertical
+  User, Sparkles, Square, Phone, Video, MoreVertical,
+  ImagePlus, BarChart3
 } from 'lucide-react';
 import { useLocation, useParams } from '@/lib/router';
 import { toast } from 'sonner';
@@ -292,10 +293,10 @@ export default function ProfessionalChat() {
       </div>
 
       {/* ===== INPUT BAR (estilo WhatsApp) — sempre visível ===== */}
-      <div className="flex-shrink-0 px-2 py-2" style={{
+      <div className="flex-shrink-0 px-2 py-3" style={{
         background: '#111114',
         borderTop: '1px solid rgba(255,255,255,0.06)',
-        paddingBottom: 'calc(0.5rem + 4.5rem + env(safe-area-inset-bottom, 0px))',
+        paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))',
       }}>
         <AnimatePresence mode="wait">
           {isRecording ? (
@@ -320,46 +321,73 @@ export default function ProfessionalChat() {
             </motion.div>
           ) : (
             /* Input normal */
-            <motion.form key="inp" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onSubmit={handleSubmit} className="flex items-end gap-2">
+            <div className="flex flex-col gap-2">
+              <motion.form key="inp" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onSubmit={handleSubmit} className="flex items-end gap-2">
 
-              {/* Campo de texto estilo WhatsApp */}
-              <div className="flex-1 flex items-end rounded-full"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <textarea ref={textareaRef} value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Digite sua mensagem..."
-                  rows={1}
-                  className="flex-1 bg-transparent text-[14px] text-white placeholder:text-white/30 pl-4 pr-2 py-2.5 resize-none outline-none"
-                  style={{ fontFamily: 'Outfit', maxHeight: '100px', minHeight: '40px', lineHeight: '1.4' }}
-                />
-              </div>
+                {/* Botões de Ação: Foto e Evolução */}
+                <div className="flex items-center gap-1 mb-0.5">
+                  <motion.button type="button" whileTap={{ scale: 0.9 }}
+                    onClick={() => {
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = 'image/*';
+                      input.onchange = (e) => {
+                        const file = (e.target as HTMLInputElement).files?.[0];
+                        if (file) toast.success('Foto selecionada para envio!');
+                      };
+                      input.click();
+                    }}
+                    className="w-10 h-10 rounded-full flex items-center justify-center"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <ImagePlus size={18} style={{ color: 'rgba(255,255,255,0.7)' }} />
+                  </motion.button>
+                  <motion.button type="button" whileTap={{ scale: 0.9 }}
+                    onClick={() => navigate('/progresso')}
+                    className="w-10 h-10 rounded-full flex items-center justify-center"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <BarChart3 size={18} style={{ color: 'rgba(255,255,255,0.7)' }} />
+                  </motion.button>
+                </div>
 
-              {/* Botão: Mic quando vazio, Send quando tem texto */}
-              {input.trim() ? (
-                <motion.button key="send-btn" type="submit"
-                  initial={{ scale: 0.8 }} animate={{ scale: 1 }}
-                  whileTap={{ scale: 0.9 }}
-                  disabled={isLoading}
-                  className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0"
-                  style={{ background: 'var(--theme-accent)' }}>
-                  {isLoading
-                    ? <Loader2 size={20} className="animate-spin" style={{ color: '#0d0d0f' }} />
-                    : <Send size={20} style={{ color: '#0d0d0f' }} />
-                  }
-                </motion.button>
-              ) : (
-                <motion.button key="mic-btn" type="button"
-                  initial={{ scale: 0.8 }} animate={{ scale: 1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={startRecording}
-                  className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0"
-                  style={{ background: 'var(--theme-accent)' }}>
-                  <Mic size={20} style={{ color: '#0d0d0f' }} />
-                </motion.button>
-              )}
-            </motion.form>
+                {/* Campo de texto estilo WhatsApp */}
+                <div className="flex-1 flex items-end rounded-2xl"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <textarea ref={textareaRef} value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Mensagem..."
+                    rows={1}
+                    className="flex-1 bg-transparent text-[14px] text-white placeholder:text-white/30 pl-4 pr-2 py-2.5 resize-none outline-none"
+                    style={{ fontFamily: 'Outfit', maxHeight: '100px', minHeight: '40px', lineHeight: '1.4' }}
+                  />
+                </div>
+
+                {/* Botão: Mic quando vazio, Send quando tem texto */}
+                {input.trim() ? (
+                  <motion.button key="send-btn" type="submit"
+                    initial={{ scale: 0.8 }} animate={{ scale: 1 }}
+                    whileTap={{ scale: 0.9 }}
+                    disabled={isLoading}
+                    className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{ background: 'var(--theme-accent)' }}>
+                    {isLoading
+                      ? <Loader2 size={20} className="animate-spin" style={{ color: '#0d0d0f' }} />
+                      : <Send size={20} style={{ color: '#0d0d0f' }} />
+                    }
+                  </motion.button>
+                ) : (
+                  <motion.button key="mic-btn" type="button"
+                    initial={{ scale: 0.8 }} animate={{ scale: 1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={startRecording}
+                    className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{ background: 'var(--theme-accent)' }}>
+                    <Mic size={20} style={{ color: '#0d0d0f' }} />
+                  </motion.button>
+                )}
+              </motion.form>
+            </div>
           )}
         </AnimatePresence>
       </div>
