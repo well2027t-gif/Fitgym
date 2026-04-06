@@ -558,41 +558,45 @@ Consulte seu médico para análise profissional.
                 </div>
               </Card>
 
-              {/* Calendário */}
-              <Card className="p-6 border-white/5 bg-white/[0.03] overflow-hidden relative">
-                <div className="absolute top-0 right-0 w-40 h-40 bg-pink-500/10 blur-[50px] rounded-full -mr-20 -mt-20" />
+              {/* Calendário Ultra-Premium */}
+              <Card className="p-6 border-white/5 bg-gradient-to-br from-white/[0.05] to-white/[0.02] overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-pink-500/5 to-rose-500/5 blur-[60px] rounded-full -mr-24 -mt-24" />
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-blue-500/5 to-cyan-500/5 blur-[50px] rounded-full -ml-16 -mb-16" />
                 
                 <div className="flex items-center justify-between mb-6 relative z-10">
-                  <h2 className="text-lg font-bold text-white capitalize">{monthName}</h2>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-widest text-white/40 font-bold mb-1">Seu Ciclo</p>
+                    <h2 className="text-2xl font-bold text-white capitalize" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{monthName}</h2>
+                  </div>
                   <div className="flex gap-2">
                     <Button 
                       variant="ghost" 
                       size="icon"
                       onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
-                      className="rounded-lg hover:bg-white/5"
+                      className="rounded-full hover:bg-white/10 hover:border-white/20 border border-white/5 transition-all"
                     >
-                      <ChevronLeft size={18} />
+                      <ChevronLeft size={18} className="text-white/60" />
                     </Button>
                     <Button 
                       variant="ghost" 
                       size="icon"
                       onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
-                      className="rounded-lg hover:bg-white/5"
+                      className="rounded-full hover:bg-white/10 hover:border-white/20 border border-white/5 transition-all"
                     >
-                      <ChevronRight size={18} />
+                      <ChevronRight size={18} className="text-white/60" />
                     </Button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-7 gap-2 mb-4 relative z-10">
+                <div className="grid grid-cols-7 gap-2.5 mb-4 relative z-10">
                   {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'].map(day => (
-                    <div key={day} className="text-center text-[11px] font-bold text-white/40 uppercase">
-                      {day}
+                    <div key={day} className="text-center text-[10px] font-bold text-white/50 uppercase tracking-wider">
+                      {day.substring(0, 1)}
                     </div>
                   ))}
                 </div>
 
-                <div className="grid grid-cols-7 gap-2 relative z-10">
+                <div className="grid grid-cols-7 gap-2.5 relative z-10">
                   {days.map((day, idx) => {
                     const dayOfCycle = getDayOfCycle(day);
                     const dateStr = day ? `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
@@ -604,18 +608,33 @@ Consulte seu médico para análise profissional.
                         key={idx}
                         onClick={() => day && handleDayClick(day)}
                         disabled={!day}
-                        className={`aspect-square rounded-lg border transition-all ${getColorForDay(day)} ${isSelected ? 'ring-2 ring-pink-500' : ''} ${day ? 'cursor-pointer' : 'cursor-default'}`}
-                        whileTap={day ? { scale: 0.95 } : {}}
+                        className={`aspect-square rounded-xl border transition-all backdrop-blur-sm ${
+                          day ? (
+                            isSelected 
+                              ? `ring-2 ring-pink-500 ${getColorForDay(day)} cursor-pointer` 
+                              : `${getColorForDay(day)} cursor-pointer hover:border-white/30`
+                          ) : 'cursor-default bg-transparent border-transparent'
+                        }`}
+                        whileTap={day ? { scale: 0.92 } : {}}
+                        whileHover={day ? { y: -2 } : {}}
                       >
-                        <div className="h-full flex flex-col items-center justify-center">
+                        <div className="h-full flex flex-col items-center justify-center gap-0.5">
                           {day && (
                             <>
-                              <span className="text-sm font-bold text-white">{day}</span>
+                              <span className="text-xs font-bold text-white leading-none">{day}</span>
                               {dayOfCycle && (
-                                <span className="text-[9px] text-white/60 font-medium">D{dayOfCycle}</span>
+                                <span className={`text-[8px] font-semibold leading-none ${
+                                  getCyclePhaseInfo(dayOfCycle)?.color || 'text-white/60'
+                                }`}>D{dayOfCycle}</span>
                               )}
                               {hasEntry && (
-                                <span className="text-[8px] text-pink-400 mt-0.5">●</span>
+                                <motion.span 
+                                  className="text-[10px] text-pink-400 mt-0.5"
+                                  animate={{ scale: [1, 1.2, 1] }}
+                                  transition={{ duration: 2, repeat: Infinity }}
+                                >
+                                  ●
+                                </motion.span>
                               )}
                             </>
                           )}
@@ -1207,40 +1226,7 @@ Consulte seu médico para análise profissional.
           </div>
         </div>
 
-        {/* Links de Suporte Rápido */}
-        <div className="px-4">
-          <p className="text-[11px] uppercase tracking-wider text-white/40 font-bold mb-3">Suporte e Recursos</p>
-          <div className="grid grid-cols-2 gap-3">
-            <button className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-pink-500/30 transition-all text-left">
-              <div className="flex items-center gap-2 mb-1">
-                <HelpCircle size={16} className="text-pink-500" />
-                <p className="text-xs font-bold text-white">Dúvidas Frequentes</p>
-              </div>
-              <p className="text-[10px] text-white/50">Respostas rápidas</p>
-            </button>
-            <button className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-pink-500/30 transition-all text-left">
-              <div className="flex items-center gap-2 mb-1">
-                <MessageCircle size={16} className="text-pink-500" />
-                <p className="text-xs font-bold text-white">Conversar</p>
-              </div>
-              <p className="text-[10px] text-white/50">Com especialista</p>
-            </button>
-            <button className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-pink-500/30 transition-all text-left">
-              <div className="flex items-center gap-2 mb-1">
-                <BookOpen size={16} className="text-pink-500" />
-                <p className="text-xs font-bold text-white">Artigos</p>
-              </div>
-              <p className="text-[10px] text-white/50">Sobre saúde feminina</p>
-            </button>
-            <button className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-pink-500/30 transition-all text-left">
-              <div className="flex items-center gap-2 mb-1">
-                <AlertCircle size={16} className="text-pink-500" />
-                <p className="text-xs font-bold text-white">Emergência</p>
-              </div>
-              <p className="text-[10px] text-white/50">Contatos úteis</p>
-            </button>
-          </div>
-        </div>
+
 
         {/* Estatísticas Pessoais */}
         {lastCycle && lastCycle.dayEntries && lastCycle.dayEntries.length > 0 && (
