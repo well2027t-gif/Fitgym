@@ -284,6 +284,42 @@
     animation: pulse-ring 1.5s ease-out infinite;
   }
 
+  /* Today pulse animation for calendar */
+  @keyframes today-pulse {
+    0%   { transform: scale(1);    opacity: 0.7; }
+    50%  { transform: scale(1.55); opacity: 0; }
+    100% { transform: scale(1.55); opacity: 0; }
+  }
+
+  @keyframes today-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(var(--theme-accent-rgb, 34, 197, 94), 0.55); }
+    50%       { box-shadow: 0 0 0 6px rgba(var(--theme-accent-rgb, 34, 197, 94), 0); }
+  }
+
+  .today-pulse-wrapper {
+    position: relative;
+  }
+
+  .today-pulse-wrapper::before,
+  .today-pulse-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid var(--theme-accent, var(--fitpro-green));
+    animation: today-pulse 2s ease-out infinite;
+    pointer-events: none;
+  }
+
+  .today-pulse-wrapper::after {
+    animation-delay: 1s;
+  }
+
+  .today-pulse-wrapper > button {
+    animation: today-glow 2s ease-in-out infinite;
+    border-radius: 50%;
+  }
+
   /* Number counter animation */
   @keyframes count-up {
     from { opacity: 0; transform: translateY(10px); }
