@@ -173,14 +173,25 @@ export interface UserStats {
   volumeHistory: Array<{ date: string; exercise: string; volume: number }>; // weight * reps * sets
 }
 
+export interface CycleDayEntry {
+  id: string;
+  date: string; // YYYY-MM-DD
+  flow?: 'light' | 'medium' | 'heavy';
+  symptoms?: string[]; // ex: ['cólica', 'inchaço', 'fadiga', 'acne', 'dor_de_cabeça']
+  mood?: string; // ex: 'feliz', 'triste', 'irritada', 'ansiosa', 'normal'
+  energy?: 'baixa' | 'normal' | 'alta';
+  libido?: 'baixa' | 'normal' | 'alta';
+  sleep?: number; // horas de sono
+  temperature?: number; // temperatura corporal em °C
+  notes?: string;
+}
+
 export interface CycleEntry {
   id: string;
   startDate: string; // YYYY-MM-DD
   endDate?: string; // YYYY-MM-DD
-  flow?: 'light' | 'medium' | 'heavy';
-  symptoms?: string[];
-  mood?: string;
-  notes?: string;
+  cycleLengthDays?: number; // comprimento do ciclo
+  dayEntries: CycleDayEntry[]; // registros diários
 }
 
 export interface AppState {
