@@ -30,6 +30,7 @@ import Diet from './pages/Diet';
 import WorkoutActive from './pages/WorkoutActive';
 import WorkoutPlans from './pages/WorkoutPlans';
 import Workouts from './pages/Workouts';
+import Cycle from './pages/Cycle';
 
 function Router() {
   return (
@@ -49,6 +50,7 @@ function Router() {
         <Route path="/personal/plano" component={PersonalPlan} />
         <Route path="/personal/chat" component={PersonalChat} />
         <Route path="/personal/evolucao" component={PersonalEvolution} />
+        <Route path="/ciclo" component={Cycle} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

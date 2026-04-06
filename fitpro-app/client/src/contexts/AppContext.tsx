@@ -134,7 +134,7 @@ export interface StepEntry {
 
 export interface NotificationReminder {
   id: string;
-  type: 'workout' | 'meal' | 'water' | 'weight_check';
+  type: 'workout' | 'meal' | 'water' | 'weight_check' | 'cycle_start';
   enabled: boolean;
   time: string; // HH:MM format
   frequency: 'daily' | 'weekly' | 'custom';
@@ -173,6 +173,16 @@ export interface UserStats {
   volumeHistory: Array<{ date: string; exercise: string; volume: number }>; // weight * reps * sets
 }
 
+export interface CycleEntry {
+  id: string;
+  startDate: string; // YYYY-MM-DD
+  endDate?: string; // YYYY-MM-DD
+  flow?: 'light' | 'medium' | 'heavy';
+  symptoms?: string[];
+  mood?: string;
+  notes?: string;
+}
+
 export interface AppState {
   profile: UserProfile;
   workouts: Workout[];
@@ -186,6 +196,7 @@ export interface AppState {
   workoutPlans: WorkoutPlan[];
   stepEntries: StepEntry[];
   preferences: UserPreferences;
+  cycleEntries: CycleEntry[];
 }
 
 // ─── Default State ────────────────────────────────────────────────────────────
@@ -304,6 +315,7 @@ const defaultState: AppState = {
     stepTrackingEnabled: true,
     dailyStepGoal: 8000,
   },
+  cycleEntries: [],
 };
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -339,72 +351,37 @@ interface AppContextValue {
   incrementTodaySteps: (steps: number) => void;
   getVolumeHistory: (exerciseName?: string, days?: number) => Array<{ date: string; volume: number }>;
   getWorkoutHistory: (days?: number) => WorkoutSession[];
+  addCycleEntry: (entry: Omit<CycleEntry, 'id'>) => void;
+  updateCycleEntry: (id: string, entry: Partial<CycleEntry>) => void;
+  deleteCycleEntry: (id: string) => void;
 }
 
-const AppContext = createContext<AppContextValue | null>(null);
+const AppContext = createContext<AppContextValue | undefined>(undefined);
 
-// ─── Provider ─────────────────────────────────────────────────────────────────
-
-const STORAGE_KEY = 'fitpro_app_state_v2'; // Bumped version to force reset of old state
-
-function loadState(): AppState {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved) as AppState;
-      
-      // Merge with defaults to ensure all new fields exist
-      const merged: AppState = {
-        ...defaultState,
-        ...parsed,
-        profile: { ...defaultProfile, ...parsed.profile },
-        stats: {
-          ...defaultState.stats,
-          ...parsed.stats,
-          volumeHistory: parsed.stats?.volumeHistory ?? [],
-          oneRMHistory: parsed.stats?.oneRMHistory ?? [],
-          personalRecords: parsed.stats?.personalRecords ?? {},
-          badges: parsed.stats?.badges ?? [],
-        },
-        preferences: {
-          ...defaultState.preferences,
-          ...parsed.preferences,
-          notifications: parsed.preferences?.notifications ?? defaultState.preferences.notifications,
-        },
-        stepEntries: parsed.stepEntries ?? defaultState.stepEntries,
-      };
-      
-      // Ensure today's diet exists
-      const today = new Date().toISOString().split('T')[0];
-      if (!merged.dietDays.find(d => d.date === today)) {
-        merged.dietDays.push({
-          date: today,
-          meals: [
-            { id: nanoid(), type: 'breakfast', foods: [] },
-            { id: nanoid(), type: 'lunch', foods: [] },
-            { id: nanoid(), type: 'snack', foods: [] },
-            { id: nanoid(), type: 'dinner', foods: [] },
-          ],
-        });
-      }
-      return merged;
-    }
-  } catch (e) {
-    console.error('Failed to load state:', e);
-  }
-  return defaultState;
-}
+const STORAGE_KEY = 'fitpro_app_state_v2';
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AppState>(loadState);
-
-  // Persist to localStorage on every change
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch (e) {
-      console.error('Failed to save state:', e);
+  const [state, setState] = useState<AppState>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return {
+          ...defaultState,
+          ...parsed,
+          profile: { ...defaultState.profile, ...parsed.profile },
+          preferences: { ...defaultState.preferences, ...parsed.preferences },
+          cycleEntries: parsed.cycleEntries || [],
+        };
+      } catch (e) {
+        return defaultState;
+      }
     }
+    return defaultState;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
   const updateProfile = useCallback((profile: Partial<UserProfile>) => {
@@ -418,18 +395,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const updateWorkout = useCallback((id: string, workout: Partial<Workout>) => {
-    setState(s => ({
-      ...s,
-      workouts: s.workouts.map(w => w.id === id ? { ...w, ...workout } : w),
-    }));
+    setState(s => ({ ...s, workouts: s.workouts.map(w => w.id === id ? { ...w, ...workout } : w) }));
   }, []);
 
   const deleteWorkout = useCallback((id: string) => {
-    setState(s => ({
-      ...s,
-      workouts: s.workouts.filter(w => w.id !== id),
-      todayWorkoutId: s.todayWorkoutId === id ? null : s.todayWorkoutId,
-    }));
+    setState(s => ({ ...s, workouts: s.workouts.filter(w => w.id !== id) }));
   }, []);
 
   const setTodayWorkout = useCallback((id: string | null) => {
@@ -439,11 +409,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const addExerciseToWorkout = useCallback((workoutId: string, exercise: Omit<Exercise, 'id'>) => {
     setState(s => ({
       ...s,
-      workouts: s.workouts.map(w =>
-        w.id === workoutId
-          ? { ...w, exercises: [...w.exercises, { ...exercise, id: nanoid() }] }
-          : w
-      ),
+      workouts: s.workouts.map(w => w.id === workoutId ? { ...w, exercises: [...w.exercises, { ...exercise, id: nanoid() }] } : w),
     }));
   }, []);
 
@@ -469,17 +435,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
-  const getTodayDiet = useCallback((): DietDay => {
+  const getTodayDiet = useCallback(() => {
     const today = new Date().toISOString().split('T')[0];
-    return state.dietDays.find(d => d.date === today) || {
-      date: today,
-      meals: [
-        { id: nanoid(), type: 'breakfast', foods: [] },
-        { id: nanoid(), type: 'lunch', foods: [] },
-        { id: nanoid(), type: 'snack', foods: [] },
-        { id: nanoid(), type: 'dinner', foods: [] },
-      ],
-    };
+    const existing = state.dietDays.find(d => d.date === today);
+    if (existing) return existing;
+
+    const newDay: DietDay = { date: today, meals: [
+      { id: nanoid(), type: 'breakfast', foods: [] },
+      { id: nanoid(), type: 'lunch', foods: [] },
+      { id: nanoid(), type: 'snack', foods: [] },
+      { id: nanoid(), type: 'dinner', foods: [] },
+    ] };
+    return newDay;
   }, [state.dietDays]);
 
   const addFoodToMeal = useCallback((mealType: MealType, food: Omit<Food, 'id'>) => {
@@ -488,15 +455,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const dietDays = [...s.dietDays];
       let dayIndex = dietDays.findIndex(d => d.date === today);
       if (dayIndex === -1) {
-        dietDays.push({
-          date: today,
-          meals: [
-            { id: nanoid(), type: 'breakfast', foods: [] },
-            { id: nanoid(), type: 'lunch', foods: [] },
-            { id: nanoid(), type: 'snack', foods: [] },
-            { id: nanoid(), type: 'dinner', foods: [] },
-          ],
-        });
+        dietDays.push({ date: today, meals: [
+          { id: nanoid(), type: 'breakfast', foods: [] },
+          { id: nanoid(), type: 'lunch', foods: [] },
+          { id: nanoid(), type: 'snack', foods: [] },
+          { id: nanoid(), type: 'dinner', foods: [] },
+        ] });
         dayIndex = dietDays.length - 1;
       }
       const day = { ...dietDays[dayIndex] };
@@ -665,6 +629,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return state.workoutSessions.filter(s => s.date >= cutoffDate);
   }, [state.workoutSessions]);
 
+  const addCycleEntry = useCallback((entry: Omit<CycleEntry, 'id'>) => {
+    setState(s => ({
+      ...s,
+      cycleEntries: [...s.cycleEntries, { ...entry, id: nanoid() }].sort((a, b) => b.startDate.localeCompare(a.startDate)),
+    }));
+  }, []);
+
+  const updateCycleEntry = useCallback((id: string, entry: Partial<CycleEntry>) => {
+    setState(s => ({
+      ...s,
+      cycleEntries: s.cycleEntries.map(e => e.id === id ? { ...e, ...entry } : e),
+    }));
+  }, []);
+
+  const deleteCycleEntry = useCallback((id: string) => {
+    setState(s => ({
+      ...s,
+      cycleEntries: s.cycleEntries.filter(e => e.id !== id),
+    }));
+  }, []);
+
   return (
     <AppContext.Provider value={{
       state,
@@ -697,6 +682,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       incrementTodaySteps,
       getVolumeHistory,
       getWorkoutHistory,
+      addCycleEntry,
+      updateCycleEntry,
+      deleteCycleEntry,
     }}>
       {children}
     </AppContext.Provider>

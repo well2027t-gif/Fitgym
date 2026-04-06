@@ -21,6 +21,7 @@ import {
   Share2,
   ChevronRight,
   X,
+  Droplets,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -36,6 +37,7 @@ const menuItems = [
   { path: '/personal/plano', icon: Sparkles, label: 'Plano IA', description: 'Gerar plano inteligente' },
   { path: '/personal/chat', icon: MessageSquareText, label: 'Chat Personal', description: 'Tirar dúvidas e ajustar rotina' },
   { path: '/personal/evolucao', icon: ScanSearch, label: 'Evolução IA', description: 'Acompanhar fotos e progresso' },
+  { path: '/ciclo', icon: Droplets, label: 'Saúde Feminina', description: 'Acompanhamento de ciclo menstrual' },
   { path: '/historico', icon: TrendingUp, label: 'Histórico', description: 'Ver registros e evolução' },
   { path: '/planos', icon: BookOpen, label: 'Planos', description: 'Gerenciar planos de treino' },
   { path: '/1rm', icon: Calculator, label: 'Calculadora 1RM', description: 'Estimativa de carga máxima' },
@@ -176,7 +178,7 @@ export default function BottomTabBar() {
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-2 mt-3">
+                  <div className="grid grid-cols-1 gap-2 mt-3 overflow-y-auto max-h-[calc(100dvh-280px)] pr-1 custom-scrollbar">
                     {secondaryItems.map(({ path, icon: Icon, label, description }) => {
                       const active = location === path || location.startsWith(path + '/');
 
@@ -256,30 +258,25 @@ export default function BottomTabBar() {
                       layoutId="tab-bg"
                       className="absolute inset-0 rounded-xl"
                       style={{ background: 'rgba(var(--theme-accent-rgb), 0.12)' }}
-                      transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                      initial={false}
                     />
                   )}
-                  <motion.div
-                    animate={{
-                      color: isActive ? 'var(--theme-accent)' : 'rgba(255,255,255,0.4)',
-                      scale: isActive ? 1.1 : 1,
+                  <div className="relative z-10">
+                    <Icon
+                      size={20}
+                      strokeWidth={isActive ? 2.5 : 2}
+                      style={{ color: isActive ? 'var(--theme-accent)' : 'rgba(255,255,255,0.45)' }}
+                    />
+                  </div>
+                  <span
+                    className="text-[10px] font-medium relative z-10"
+                    style={{
+                      color: isActive ? 'var(--theme-accent)' : 'rgba(255,255,255,0.45)',
+                      fontFamily: 'Outfit, sans-serif',
                     }}
-                    transition={{ duration: 0.2 }}
-                    className="relative z-10"
-                  >
-                    <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
-                  </motion.div>
-                  <motion.span
-                    animate={{
-                      color: isActive ? 'var(--theme-accent)' : 'rgba(255,255,255,0.35)',
-                      fontWeight: isActive ? 600 : 400,
-                    }}
-                    transition={{ duration: 0.2 }}
-                    className="text-[10px] relative z-10"
-                    style={{ fontFamily: 'Outfit, sans-serif' }}
                   >
                     {label}
-                  </motion.span>
+                  </span>
                 </motion.div>
               </Link>
             );
@@ -287,40 +284,33 @@ export default function BottomTabBar() {
 
           <motion.button
             type="button"
-            onClick={() => setMenuOpen(prev => !prev)}
-            whileTap={{ scale: 0.88 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+            onClick={() => setMenuOpen(true)}
             className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl relative"
+            whileTap={{ scale: 0.88 }}
           >
-            {(isMenuActive || menuOpen) && (
+            {isMenuActive && !menuOpen && (
               <motion.div
                 layoutId="tab-bg"
                 className="absolute inset-0 rounded-xl"
                 style={{ background: 'rgba(var(--theme-accent-rgb), 0.12)' }}
-                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
               />
             )}
-            <motion.div
-              animate={{
-                color: isMenuActive || menuOpen ? 'var(--theme-accent)' : 'rgba(255,255,255,0.4)',
-                scale: isMenuActive || menuOpen ? 1.1 : 1,
+            <div className="relative z-10">
+              <Menu
+                size={20}
+                strokeWidth={isMenuActive ? 2.5 : 2}
+                style={{ color: isMenuActive ? 'var(--theme-accent)' : 'rgba(255,255,255,0.45)' }}
+              />
+            </div>
+            <span
+              className="text-[10px] font-medium relative z-10"
+              style={{
+                color: isMenuActive ? 'var(--theme-accent)' : 'rgba(255,255,255,0.45)',
+                fontFamily: 'Outfit, sans-serif',
               }}
-              transition={{ duration: 0.2 }}
-              className="relative z-10"
-            >
-              <Menu size={20} strokeWidth={isMenuActive || menuOpen ? 2.5 : 1.8} />
-            </motion.div>
-            <motion.span
-              animate={{
-                color: isMenuActive || menuOpen ? 'var(--theme-accent)' : 'rgba(255,255,255,0.35)',
-                fontWeight: isMenuActive || menuOpen ? 600 : 400,
-              }}
-              transition={{ duration: 0.2 }}
-              className="text-[10px] relative z-10"
-              style={{ fontFamily: 'Outfit, sans-serif' }}
             >
               Menu
-            </motion.span>
+            </span>
           </motion.button>
         </div>
       </nav>
