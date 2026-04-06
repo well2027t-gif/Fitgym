@@ -626,14 +626,19 @@ Consulte seu médico para análise profissional.
                         whileHover={{ scale: 1.06 }}
                         whileTap={{ scale: 0.94 }}
                       >
-                        {/* Ponto de hoje */}
+                        {/* Destaque do dia de hoje */}
                         {isToday && (
-                          <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-green-400" />
+                          <motion.div
+                            className="absolute inset-0 rounded-2xl"
+                            style={{ background: 'linear-gradient(135deg, rgba(236,72,153,0.5) 0%, rgba(168,85,247,0.5) 100%)', boxShadow: '0 0 16px 4px rgba(236,72,153,0.4)' }}
+                            animate={{ opacity: [0.7, 1, 0.7] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                          />
                         )}
 
                         {/* Número do dia */}
-                        <span className={`text-sm font-bold leading-none ${
-                          isSelected ? 'text-white' : dayOfCycle ? phaseText : 'text-white/40'
+                        <span className={`text-sm font-bold leading-none relative z-10 ${
+                          isToday ? 'text-white drop-shadow-lg' : isSelected ? 'text-white' : dayOfCycle ? phaseText : 'text-white/40'
                         }`}>
                           {day}
                         </span>

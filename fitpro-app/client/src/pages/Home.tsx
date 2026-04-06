@@ -8,10 +8,12 @@
 import { useApp } from '@/contexts/AppContext';
 import { useLocation } from 'wouter';
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import GamificationCard from '@/components/GamificationCard';
 import {
   Flame, Dumbbell, Apple, TrendingUp, ChevronRight,
-  Zap, Target, Award, Play, Camera, Activity
+  Zap, Target, Award, Play, Camera, Activity,
+  Droplets, Heart, Dna
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip
@@ -93,6 +95,69 @@ export default function Home() {
   const { state, getTodayCalories, getTodaySteps } = useApp();
   const [, navigate] = useLocation();
   const { profile, workouts, todayWorkoutId, weightEntries, progressPhotos, workoutSessions } = state;
+
+  // Widget de água — persiste por dia
+  const todayKey = new Date().toISOString().split('T')[0];
+  const [waterCups, setWaterCups] = useState<number>(() => {
+    const saved = localStorage.getItem('fitpro_water_' + todayKey);
+    return saved ? parseInt(saved) : 0;
+  });
+  useEffect(() => {
+    localStorage.setItem('fitpro_water_' + todayKey, String(waterCups));
+  }, [waterCups, todayKey]);
+  const WATER_GOAL = 8;
+
+  // Ciclo menstrual — fase atual
+  const cycleProfile = state.cycleProfile;
+  const lastCycleStart = cycleProfile?.lastPeriodStart ? new Date(cycleProfile.lastPeriodStart + 'T12:00:00') : null;
+  const cycleLength = cycleProfile?.cycleLength || 28;
+  const periodLength = cycleProfile?.periodLength || 5;
+  let currentCycleDay = 0;
+  if (lastCycleStart) {
+    const today = new Date();
+    const diff = Math.floor((today.getTime() - lastCycleStart.getTime()) / (1000 * 60 * 60 * 24));
+    currentCycleDay = (diff % cycleLength) + 1;
+  }
+  function getCyclePhaseForHome(day: number) {
+    if (!day) return null;
+    if (day <= periodLength) return {
+      name: 'Menstruação',
+      emoji: '🩸',
+      color: '#f87171',
+      bg: 'rgba(239,68,68,0.12)',
+      border: 'rgba(239,68,68,0.3)',
+      workout: 'Treino leve ou descanso ativo. Priorize yoga, caminhada e alongamento.',
+      tip: 'Seu corpo precisa de recuperação. Hidratação e calor ajudam nas cólicas.'
+    };
+    if (day <= 13) return {
+      name: 'Fase Folicular',
+      emoji: '🌱',
+      color: '#60a5fa',
+      bg: 'rgba(96,165,250,0.12)',
+      border: 'rgba(96,165,250,0.3)',
+      workout: 'Fase ideal para treinos de força e alta intensidade (HIIT). Seu corpo está no pico!',
+      tip: 'Estrogênio em alta = mais energia e recuperação rápida. Aproveite!'
+    };
+    if (day <= 16) return {
+      name: 'Ovulação',
+      emoji: '✨',
+      color: '#f472b6',
+      bg: 'rgba(244,114,182,0.12)',
+      border: 'rgba(244,114,182,0.3)',
+      workout: 'Pico de desempenho! Treine pesado com foco em PR (recordes pessoais).',
+      tip: 'Você está no seu momento mais forte do ciclo. Empurre seus limites!'
+    };
+    return {
+      name: 'Fase Lútea',
+      emoji: '🌙',
+      color: '#fbbf24',
+      bg: 'rgba(251,191,36,0.12)',
+      border: 'rgba(251,191,36,0.3)',
+      workout: 'Prefira cardio moderado, pilates e treinos funcionais. Evite excesso de volume.',
+      tip: 'Progesterona em alta pode causar fadiga. Respeite seu corpo e durma bem.'
+    };
+  }
+  const currentPhase = getCyclePhaseForHome(currentCycleDay);
   const todayMacros = getTodayCalories();
   const todaySteps = getTodaySteps();
   const stepGoal = state.preferences.dailyStepGoal;
@@ -384,6 +449,98 @@ export default function Home() {
 
       {/* ── Content ── */}
       <div className="px-4 pb-6 space-y-4 -mt-2">
+
+        {/* ── Banner de Fase do Ciclo ── */}
+        {currentPhase && (
+          <motion.div
+            custom={-1} variants={cardVariants} initial="hidden" animate="visible"
+            className="rounded-2xl p-4 cursor-pointer"
+            style={{ background: currentPhase.bg, border: `1px solid ${currentPhase.border}` }}
+            onClick={() => navigate('/ciclo')}
+            whileTap={{ scale: 0.98 }}
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                style={{ background: 'rgba(0,0,0,0.2)' }}>
+                {currentPhase.emoji}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: currentPhase.color, fontFamily: 'Outfit' }}>
+                    Saúde Feminina • Dia {currentCycleDay}
+                  </span>
+                  <ChevronRight size={14} style={{ color: currentPhase.color }} />
+                </div>
+                <p className="text-sm font-bold text-white mb-1" style={{ fontFamily: 'Space Grotesk' }}>
+                  {currentPhase.name}
+                </p>
+                <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.7)', fontFamily: 'Outfit' }}>
+                  <span className="font-semibold" style={{ color: currentPhase.color }}>Treino de hoje: </span>
+                  {currentPhase.workout}
+                </p>
+                <p className="text-xs mt-1.5 italic" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Outfit' }}>
+                  {currentPhase.tip}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Widget de Água ── */}
+        <motion.div
+          custom={-0.5} variants={cardVariants} initial="hidden" animate="visible"
+          className="fitpro-card p-4"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(56,189,248,0.15)' }}>
+                <Droplets size={16} style={{ color: '#38bdf8' }} />
+              </div>
+              <span className="text-sm font-semibold text-white" style={{ fontFamily: 'Space Grotesk' }}>Hidratação</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold" style={{ color: '#38bdf8', fontFamily: 'Space Grotesk' }}>
+                {waterCups}/{WATER_GOAL} copos
+              </span>
+              {waterCups >= WATER_GOAL && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{ background: 'rgba(56,189,248,0.2)', color: '#38bdf8' }}>Meta!</span>
+              )}
+            </div>
+          </div>
+
+          {/* Barra de progresso */}
+          <div className="w-full h-2 rounded-full mb-3" style={{ background: 'rgba(255,255,255,0.06)' }}>
+            <motion.div
+              className="h-full rounded-full"
+              style={{ background: 'linear-gradient(90deg, #38bdf8, #818cf8)' }}
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min((waterCups / WATER_GOAL) * 100, 100)}%` }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
+            />
+          </div>
+
+          {/* Copos interativos */}
+          <div className="flex gap-2 flex-wrap">
+            {Array.from({ length: WATER_GOAL }).map((_, i) => (
+              <motion.button
+                key={i}
+                onClick={() => setWaterCups(i < waterCups ? i : i + 1)}
+                className="flex-1 min-w-[32px] h-9 rounded-xl flex items-center justify-center transition-all"
+                style={{
+                  background: i < waterCups ? 'rgba(56,189,248,0.25)' : 'rgba(255,255,255,0.04)',
+                  border: i < waterCups ? '1px solid rgba(56,189,248,0.4)' : '1px solid rgba(255,255,255,0.06)',
+                }}
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.92 }}
+              >
+                <Droplets size={14} style={{ color: i < waterCups ? '#38bdf8' : 'rgba(255,255,255,0.2)' }} />
+              </motion.button>
+            ))}
+          </div>
+          <p className="text-[11px] mt-2 text-center" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>
+            Toque nos copos para registrar sua hidratação diária
+          </p>
+        </motion.div>
 
         {/* ── Calories Card ── */}
         <motion.div
