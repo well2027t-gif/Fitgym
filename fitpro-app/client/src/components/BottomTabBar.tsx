@@ -17,19 +17,16 @@ import {
   ChevronRight,
   X,
   Plus,
-  LayoutGrid,
-  Apple,
-  Users
+  Building2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Tabs atualizadas conforme a foto e solicitações anteriores
+// Tabs conforme a foto: Início, Treinos, Academia, Perfil
 const tabs = [
   { path: '/', icon: Home, label: 'Início' },
   { path: '/treinos', icon: Dumbbell, label: 'Treinos' },
-  // O botão central "Registrar" (+) será inserido manualmente entre as abas
-  { path: '/dieta', icon: Apple, label: 'Dieta' },
-  { path: '/profissionais', icon: Users, label: 'Profissionais' },
+  { path: '/academia', icon: Building2, label: 'Academia' },
+  { path: '/perfil', icon: User, label: 'Perfil' },
 ];
 
 const menuItems = [
@@ -108,14 +105,14 @@ export default function BottomTabBar() {
                       key={path}
                       onClick={() => handleMenuNavigate(path)}
                       className={`w-full p-4 rounded-2xl flex items-center gap-4 transition-all ${
-                        active ? 'bg-[#22c55e]/10 border border-[#22c55e]/20' : 'bg-white/5 border border-transparent'
+                        active ? 'bg-[#c5ff22]/10 border border-[#c5ff22]/20' : 'bg-white/5 border border-transparent'
                       }`}
                     >
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${active ? 'bg-[#22c55e] text-black' : 'bg-white/5 text-white/60'}`}>
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${active ? 'bg-[#c5ff22] text-black' : 'bg-white/5 text-white/60'}`}>
                         <Icon size={20} />
                       </div>
                       <div className="text-left">
-                        <p className={`font-bold ${active ? 'text-[#22c55e]' : 'text-white'}`}>{label}</p>
+                        <p className={`font-bold ${active ? 'text-[#c5ff22]' : 'text-white'}`}>{label}</p>
                         <p className="text-[11px] text-white/40">{description}</p>
                       </div>
                     </button>
@@ -127,62 +124,107 @@ export default function BottomTabBar() {
         )}
       </AnimatePresence>
 
-      {/* ── FIXED BOTTOM TAB BAR ── */}
-      <nav
-        className="fixed bottom-0 left-0 right-0 z-30 h-[88px] bg-[#111111]/95 backdrop-blur-xl border-t border-white/10 flex items-center justify-center px-4 bottom-tab-bar"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
-      >
-        <div className="max-w-md w-full h-full flex items-center justify-between">
-          {/* Primeiras duas abas */}
-          <div className="flex flex-1 justify-around items-center">
-            {tabs.slice(0, 2).map(({ path, icon: Icon, label }) => {
-              const isActive = location === path || (path !== '/' && location.startsWith(path));
+      {/* ── FLOATING PILL BOTTOM TAB BAR ── */}
+      <div className="fixed bottom-0 left-0 right-0 z-30 flex items-end justify-center pb-6 pointer-events-none">
+        <nav
+          className="relative h-20 bg-[#1a1a1d]/95 backdrop-blur-xl border border-white/10 rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-between px-8 pointer-events-auto"
+          style={{ width: 'calc(100% - 32px)', maxWidth: '520px', marginLeft: '16px', marginRight: '16px' }}
+        >
+          {/* Primeira aba (Início) */}
+          <Link href={tabs[0].path} className="flex flex-col items-center gap-1.5 flex-1">
+            {(() => {
+              const isActive = location === tabs[0].path || (tabs[0].path !== '/' && location.startsWith(tabs[0].path));
+              const Icon = tabs[0].icon;
               return (
-                <Link key={path} href={path} className="flex flex-col items-center gap-1 px-4">
+                <>
                   <Icon 
-                    size={24} 
-                    className={isActive ? 'text-[#c5ff22]' : 'text-white/40'} 
+                    size={28} 
+                    className={isActive ? 'text-[#c5ff22]' : 'text-white/50'} 
                     strokeWidth={isActive ? 2.5 : 2}
                   />
-                  <span className={`text-[10px] font-bold tracking-tight ${isActive ? 'text-[#c5ff22]' : 'text-white/40'}`}>
-                    {label}
+                  <span className={`text-[11px] font-bold tracking-tight ${isActive ? 'text-[#c5ff22]' : 'text-white/50'}`}>
+                    {tabs[0].label}
                   </span>
-                </Link>
+                </>
               );
-            })}
-          </div>
+            })()}
+          </Link>
 
-          {/* Botão Central (+) */}
-          <div className="relative px-2 flex items-center justify-center">
+          {/* Segunda aba (Treinos) */}
+          <Link href={tabs[1].path} className="flex flex-col items-center gap-1.5 flex-1">
+            {(() => {
+              const isActive = location === tabs[1].path || location.startsWith(tabs[1].path);
+              const Icon = tabs[1].icon;
+              return (
+                <>
+                  <Icon 
+                    size={28} 
+                    className={isActive ? 'text-[#c5ff22]' : 'text-white/50'} 
+                    strokeWidth={isActive ? 2.5 : 2}
+                  />
+                  <span className={`text-[11px] font-bold tracking-tight ${isActive ? 'text-[#c5ff22]' : 'text-white/50'}`}>
+                    {tabs[1].label}
+                  </span>
+                </>
+              );
+            })()}
+          </Link>
+
+          {/* Botão Central (+) - Flutuante */}
+          <div className="absolute -top-8 left-1/2 transform -translate-x-1/2">
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => setMenuOpen(true)}
-              className="w-14 h-14 rounded-full bg-[#c5ff22] shadow-[0_8px_25px_rgba(197,255,34,0.4)] flex items-center justify-center border-[4px] border-[#000000]"
+              className="w-20 h-20 rounded-full bg-[#c5ff22] shadow-[0_12px_40px_rgba(197,255,34,0.5)] flex flex-col items-center justify-center border-[5px] border-[#000000] hover:scale-105 transition-transform"
             >
-              <Plus size={28} className="text-black" strokeWidth={3} />
+              <Plus size={36} className="text-black" strokeWidth={3} />
             </motion.button>
+            <div className="text-center mt-1">
+              <span className="text-[10px] font-black text-white/70 uppercase tracking-widest">Registrar</span>
+            </div>
           </div>
 
-          {/* Últimas duas abas */}
-          <div className="flex flex-1 justify-around items-center">
-            {tabs.slice(2).map(({ path, icon: Icon, label }) => {
-              const isActive = location === path || location.startsWith(path);
+          {/* Terceira aba (Academia) */}
+          <Link href={tabs[2].path} className="flex flex-col items-center gap-1.5 flex-1">
+            {(() => {
+              const isActive = location === tabs[2].path || location.startsWith(tabs[2].path);
+              const Icon = tabs[2].icon;
               return (
-                <Link key={path} href={path} className="flex flex-col items-center gap-1 px-4">
+                <>
                   <Icon 
-                    size={24} 
-                    className={isActive ? 'text-[#c5ff22]' : 'text-white/40'} 
+                    size={28} 
+                    className={isActive ? 'text-[#c5ff22]' : 'text-white/50'} 
                     strokeWidth={isActive ? 2.5 : 2}
                   />
-                  <span className={`text-[10px] font-bold tracking-tight ${isActive ? 'text-[#c5ff22]' : 'text-white/40'}`}>
-                    {label}
+                  <span className={`text-[11px] font-bold tracking-tight ${isActive ? 'text-[#c5ff22]' : 'text-white/50'}`}>
+                    {tabs[2].label}
                   </span>
-                </Link>
+                </>
               );
-            })}
-          </div>
-        </div>
-      </nav>
+            })()}
+          </Link>
+
+          {/* Quarta aba (Perfil) */}
+          <Link href={tabs[3].path} className="flex flex-col items-center gap-1.5 flex-1">
+            {(() => {
+              const isActive = location === tabs[3].path || location.startsWith(tabs[3].path);
+              const Icon = tabs[3].icon;
+              return (
+                <>
+                  <Icon 
+                    size={28} 
+                    className={isActive ? 'text-[#c5ff22]' : 'text-white/50'} 
+                    strokeWidth={isActive ? 2.5 : 2}
+                  />
+                  <span className={`text-[11px] font-bold tracking-tight ${isActive ? 'text-[#c5ff22]' : 'text-white/50'}`}>
+                    {tabs[3].label}
+                  </span>
+                </>
+              );
+            })()}
+          </Link>
+        </nav>
+      </div>
     </>
   );
 }
