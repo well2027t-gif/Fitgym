@@ -1,15 +1,21 @@
 /**
- * FitPro — WorkoutActive Page (Redesigned)
+ * FitPro — WorkoutActive Page (Premium Layout)
  * Design: Premium Dark Fitness / Full Screen Guided Flow
- * Execução de treino em modo foco: tela cheia, fluxo contínuo,
- * sem distrações, com descanso automático e transições suaves.
+ * Layout exatamente conforme imagem de referência:
+ * - Cabeçalho com contador e timer
+ * - Vídeo/imagem centralizada com play button
+ * - Caixa de dicas com ícone de lâmpada
+ * - 4 cards de métricas (Série, Reps, Carga, Descanso)
+ * - Botão principal verde "Concluir série"
+ * - Timer de descanso integrado na base
  */
 
 import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
+  ArrowLeft,
   Check,
-  ChevronRight,
+  Lightbulb,
   Minus,
   Plus,
   SkipForward,
@@ -32,7 +38,7 @@ interface RestTimerProps {
   onSkip: () => void;
 }
 
-function RestTimer({ seconds, onComplete, onSkip }: RestTimerProps) {
+function RestTimerBottom({ seconds, onComplete, onSkip }: RestTimerProps) {
   const [remaining, setRemaining] = useState(seconds);
   const [running, setRunning] = useState(true);
 
@@ -52,70 +58,58 @@ function RestTimer({ seconds, onComplete, onSkip }: RestTimerProps) {
   }, [remaining, running, onComplete]);
 
   const progress = Math.max(0, remaining / Math.max(seconds, 1));
-  const radius = 60;
+  const radius = 48;
   const circumference = 2 * Math.PI * radius;
+
+  const minutes = Math.floor(remaining / 60);
+  const secs = remaining % 60;
+  const timeDisplay = `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center"
-      style={{ background: 'linear-gradient(135deg, rgba(13,13,15,0.98) 0%, rgba(10,10,12,0.98) 100%)' }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      className="rounded-[24px] border p-5"
+      style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.06)' }}
     >
-      <motion.div
-        initial={{ scale: 0.88, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        className="flex flex-col items-center gap-8"
-      >
-        <div>
-          <p className="text-center text-sm uppercase tracking-[0.2em]" style={{ color: 'rgba(255,255,255,0.48)', fontFamily: 'Space Grotesk' }}>
-            Recuperando
+      <p className="text-xs uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>
+        Descanso
+      </p>
+      
+      <div className="mt-4 flex items-center justify-between gap-4">
+        <div className="flex-1">
+          <p className="text-4xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+            {timeDisplay}
           </p>
-          <h2 className="mt-2 text-center text-2xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
-            Prepare-se para a próxima série
-          </h2>
         </div>
 
-        <div className="relative size-56">
-          <svg width="224" height="224" viewBox="0 0 224 224" className="-rotate-90">
-            <circle cx="112" cy="112" r={radius} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="10" />
+        <div className="relative size-32">
+          <svg width="128" height="128" viewBox="0 0 128 128" className="-rotate-90">
+            <circle cx="64" cy="64" r={radius} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" />
             <circle
-              cx="112"
-              cy="112"
+              cx="64"
+              cy="64"
               r={radius}
               fill="none"
               stroke="var(--theme-accent)"
-              strokeWidth="10"
+              strokeWidth="8"
               strokeLinecap="round"
               strokeDasharray={circumference}
               strokeDashoffset={circumference * (1 - progress)}
-              style={{ filter: 'drop-shadow(0 0 16px rgba(var(--theme-accent-rgb), 0.8))' }}
+              style={{ filter: 'drop-shadow(0 0 12px rgba(var(--theme-accent-rgb), 0.7))' }}
             />
           </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <p className="text-6xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>{remaining}</p>
-            <p className="mt-2 text-xs uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'Space Grotesk' }}>segundos</p>
-          </div>
         </div>
 
-        <div className="flex flex-col gap-3 w-full max-w-xs">
-          <button
-            onClick={onComplete}
-            className="w-full rounded-2xl px-6 py-4 text-base font-bold"
-            style={{ background: 'var(--theme-accent)', color: '#0d0d0f', fontFamily: 'Space Grotesk' }}
-          >
-            Próxima série
-          </button>
-          <button
-            onClick={onSkip}
-            className="w-full rounded-2xl border px-6 py-4 text-base font-semibold text-white"
-            style={{ borderColor: 'rgba(255,255,255,0.1)', fontFamily: 'Space Grotesk' }}
-          >
-            Pular descanso
-          </button>
-        </div>
-      </motion.div>
+        <button
+          onClick={onSkip}
+          className="rounded-2xl border px-4 py-3 text-sm font-semibold text-white"
+          style={{ borderColor: 'rgba(255,255,255,0.1)', fontFamily: 'Space Grotesk' }}
+        >
+          ⏭ Pular descanso
+        </button>
+      </div>
     </motion.div>
   );
 }
@@ -126,7 +120,7 @@ export default function WorkoutActive() {
   const { state, saveWorkoutSession } = useApp();
 
   const workout = useMemo(() => state.workouts.find(item => item.id === id), [state.workouts, id]);
-  const [showTimer, setShowTimer] = useState(false);
+  const [showRestTimer, setShowRestTimer] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(60);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [startedAt] = useState(Date.now());
@@ -256,7 +250,7 @@ export default function WorkoutActive() {
     } else {
       if (exercise.restSeconds > 0) {
         setTimerSeconds(exercise.restSeconds);
-        setShowTimer(true);
+        setShowRestTimer(true);
       } else {
         goToNextPendingExercise();
       }
@@ -322,130 +316,232 @@ export default function WorkoutActive() {
   const currentProgress = exerciseState[activeExercise?.id ?? '']?.completedSets ?? 0;
   const isWorkoutComplete = completedExercises.length + skippedExercises.length === workout.exercises.length;
 
+  // Renderizar indicador de progresso com bolinhas
+  const progressDots = Array.from({ length: allExercises.length }).map((_, i) => {
+    const isCompleted = completedExercises.some(ex => ex.id === allExercises[i].id);
+    const isSkipped = skippedExercises.includes(allExercises[i].id);
+    const isCurrent = i === currentExerciseIndex;
+    
+    return (
+      <div
+        key={i}
+        className="h-2 rounded-full"
+        style={{
+          width: '32px',
+          background: isCurrent ? 'var(--theme-accent)' : isCompleted ? 'var(--theme-accent)' : isSkipped ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.15)',
+        }}
+      />
+    );
+  });
+
+  // Calcular tempo total do treino
+  const elapsedMinutes = Math.floor((Date.now() - startedAt) / 60000);
+  const elapsedSeconds = Math.floor(((Date.now() - startedAt) % 60000) / 1000);
+  const timeDisplay = `${String(elapsedMinutes).padStart(2, '0')}:${String(elapsedSeconds).padStart(2, '0')}`;
+
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-[#0d0d0f]" style={{ height: '100dvh' }}>
-      {/* TOPO FIXO */}
-      <div className="flex-shrink-0 border-b px-5 py-4" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>
-              {currentExerciseIndex + 1} de {allExercises.length}
-            </p>
-            <h1 className="mt-1 text-xl font-bold text-white truncate" style={{ fontFamily: 'Space Grotesk' }}>
+      {/* CABEÇALHO */}
+      <div className="flex-shrink-0 px-5 py-4">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <button
+            onClick={() => navigate('/treinos')}
+            className="flex size-10 items-center justify-center rounded-2xl"
+            style={{ background: 'rgba(255,255,255,0.06)', color: 'white' }}
+          >
+            <ArrowLeft size={18} />
+          </button>
+          
+          <div className="flex-1 text-center">
+            <h1 className="text-2xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
               {activeExercise?.name ?? 'Treino concluído'}
             </h1>
+            <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.56)', fontFamily: 'Outfit' }}>
+              {currentExerciseIndex + 1} / {allExercises.length}
+            </p>
           </div>
-          <div className="flex-shrink-0 text-right">
-            <p className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>
-              Progresso
-            </p>
-            <p className="mt-1 text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk', color: 'var(--theme-accent)' }}>
-              {progressPercent}%
-            </p>
+
+          <div className="text-right">
+            <div className="flex size-10 items-center justify-center rounded-2xl" style={{ background: 'rgba(var(--theme-accent-rgb), 0.15)' }}>
+              <p className="text-sm font-bold" style={{ color: 'var(--theme-accent)', fontFamily: 'Space Grotesk' }}>
+                {timeDisplay}
+              </p>
+            </div>
           </div>
         </div>
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
-          <motion.div
-            className="h-full rounded-full"
-            animate={{ width: `${progressPercent}%` }}
-            style={{ background: 'linear-gradient(90deg, var(--theme-accent) 0%, #84cc16 100%)' }}
-          />
+
+        {/* PROGRESSO COM BOLINHAS */}
+        <div className="flex gap-1.5 justify-center">
+          {progressDots}
         </div>
       </div>
 
-      {/* CONTEÚDO PRINCIPAL */}
-      <div className="flex-1 overflow-y-auto px-5 py-6">
+      {/* CONTEÚDO SCROLLÁVEL */}
+      <div className="flex-1 overflow-y-auto px-5 py-4">
         <AnimatePresence mode="wait">
           {activeExercise && !isWorkoutComplete ? (
             <motion.div
               key={activeExercise.id}
-              initial={{ opacity: 0, x: 100 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -100 }}
-              transition={{ duration: 0.3 }}
-              className="flex flex-col gap-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col gap-4"
             >
-              {/* INSTRUÇÕES */}
-              <div className="rounded-[24px] border p-5" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.06)' }}>
+              {/* VÍDEO/IMAGEM COM PLAY BUTTON */}
+              <div className="relative rounded-[24px] overflow-hidden bg-black aspect-video">
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40 flex items-center justify-center">
+                  <div className="flex size-16 items-center justify-center rounded-full border-2 border-white">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                </div>
+                {activeExercise.videoUrl && (
+                  <img
+                    src={activeExercise.videoUrl}
+                    alt={activeExercise.name}
+                    className="w-full h-full object-cover"
+                  />
+                )}
+              </div>
+
+              {/* CAIXA DE DICAS COM ÍCONE DE LÂMPADA */}
+              <div className="rounded-[20px] border p-4 flex gap-3" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.06)' }}>
+                <div className="flex-shrink-0 mt-1">
+                  <Lightbulb size={20} style={{ color: 'var(--theme-accent)' }} />
+                </div>
                 <p className="text-sm leading-relaxed text-white" style={{ fontFamily: 'Outfit' }}>
                   {activeExercise.instructions || 'Execute o exercício com controle e técnica adequada.'}
                 </p>
               </div>
 
-              {/* CONFIGURAÇÃO COMPACTA */}
-              <div className="space-y-4">
-                {/* Repetições */}
-                <div>
-                  <p className="text-xs uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>
-                    Repetições
+              {/* 4 CARDS DE MÉTRICAS */}
+              <div className="grid grid-cols-4 gap-2">
+                {/* Série */}
+                <div className="rounded-[20px] border p-3 text-center" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.06)' }}>
+                  <div className="flex justify-center mb-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--theme-accent)" strokeWidth="2">
+                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                      <path d="M21 3v5h-5" />
+                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                      <path d="M3 21v-5h5" />
+                    </svg>
+                  </div>
+                  <p className="text-xs uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Série</p>
+                  <p className="mt-1 text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                    {currentProgress}/{activeExercise.sets}
                   </p>
-                  <div className="mt-2 flex items-center gap-3">
-                    <button
-                      onClick={() => handleChangeNumber(activeExercise.id, 'reps', -1)}
-                      className="flex size-12 items-center justify-center rounded-2xl"
-                      style={{ background: 'rgba(255,255,255,0.08)', color: 'white' }}
-                    >
-                      <Minus size={18} />
-                    </button>
-                    <div className="flex-1 rounded-2xl border py-3 text-center text-lg font-bold text-white" style={{ background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.08)', fontFamily: 'Space Grotesk' }}>
-                      {exerciseState[activeExercise.id]?.reps ?? activeExercise.reps}
-                    </div>
-                    <button
-                      onClick={() => handleChangeNumber(activeExercise.id, 'reps', 1)}
-                      className="flex size-12 items-center justify-center rounded-2xl"
-                      style={{ background: 'rgba(255,255,255,0.08)', color: 'white' }}
-                    >
-                      <Plus size={18} />
-                    </button>
+                  <div className="mt-2 h-1 rounded-full" style={{ background: 'rgba(var(--theme-accent-rgb), 0.3)' }}>
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${(currentProgress / activeExercise.sets) * 100}%`,
+                        background: 'var(--theme-accent)',
+                      }}
+                    />
                   </div>
                 </div>
 
-                {/* Carga */}
-                <div>
-                  <p className="text-xs uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>
-                    Carga (kg)
+                {/* Repetições */}
+                <div className="rounded-[20px] border p-3 text-center" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.06)' }}>
+                  <div className="flex justify-center mb-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: '#f59e0b' }}>
+                      <path d="M6 9h12M6 15h12M3 3h18v18H3z" />
+                    </svg>
+                  </div>
+                  <p className="text-xs uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Repetições</p>
+                  <p className="mt-1 text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                    {exerciseState[activeExercise.id]?.reps ?? activeExercise.reps} reps
                   </p>
-                  <div className="mt-2 flex items-center gap-3">
+                </div>
+
+                {/* Carga com +/- */}
+                <div className="rounded-[20px] border p-3 text-center" style={{ background: 'rgba(var(--theme-accent-rgb), 0.12)', borderColor: 'rgba(var(--theme-accent-rgb), 0.22)' }}>
+                  <div className="flex justify-center mb-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--theme-accent)" strokeWidth="2">
+                      <circle cx="12" cy="12" r="1" />
+                      <circle cx="19" cy="12" r="1" />
+                      <circle cx="5" cy="12" r="1" />
+                      <path d="M12 2v20M2 12h20" />
+                    </svg>
+                  </div>
+                  <p className="text-xs uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Carga</p>
+                  <p className="mt-1 text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                    {(exerciseState[activeExercise.id]?.weight ?? activeExercise.weight).toFixed(0)} kg
+                  </p>
+                  <div className="mt-2 flex gap-1">
                     <button
                       onClick={() => handleChangeNumber(activeExercise.id, 'weight', -2.5)}
-                      className="flex size-12 items-center justify-center rounded-2xl"
+                      className="flex-1 rounded-lg py-1 text-xs font-bold"
                       style={{ background: 'rgba(255,255,255,0.08)', color: 'white' }}
                     >
-                      <Minus size={18} />
+                      <Minus size={12} className="mx-auto" />
                     </button>
-                    <div className="flex-1 rounded-2xl border py-3 text-center text-lg font-bold text-white" style={{ background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.08)', fontFamily: 'Space Grotesk' }}>
-                      {(exerciseState[activeExercise.id]?.weight ?? activeExercise.weight).toFixed(1)}
-                    </div>
                     <button
                       onClick={() => handleChangeNumber(activeExercise.id, 'weight', 2.5)}
-                      className="flex size-12 items-center justify-center rounded-2xl"
+                      className="flex-1 rounded-lg py-1 text-xs font-bold"
                       style={{ background: 'rgba(255,255,255,0.08)', color: 'white' }}
                     >
-                      <Plus size={18} />
+                      <Plus size={12} className="mx-auto" />
                     </button>
                   </div>
                 </div>
 
-                {/* Séries e Descanso */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-[20px] border p-4 text-center" style={{ background: 'rgba(var(--theme-accent-rgb), 0.12)', borderColor: 'rgba(var(--theme-accent-rgb), 0.22)' }}>
-                    <p className="text-xs uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>
-                      Séries
-                    </p>
-                    <p className="mt-2 text-2xl font-bold text-white" style={{ fontFamily: 'Space Grotesk', color: 'var(--theme-accent)' }}>
-                      {currentProgress}/{activeExercise.sets}
-                    </p>
+                {/* Descanso */}
+                <div className="rounded-[20px] border p-3 text-center" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.06)' }}>
+                  <div className="flex justify-center mb-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
                   </div>
-                  <div className="rounded-[20px] border p-4 text-center" style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.08)' }}>
-                    <p className="text-xs uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>
-                      Descanso
-                    </p>
-                    <p className="mt-2 text-2xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
-                      {activeExercise.restSeconds}s
-                    </p>
-                  </div>
+                  <p className="text-xs uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Descanso</p>
+                  <p className="mt-1 text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                    {activeExercise.restSeconds}s
+                  </p>
                 </div>
               </div>
+
+              {/* BOTÃO PRINCIPAL VERDE */}
+              <button
+                onClick={() => handleCompleteSet(activeExercise.id)}
+                className="w-full rounded-2xl px-4 py-4 text-lg font-bold flex items-center justify-center gap-2 mt-2"
+                style={{ background: 'var(--theme-accent)', color: '#0d0d0f', fontFamily: 'Space Grotesk' }}
+              >
+                <Check size={20} />
+                Concluir série
+              </button>
+              <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.48)', fontFamily: 'Outfit' }}>
+                Ao concluir, o descanso será iniciado.
+              </p>
+
+              {/* TIMER DE DESCANSO */}
+              <AnimatePresence>
+                {showRestTimer && (
+                  <RestTimerBottom
+                    seconds={timerSeconds}
+                    onComplete={() => {
+                      setShowRestTimer(false);
+                      goToNextPendingExercise();
+                    }}
+                    onSkip={() => {
+                      setShowRestTimer(false);
+                      goToNextPendingExercise();
+                    }}
+                  />
+                )}
+              </AnimatePresence>
+
+              {/* BOTÃO SECUNDÁRIO PULAR */}
+              <button
+                onClick={() => handleSkipExercise(activeExercise.id)}
+                className="w-full rounded-2xl border px-4 py-3 text-sm font-semibold text-white"
+                style={{ borderColor: 'rgba(255,255,255,0.1)', fontFamily: 'Space Grotesk' }}
+              >
+                <SkipForward size={16} className="inline mr-2" />
+                Pular exercício
+              </button>
             </motion.div>
           ) : isWorkoutComplete ? (
             <motion.div
@@ -461,64 +557,21 @@ export default function WorkoutActive() {
                   Treino concluído!
                 </h2>
                 <p className="mt-2 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.56)', fontFamily: 'Outfit' }}>
-                  Você completou {completedExercises.length} exercícios em {Math.max(1, Math.round((Date.now() - startedAt) / 60000))} minutos.
+                  Você completou {completedExercises.length} exercícios em {elapsedMinutes} minutos.
                 </p>
               </div>
+              <button
+                onClick={finishWorkout}
+                className="w-full rounded-2xl px-4 py-4 text-base font-bold flex items-center justify-center gap-2"
+                style={{ background: 'var(--theme-accent)', color: '#0d0d0f', fontFamily: 'Space Grotesk' }}
+              >
+                <Check size={18} />
+                Salvar e finalizar
+              </button>
             </motion.div>
           ) : null}
         </AnimatePresence>
       </div>
-
-      {/* BOTÃO DE AÇÃO (FIXO NA BASE) */}
-      <div className="flex-shrink-0 border-t px-5 py-4" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-        <div className="flex gap-3">
-          {!isWorkoutComplete ? (
-            <>
-              <button
-                onClick={() => handleCompleteSet(activeExercise?.id ?? '')}
-                className="flex-1 rounded-2xl px-4 py-4 text-base font-bold flex items-center justify-center gap-2"
-                style={{ background: 'var(--theme-accent)', color: '#0d0d0f', fontFamily: 'Space Grotesk' }}
-              >
-                <Check size={18} />
-                {currentProgress >= (activeExercise?.sets ?? 0) ? 'Próximo' : 'Concluir série'}
-              </button>
-              <button
-                onClick={() => handleSkipExercise(activeExercise?.id ?? '')}
-                className="rounded-2xl border px-4 py-4 text-base font-semibold text-white"
-                style={{ borderColor: 'rgba(255,255,255,0.1)', fontFamily: 'Space Grotesk' }}
-              >
-                <SkipForward size={18} />
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={finishWorkout}
-              className="w-full rounded-2xl px-4 py-4 text-base font-bold flex items-center justify-center gap-2"
-              style={{ background: 'var(--theme-accent)', color: '#0d0d0f', fontFamily: 'Space Grotesk' }}
-            >
-              <Check size={18} />
-              Salvar e finalizar
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* TIMER DE DESCANSO */}
-      <AnimatePresence>
-        {showTimer && (
-          <RestTimer
-            seconds={timerSeconds}
-            onComplete={() => {
-              setShowTimer(false);
-              goToNextPendingExercise();
-            }}
-            onSkip={() => {
-              setShowTimer(false);
-              goToNextPendingExercise();
-            }}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 }
