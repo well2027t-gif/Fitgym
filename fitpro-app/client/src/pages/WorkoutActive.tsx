@@ -498,21 +498,15 @@ export default function WorkoutActive() {
                 </p>
               </div>
 
-              <svg className="w-20 h-20" viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)' }}>
-                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
-                <motion.circle
-                  cx="50"
-                  cy="50"
-                  r="45"
-                  fill="none"
-                  stroke="#4ade80"
-                  strokeWidth="2"
-                  strokeDasharray={`${2 * Math.PI * 45}`}
-                  strokeDashoffset={2 * Math.PI * 45 * (1 - Math.max(0, Math.min(1, (restTimeRemaining || 0) / (activeExercise?.restSeconds || 1))))}
-                  animate={{}}
-                  transition={{ duration: 0.1 }}
-                />
-              </svg>
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: Math.max(restTimeRemaining || 1, 1), repeat: 0, ease: 'linear' }}
+                className="w-20 h-20 rounded-full flex items-center justify-center"
+                style={{
+                  border: '2px solid rgba(74, 222, 128, 0.3)',
+                  background: 'conic-gradient(from 0deg, #4ade80 0deg, #4ade80 180deg, rgba(255,255,255,0.1) 180deg)',
+                }}
+              />
 
               <motion.button
                 whileHover={{ scale: 1.05 }}
