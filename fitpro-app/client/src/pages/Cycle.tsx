@@ -1,7 +1,7 @@
 /**
- * FitPro — Women's Health & Cycle Tracking
- * Design: Premium Soft Feminine
- * Acompanhamento completo de ciclo menstrual, saúde e bem-estar feminino.
+ * FitPro — Women's Health & Cycle Tracking (Professional Edition)
+ * Design: Ultra-Premium Soft Feminine
+ * Acompanhamento profissional de ciclo menstrual com análise, educação e insights médicos.
  */
 
 import { useState, useMemo } from 'react';
@@ -22,12 +22,17 @@ import {
   AlertCircle,
   TrendingUp,
   Sparkles,
+  Download,
+  BookOpen,
+  BarChart3,
+  Info,
 } from 'lucide-react';
 import { useApp, CycleDayEntry } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useLocation } from 'wouter';
 import { toast } from 'sonner';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 const SYMPTOMS = [
   { id: 'colica', label: 'Cólica', emoji: '🤕' },
@@ -57,6 +62,7 @@ interface PhaseInfo {
   trainingTip: string;
   nutritionTip: string;
   symptoms: string[];
+  hormones: { name: string; level: string; description: string }[];
 }
 
 function getCyclePhaseInfo(dayOfCycle: number): PhaseInfo {
@@ -70,6 +76,10 @@ function getCyclePhaseInfo(dayOfCycle: number): PhaseInfo {
       trainingTip: 'Foco em atividades leves: yoga, pilates, caminhada. Evite treinos de alta intensidade.',
       nutritionTip: 'Aumente ferro (carnes vermelhas, feijão) e magnésio. Hidrate-se bem.',
       symptoms: ['cólica', 'fadiga', 'inchaco'],
+      hormones: [
+        { name: 'Estrogênio', level: 'Baixo', description: 'Níveis mínimos de estrogênio' },
+        { name: 'Progesterona', level: 'Baixa', description: 'Queda de progesterona causa menstruação' },
+      ],
     };
   } else if (dayOfCycle >= 6 && dayOfCycle <= 13) {
     return {
@@ -81,6 +91,10 @@ function getCyclePhaseInfo(dayOfCycle: number): PhaseInfo {
       trainingTip: 'Ideal para treinos de força e alta intensidade. Seu corpo está pronto para desafios!',
       nutritionTip: 'Aumente proteína e carboidratos complexos. Seu metabolismo está acelerado.',
       symptoms: [],
+      hormones: [
+        { name: 'Estrogênio', level: 'Crescente', description: 'Aumento gradual de estrogênio' },
+        { name: 'FSH', level: 'Alto', description: 'Hormônio folículo-estimulante em alta' },
+      ],
     };
   } else if (dayOfCycle >= 14 && dayOfCycle <= 16) {
     return {
@@ -92,6 +106,10 @@ function getCyclePhaseInfo(dayOfCycle: number): PhaseInfo {
       trainingTip: 'Melhor momento para estabelecer recordes pessoais. Máxima força e resistência.',
       nutritionTip: 'Mantenha proteína alta. Aproveite o metabolismo acelerado.',
       symptoms: [],
+      hormones: [
+        { name: 'LH', level: 'Pico', description: 'Hormônio luteinizante em seu pico máximo' },
+        { name: 'Estrogênio', level: 'Pico', description: 'Estrogênio atinge seu nível máximo' },
+      ],
     };
   } else {
     return {
@@ -103,6 +121,10 @@ function getCyclePhaseInfo(dayOfCycle: number): PhaseInfo {
       trainingTip: 'Priorize cardio leve, alongamento e meditação. Ouça seu corpo.',
       nutritionTip: 'Aumente cálcio e magnésio. Controle desejos por doces com alimentos integrais.',
       symptoms: ['inchaco', 'fadiga', 'acne'],
+      hormones: [
+        { name: 'Progesterona', level: 'Alta', description: 'Progesterona em níveis elevados' },
+        { name: 'Estrogênio', level: 'Moderado', description: 'Estrogênio em níveis moderados' },
+      ],
     };
   }
 }
@@ -113,6 +135,7 @@ export default function Cycle() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showDayModal, setShowDayModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'analysis' | 'education'>('overview');
 
   const [dayForm, setDayForm] = useState<CycleDayEntry>({
     id: '',
@@ -129,11 +152,6 @@ export default function Cycle() {
 
   const cycleEntries = state.cycleEntries || [];
   const lastCycle = useMemo(() => cycleEntries[0], [cycleEntries]);
-
-  const selectedDayEntry = useMemo(() => {
-    if (!selectedDate || !lastCycle) return null;
-    return lastCycle.dayEntries?.find(e => e.date === selectedDate);
-  }, [selectedDate, lastCycle]);
 
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -205,6 +223,89 @@ export default function Cycle() {
     toast.success('Novo ciclo iniciado!');
   };
 
+  const handleExportReport = () => {
+    if (!lastCycle) return;
+    
+    const reportData = {
+      startDate: lastCycle.startDate,
+      endDate: lastCycle.endDate,
+      cycleLengthDays: lastCycle.cycleLengthDays,
+      totalEntries: lastCycle.dayEntries?.length || 0,
+      averageTemperature: (lastCycle.dayEntries?.reduce((sum, e) => sum + (e.temperature || 0), 0) || 0) / (lastCycle.dayEntries?.length || 1),
+      averageSleep: (lastCycle.dayEntries?.reduce((sum, e) => sum + (e.sleep || 0), 0) || 0) / (lastCycle.dayEntries?.length || 1),
+      mostCommonSymptoms: getMostCommonSymptoms(),
+    };
+
+    const reportText = `
+RELATÓRIO DE CICLO MENSTRUAL
+============================
+Data de Início: ${new Date(lastCycle.startDate).toLocaleDateString('pt-BR')}
+Duração do Ciclo: ${lastCycle.cycleLengthDays} dias
+Registros Realizados: ${reportData.totalEntries}
+
+DADOS MÉDICOS:
+- Temperatura Média: ${reportData.averageTemperature.toFixed(1)}°C
+- Horas de Sono Média: ${reportData.averageSleep.toFixed(1)}h
+- Sintomas Mais Comuns: ${reportData.mostCommonSymptoms.join(', ') || 'Nenhum'}
+
+Este relatório foi gerado automaticamente pelo FitPro.
+Consulte seu médico para análise profissional.
+    `;
+
+    const blob = new Blob([reportText], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ciclo_menstrual_${new Date().toISOString().split('T')[0]}.txt`;
+    a.click();
+    toast.success('Relatório exportado com sucesso!');
+  };
+
+  const getMostCommonSymptoms = () => {
+    const symptomCount: Record<string, number> = {};
+    lastCycle?.dayEntries?.forEach(entry => {
+      entry.symptoms?.forEach(symptom => {
+        symptomCount[symptom] = (symptomCount[symptom] || 0) + 1;
+      });
+    });
+    return Object.entries(symptomCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([symptom]) => SYMPTOMS.find(s => s.id === symptom)?.label || symptom);
+  };
+
+  // Dados para gráficos
+  const temperatureData = useMemo(() => {
+    return (lastCycle?.dayEntries || [])
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .map(entry => ({
+        date: new Date(entry.date).getDate(),
+        temperature: entry.temperature || 0,
+      }));
+  }, [lastCycle]);
+
+  const sleepData = useMemo(() => {
+    return (lastCycle?.dayEntries || [])
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .map(entry => ({
+        date: new Date(entry.date).getDate(),
+        sleep: entry.sleep || 0,
+      }));
+  }, [lastCycle]);
+
+  const symptomFrequency = useMemo(() => {
+    const counts: Record<string, number> = {};
+    lastCycle?.dayEntries?.forEach(entry => {
+      entry.symptoms?.forEach(symptom => {
+        counts[symptom] = (counts[symptom] || 0) + 1;
+      });
+    });
+    return Object.entries(counts).map(([symptom, count]) => ({
+      name: SYMPTOMS.find(s => s.id === symptom)?.label || symptom,
+      count,
+    }));
+  }, [lastCycle]);
+
   const daysInMonth = getDaysInMonth(currentMonth);
   const firstDay = getFirstDayOfMonth(currentMonth);
   const days = [];
@@ -237,7 +338,6 @@ export default function Cycle() {
     return 'bg-amber-500/15 border-amber-500/40 hover:border-amber-500/60';
   };
 
-  // Calcular próxima ovulação e janela fértil
   const nextOvulation = useMemo(() => {
     if (!lastCycle) return null;
     const startDate = new Date(lastCycle.startDate);
@@ -248,8 +348,6 @@ export default function Cycle() {
 
   const currentPhaseInfo = useMemo(() => {
     if (!lastCycle || !lastCycle.dayEntries || lastCycle.dayEntries.length === 0) return null;
-    const today = new Date().toISOString().split('T')[0];
-    const todayEntry = lastCycle.dayEntries.find(e => e.date === today);
     const dayOfCycle = getDayOfCycle(new Date().getDate());
     return dayOfCycle ? getCyclePhaseInfo(dayOfCycle) : null;
   }, [lastCycle]);
@@ -274,319 +372,368 @@ export default function Cycle() {
             <p className="text-sm text-white/50">Seu ciclo, sua força, seu bem-estar</p>
           </div>
         </div>
-        {!lastCycle && (
+        {lastCycle && (
           <Button 
-            onClick={handleStartNewCycle}
-            className="rounded-2xl gap-2"
-            style={{ background: 'linear-gradient(135deg, #ec4899 0%, #f472b6 100%)', color: 'white' }}
+            onClick={handleExportReport}
+            className="rounded-2xl gap-2 bg-white/5 hover:bg-white/10 text-white"
           >
-            <Plus size={18} />
-            Iniciar
+            <Download size={16} />
+            Exportar
           </Button>
         )}
       </div>
 
       {lastCycle ? (
         <>
-          {/* Roda de Ciclo - Visualização Circular */}
-          <Card className="p-8 border-white/5 bg-gradient-to-br from-pink-500/10 via-white/[0.03] to-purple-500/10 overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-pink-500/20 blur-[80px] rounded-full -mr-24 -mt-24" />
-            <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-500/15 blur-[60px] rounded-full -ml-20 -mb-20" />
-            
-            <div className="relative z-10 flex flex-col items-center">
-              <div className="w-48 h-48 rounded-full border-4 border-white/10 flex items-center justify-center relative mb-6">
-                {/* Roda de ciclo SVG */}
-                <svg className="w-full h-full" viewBox="0 0 200 200">
-                  {/* Menstruação */}
-                  <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(239, 68, 68, 0.3)" strokeWidth="20" strokeDasharray="47.1 282.6" strokeDashoffset="0" />
-                  {/* Folicular */}
-                  <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(59, 130, 246, 0.3)" strokeWidth="20" strokeDasharray="62.8 282.6" strokeDashoffset="-47.1" />
-                  {/* Ovulatória */}
-                  <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(236, 72, 153, 0.3)" strokeWidth="20" strokeDasharray="47.1 282.6" strokeDashoffset="-109.9" />
-                  {/* Lútea */}
-                  <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(217, 119, 6, 0.3)" strokeWidth="20" strokeDasharray="125.6 282.6" strokeDashoffset="-157" />
-                </svg>
-                
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Fase Atual</p>
-                  <p className={`text-2xl font-bold mt-2 ${currentPhaseInfo?.color || 'text-pink-500'}`} style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                    {currentPhaseInfo?.phase || 'Carregando...'}
-                  </p>
-                </div>
-              </div>
-
-              {currentPhaseInfo && (
-                <div className="text-center">
-                  <p className="text-sm text-white/70 mb-3">{currentPhaseInfo.description}</p>
-                  <div className="inline-block px-4 py-2 rounded-full bg-white/5 border border-white/10">
-                    <p className="text-[11px] text-white/60">{currentPhaseInfo.dayRange}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </Card>
-
-          {/* Insights de Treino e Nutrição */}
-          {currentPhaseInfo && (
-            <div className="grid grid-cols-1 gap-4">
-              <Card className={`p-5 border-white/5 bg-gradient-to-br ${currentPhaseInfo.bgColor} overflow-hidden relative`}>
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 blur-[40px] rounded-full -mr-16 -mt-16" />
-                
-                <div className="relative z-10">
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
-                      <Dumbbell size={20} className={currentPhaseInfo.color} />
-                    </div>
-                    <div>
-                      <p className="text-[11px] uppercase tracking-wider text-white/40 font-bold">Recomendação de Treino</p>
-                      <p className="text-sm text-white font-semibold mt-1">{currentPhaseInfo.trainingTip}</p>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className={`p-5 border-white/5 bg-gradient-to-br ${currentPhaseInfo.bgColor} overflow-hidden relative`}>
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 blur-[40px] rounded-full -mr-16 -mt-16" />
-                
-                <div className="relative z-10">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
-                      <Apple size={20} className={currentPhaseInfo.color} />
-                    </div>
-                    <div>
-                      <p className="text-[11px] uppercase tracking-wider text-white/40 font-bold">Recomendação Nutricional</p>
-                      <p className="text-sm text-white font-semibold mt-1">{currentPhaseInfo.nutritionTip}</p>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          )}
-
-          {/* Próximas Datas Importantes */}
-          <Card className="p-5 border-white/5 bg-white/[0.03]">
-            <div className="flex items-center gap-3 mb-4">
-              <Sparkles size={18} className="text-yellow-400" />
-              <h3 className="text-sm font-bold text-white">Próximas Datas Importantes</h3>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-pink-500/10 border border-pink-500/20">
-                <div>
-                  <p className="text-[11px] text-white/60 uppercase tracking-wider font-bold">Próxima Ovulação</p>
-                  <p className="text-sm font-semibold text-white mt-1">
-                    {nextOvulation ? new Date(nextOvulation).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' }) : '--'}
-                  </p>
-                </div>
-                <Heart size={20} className="text-pink-500" />
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                <div>
-                  <p className="text-[11px] text-white/60 uppercase tracking-wider font-bold">Próxima Menstruação</p>
-                  <p className="text-sm font-semibold text-white mt-1">
-                    {lastCycle ? new Date(new Date(lastCycle.startDate).getTime() + (lastCycle.cycleLengthDays || 28) * 86400000).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' }) : '--'}
-                  </p>
-                </div>
-                <Droplets size={20} className="text-blue-500" />
-              </div>
-            </div>
-          </Card>
-
-          {/* Calendário */}
-          <Card className="p-6 border-white/5 bg-white/[0.03] overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-40 h-40 bg-pink-500/10 blur-[50px] rounded-full -mr-20 -mt-20" />
-            
-            <div className="flex items-center justify-between mb-6 relative z-10">
-              <h2 className="text-lg font-bold text-white capitalize">{monthName}</h2>
-              <div className="flex gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
-                  className="rounded-lg hover:bg-white/5"
-                >
-                  <ChevronLeft size={18} />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
-                  className="rounded-lg hover:bg-white/5"
-                >
-                  <ChevronRight size={18} />
-                </Button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-7 gap-2 mb-4 relative z-10">
-              {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'].map(day => (
-                <div key={day} className="text-center text-[11px] font-bold text-white/40 uppercase">
-                  {day}
-                </div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-7 gap-2 relative z-10">
-              {days.map((day, idx) => {
-                const dayOfCycle = getDayOfCycle(day);
-                const dateStr = day ? `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
-                const hasEntry = day && lastCycle.dayEntries?.some(e => e.date === dateStr);
-                const isSelected = day && selectedDate === dateStr;
-
-                return (
-                  <motion.button
-                    key={idx}
-                    onClick={() => day && handleDayClick(day)}
-                    disabled={!day}
-                    className={`aspect-square rounded-lg border transition-all ${getColorForDay(day)} ${isSelected ? 'ring-2 ring-pink-500' : ''} ${day ? 'cursor-pointer' : 'cursor-default'}`}
-                    whileTap={day ? { scale: 0.95 } : {}}
-                  >
-                    <div className="h-full flex flex-col items-center justify-center">
-                      {day && (
-                        <>
-                          <span className="text-sm font-bold text-white">{day}</span>
-                          {dayOfCycle && (
-                            <span className="text-[9px] text-white/60 font-medium">D{dayOfCycle}</span>
-                          )}
-                          {hasEntry && (
-                            <span className="text-[8px] text-pink-400 mt-0.5">●</span>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </motion.button>
-                );
-              })}
-            </div>
-          </Card>
-
-          {/* Legenda de Fases */}
-          <div className="grid grid-cols-2 gap-3">
-            <Card className="p-3 border-white/5 bg-red-500/10 flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-500" />
-              <div className="text-[11px]">
-                <p className="font-bold text-white">Menstruação</p>
-                <p className="text-white/50 text-[9px]">Dias 1-5</p>
-              </div>
-            </Card>
-            <Card className="p-3 border-white/5 bg-blue-500/10 flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-blue-500" />
-              <div className="text-[11px]">
-                <p className="font-bold text-white">Folicular</p>
-                <p className="text-white/50 text-[9px]">Dias 6-13</p>
-              </div>
-            </Card>
-            <Card className="p-3 border-white/5 bg-pink-500/10 flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-pink-500" />
-              <div className="text-[11px]">
-                <p className="font-bold text-white">Ovulatória</p>
-                <p className="text-white/50 text-[9px]">Dias 14-16</p>
-              </div>
-            </Card>
-            <Card className="p-3 border-white/5 bg-amber-500/10 flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-amber-500" />
-              <div className="text-[11px]">
-                <p className="font-bold text-white">Lútea</p>
-                <p className="text-white/50 text-[9px]">Dias 17-28</p>
-              </div>
-            </Card>
+          {/* Tabs de Navegação */}
+          <div className="flex gap-2 border-b border-white/10">
+            {[
+              { id: 'overview', label: 'Visão Geral', icon: Heart },
+              { id: 'analysis', label: 'Análise', icon: BarChart3 },
+              { id: 'education', label: 'Educação', icon: BookOpen },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold transition-all border-b-2 ${
+                  activeTab === tab.id
+                    ? 'border-pink-500 text-pink-500'
+                    : 'border-transparent text-white/50 hover:text-white/70'
+                }`}
+              >
+                <tab.icon size={16} />
+                {tab.label}
+              </button>
+            ))}
           </div>
 
-          {/* Histórico */}
-          {lastCycle.dayEntries && lastCycle.dayEntries.length > 0 && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                <TrendingUp size={18} className="text-pink-500" />
-                Histórico do Mês
-              </h2>
+          {/* TAB: VISÃO GERAL */}
+          {activeTab === 'overview' && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+              {/* Roda de Ciclo */}
+              <Card className="p-8 border-white/5 bg-gradient-to-br from-pink-500/10 via-white/[0.03] to-purple-500/10 overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-48 h-48 bg-pink-500/20 blur-[80px] rounded-full -mr-24 -mt-24" />
+                <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-500/15 blur-[60px] rounded-full -ml-20 -mb-20" />
+                
+                <div className="relative z-10 flex flex-col items-center">
+                  <div className="w-48 h-48 rounded-full border-4 border-white/10 flex items-center justify-center relative mb-6">
+                    <svg className="w-full h-full" viewBox="0 0 200 200">
+                      <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(239, 68, 68, 0.3)" strokeWidth="20" strokeDasharray="47.1 282.6" strokeDashoffset="0" />
+                      <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(59, 130, 246, 0.3)" strokeWidth="20" strokeDasharray="62.8 282.6" strokeDashoffset="-47.1" />
+                      <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(236, 72, 153, 0.3)" strokeWidth="20" strokeDasharray="47.1 282.6" strokeDashoffset="-109.9" />
+                      <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(217, 119, 6, 0.3)" strokeWidth="20" strokeDasharray="125.6 282.6" strokeDashoffset="-157" />
+                    </svg>
+                    
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Fase Atual</p>
+                      <p className={`text-2xl font-bold mt-2 ${currentPhaseInfo?.color || 'text-pink-500'}`} style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                        {currentPhaseInfo?.phase || 'Carregando...'}
+                      </p>
+                    </div>
+                  </div>
 
-              <div className="space-y-3">
-                {lastCycle.dayEntries.sort((a, b) => b.date.localeCompare(a.date)).map((entry) => {
-                  const dayOfCycle = getDayOfCycle(parseInt(entry.date.split('-')[2]));
-                  const phase = dayOfCycle ? getCyclePhaseInfo(dayOfCycle) : null;
+                  {currentPhaseInfo && (
+                    <div className="text-center">
+                      <p className="text-sm text-white/70 mb-3">{currentPhaseInfo.description}</p>
+                      <div className="inline-block px-4 py-2 rounded-full bg-white/5 border border-white/10">
+                        <p className="text-[11px] text-white/60">{currentPhaseInfo.dayRange}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Card>
 
-                  return (
-                    <motion.div
-                      key={entry.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="p-4 rounded-[24px] bg-white/[0.03] border border-white/5 hover:border-white/10 transition-all"
-                    >
-                      <div className="flex items-start justify-between mb-3">
+              {/* Insights de Treino e Nutrição */}
+              {currentPhaseInfo && (
+                <div className="grid grid-cols-1 gap-4">
+                  <Card className={`p-5 border-white/5 bg-gradient-to-br ${currentPhaseInfo.bgColor} overflow-hidden relative`}>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 blur-[40px] rounded-full -mr-16 -mt-16" />
+                    
+                    <div className="relative z-10">
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                          <Dumbbell size={20} className={currentPhaseInfo.color} />
+                        </div>
                         <div>
-                          <p className="text-sm font-bold text-white">
-                            {new Date(entry.date).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', weekday: 'short' })}
-                          </p>
-                          {phase && (
-                            <p className={`text-[11px] font-bold uppercase tracking-wider mt-1 ${phase.color}`}>
-                              {phase.phase}
-                            </p>
+                          <p className="text-[11px] uppercase tracking-wider text-white/40 font-bold">Recomendação de Treino</p>
+                          <p className="text-sm text-white font-semibold mt-1">{currentPhaseInfo.trainingTip}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+
+                  <Card className={`p-5 border-white/5 bg-gradient-to-br ${currentPhaseInfo.bgColor} overflow-hidden relative`}>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 blur-[40px] rounded-full -mr-16 -mt-16" />
+                    
+                    <div className="relative z-10">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                          <Apple size={20} className={currentPhaseInfo.color} />
+                        </div>
+                        <div>
+                          <p className="text-[11px] uppercase tracking-wider text-white/40 font-bold">Recomendação Nutricional</p>
+                          <p className="text-sm text-white font-semibold mt-1">{currentPhaseInfo.nutritionTip}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+              )}
+
+              {/* Próximas Datas Importantes */}
+              <Card className="p-5 border-white/5 bg-white/[0.03]">
+                <div className="flex items-center gap-3 mb-4">
+                  <Sparkles size={18} className="text-yellow-400" />
+                  <h3 className="text-sm font-bold text-white">Próximas Datas Importantes</h3>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-pink-500/10 border border-pink-500/20">
+                    <div>
+                      <p className="text-[11px] text-white/60 uppercase tracking-wider font-bold">Próxima Ovulação</p>
+                      <p className="text-sm font-semibold text-white mt-1">
+                        {nextOvulation ? new Date(nextOvulation).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' }) : '--'}
+                      </p>
+                    </div>
+                    <Heart size={20} className="text-pink-500" />
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                    <div>
+                      <p className="text-[11px] text-white/60 uppercase tracking-wider font-bold">Próxima Menstruação</p>
+                      <p className="text-sm font-semibold text-white mt-1">
+                        {lastCycle ? new Date(new Date(lastCycle.startDate).getTime() + (lastCycle.cycleLengthDays || 28) * 86400000).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' }) : '--'}
+                      </p>
+                    </div>
+                    <Droplets size={20} className="text-blue-500" />
+                  </div>
+                </div>
+              </Card>
+
+              {/* Calendário */}
+              <Card className="p-6 border-white/5 bg-white/[0.03] overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-40 h-40 bg-pink-500/10 blur-[50px] rounded-full -mr-20 -mt-20" />
+                
+                <div className="flex items-center justify-between mb-6 relative z-10">
+                  <h2 className="text-lg font-bold text-white capitalize">{monthName}</h2>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
+                      className="rounded-lg hover:bg-white/5"
+                    >
+                      <ChevronLeft size={18} />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
+                      className="rounded-lg hover:bg-white/5"
+                    >
+                      <ChevronRight size={18} />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-7 gap-2 mb-4 relative z-10">
+                  {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'].map(day => (
+                    <div key={day} className="text-center text-[11px] font-bold text-white/40 uppercase">
+                      {day}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-7 gap-2 relative z-10">
+                  {days.map((day, idx) => {
+                    const dayOfCycle = getDayOfCycle(day);
+                    const dateStr = day ? `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
+                    const hasEntry = day && lastCycle.dayEntries?.some(e => e.date === dateStr);
+                    const isSelected = day && selectedDate === dateStr;
+
+                    return (
+                      <motion.button
+                        key={idx}
+                        onClick={() => day && handleDayClick(day)}
+                        disabled={!day}
+                        className={`aspect-square rounded-lg border transition-all ${getColorForDay(day)} ${isSelected ? 'ring-2 ring-pink-500' : ''} ${day ? 'cursor-pointer' : 'cursor-default'}`}
+                        whileTap={day ? { scale: 0.95 } : {}}
+                      >
+                        <div className="h-full flex flex-col items-center justify-center">
+                          {day && (
+                            <>
+                              <span className="text-sm font-bold text-white">{day}</span>
+                              {dayOfCycle && (
+                                <span className="text-[9px] text-white/60 font-medium">D{dayOfCycle}</span>
+                              )}
+                              {hasEntry && (
+                                <span className="text-[8px] text-pink-400 mt-0.5">●</span>
+                              )}
+                            </>
                           )}
                         </div>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => {
-                            if (lastCycle.dayEntries) {
-                              updateCycleEntry(lastCycle.id, {
-                                dayEntries: lastCycle.dayEntries.filter(e => e.id !== entry.id)
-                              });
-                              toast.success('Registro removido.');
-                            }
-                          }}
-                          className="text-white/20 hover:text-red-500 hover:bg-red-500/10 rounded-full"
-                        >
-                          <Trash2 size={16} />
-                        </Button>
-                      </div>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </Card>
 
-                      <div className="grid grid-cols-2 gap-3 text-[11px] mb-3">
-                        {entry.flow && (
-                          <div className="flex items-center gap-2 text-white/60">
-                            <Droplets size={14} className="text-red-400" />
-                            <span>{entry.flow === 'light' ? 'Leve' : entry.flow === 'medium' ? 'Moderado' : 'Intenso'}</span>
-                          </div>
-                        )}
-                        {entry.mood && (
-                          <div className="flex items-center gap-2 text-white/60">
-                            <Heart size={14} className="text-pink-400" />
-                            <span>{MOODS.find(m => m.id === entry.mood)?.label || entry.mood}</span>
-                          </div>
-                        )}
-                        {entry.energy && (
-                          <div className="flex items-center gap-2 text-white/60">
-                            <Zap size={14} className="text-yellow-400" />
-                            <span>Energia: {entry.energy}</span>
-                          </div>
-                        )}
-                        {entry.sleep && (
-                          <div className="flex items-center gap-2 text-white/60">
-                            <Moon size={14} className="text-blue-400" />
-                            <span>{entry.sleep}h de sono</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {entry.symptoms && entry.symptoms.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {entry.symptoms.map(symptom => {
-                            const symptomData = SYMPTOMS.find(s => s.id === symptom);
-                            return (
-                              <span key={symptom} className="px-2 py-1 rounded-lg bg-white/5 text-[10px] text-white/70">
-                                {symptomData?.emoji} {symptomData?.label || symptom}
-                              </span>
-                            );
-                          })}
-                        </div>
-                      )}
-
-                      {entry.notes && (
-                        <p className="text-[11px] text-white/50 italic border-l-2 border-pink-500/30 pl-3">"{entry.notes}"</p>
-                      )}
-                    </motion.div>
-                  );
-                })}
+              {/* Legenda de Fases */}
+              <div className="grid grid-cols-2 gap-3">
+                <Card className="p-3 border-white/5 bg-red-500/10 flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500" />
+                  <div className="text-[11px]">
+                    <p className="font-bold text-white">Menstruação</p>
+                    <p className="text-white/50 text-[9px]">Dias 1-5</p>
+                  </div>
+                </Card>
+                <Card className="p-3 border-white/5 bg-blue-500/10 flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-blue-500" />
+                  <div className="text-[11px]">
+                    <p className="font-bold text-white">Folicular</p>
+                    <p className="text-white/50 text-[9px]">Dias 6-13</p>
+                  </div>
+                </Card>
+                <Card className="p-3 border-white/5 bg-pink-500/10 flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-pink-500" />
+                  <div className="text-[11px]">
+                    <p className="font-bold text-white">Ovulatória</p>
+                    <p className="text-white/50 text-[9px]">Dias 14-16</p>
+                  </div>
+                </Card>
+                <Card className="p-3 border-white/5 bg-amber-500/10 flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-amber-500" />
+                  <div className="text-[11px]">
+                    <p className="font-bold text-white">Lútea</p>
+                    <p className="text-white/50 text-[9px]">Dias 17-28</p>
+                  </div>
+                </Card>
               </div>
-            </div>
+            </motion.div>
+          )}
+
+          {/* TAB: ANÁLISE */}
+          {activeTab === 'analysis' && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+              {/* Gráfico de Temperatura */}
+              {temperatureData.length > 0 && (
+                <Card className="p-6 border-white/5 bg-white/[0.03]">
+                  <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                    <Thermometer size={16} className="text-red-400" />
+                    Temperatura Corporal
+                  </h3>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={temperatureData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                      <XAxis dataKey="date" stroke="rgba(255,255,255,0.3)" />
+                      <YAxis stroke="rgba(255,255,255,0.3)" domain={[35, 38]} />
+                      <Tooltip contentStyle={{ background: '#1a1620', border: '1px solid rgba(255,255,255,0.1)' }} />
+                      <Line type="monotone" dataKey="temperature" stroke="#ef4444" dot={{ fill: '#ef4444' }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </Card>
+              )}
+
+              {/* Gráfico de Sono */}
+              {sleepData.length > 0 && (
+                <Card className="p-6 border-white/5 bg-white/[0.03]">
+                  <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                    <Moon size={16} className="text-blue-400" />
+                    Horas de Sono
+                  </h3>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={sleepData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                      <XAxis dataKey="date" stroke="rgba(255,255,255,0.3)" />
+                      <YAxis stroke="rgba(255,255,255,0.3)" />
+                      <Tooltip contentStyle={{ background: '#1a1620', border: '1px solid rgba(255,255,255,0.1)' }} />
+                      <Bar dataKey="sleep" fill="#3b82f6" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </Card>
+              )}
+
+              {/* Frequência de Sintomas */}
+              {symptomFrequency.length > 0 && (
+                <Card className="p-6 border-white/5 bg-white/[0.03]">
+                  <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                    <AlertCircle size={16} className="text-yellow-400" />
+                    Sintomas Mais Frequentes
+                  </h3>
+                  <div className="space-y-3">
+                    {symptomFrequency.map((item, idx) => (
+                      <div key={idx}>
+                        <div className="flex justify-between mb-1">
+                          <p className="text-sm text-white/70">{item.name}</p>
+                          <p className="text-sm font-bold text-pink-500">{item.count}x</p>
+                        </div>
+                        <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${(item.count / Math.max(...symptomFrequency.map(s => s.count))) * 100}%` }}
+                            className="h-full bg-gradient-to-r from-pink-500 to-rose-500"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
+
+              {/* Estatísticas Resumidas */}
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="p-4 border-white/5 bg-white/[0.03]">
+                  <p className="text-[11px] text-white/60 uppercase tracking-wider font-bold">Temperatura Média</p>
+                  <p className="text-2xl font-bold text-white mt-2">
+                    {(temperatureData.reduce((sum, d) => sum + d.temperature, 0) / temperatureData.length || 0).toFixed(1)}°C
+                  </p>
+                </Card>
+                <Card className="p-4 border-white/5 bg-white/[0.03]">
+                  <p className="text-[11px] text-white/60 uppercase tracking-wider font-bold">Sono Médio</p>
+                  <p className="text-2xl font-bold text-white mt-2">
+                    {(sleepData.reduce((sum, d) => sum + d.sleep, 0) / sleepData.length || 0).toFixed(1)}h
+                  </p>
+                </Card>
+              </div>
+            </motion.div>
+          )}
+
+          {/* TAB: EDUCAÇÃO */}
+          {activeTab === 'education' && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+              {currentPhaseInfo && (
+                <>
+                  <Card className="p-6 border-white/5 bg-white/[0.03]">
+                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                      <BookOpen size={18} className="text-blue-400" />
+                      Hormônios na Fase {currentPhaseInfo.phase}
+                    </h3>
+                    <div className="space-y-4">
+                      {currentPhaseInfo.hormones.map((hormone, idx) => (
+                        <div key={idx} className="p-4 rounded-xl bg-white/5 border border-white/10">
+                          <div className="flex items-start justify-between mb-2">
+                            <h4 className="font-bold text-white">{hormone.name}</h4>
+                            <span className="px-2 py-1 rounded-lg bg-pink-500/20 text-pink-500 text-[10px] font-bold">
+                              {hormone.level}
+                            </span>
+                          </div>
+                          <p className="text-sm text-white/70">{hormone.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+
+                  <Card className="p-6 border-white/5 bg-gradient-to-br from-blue-500/10 to-cyan-500/10">
+                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                      <Info size={18} className="text-cyan-400" />
+                      Dica Profissional
+                    </h3>
+                    <p className="text-sm text-white/80">
+                      Durante a fase {currentPhaseInfo.phase.toLowerCase()}, seu corpo passa por mudanças hormonais significativas. 
+                      Acompanhe seus sintomas e padrões para identificar anomalias e compartilhe esses dados com seu médico durante consultas.
+                    </p>
+                  </Card>
+                </>
+              )}
+            </motion.div>
           )}
         </>
       ) : (
