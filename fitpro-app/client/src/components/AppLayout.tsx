@@ -36,8 +36,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
     document.documentElement.scrollTo(0, 0);
   }, [location]);
 
-  // Verificar se estamos na tela de conversa com profissional
+  // Verificar se estamos em modo de treino (full screen, sem menu inferior)
   const isInProfessionalChat = location.startsWith('/profissionais/chat/');
+  const isInWorkoutMode = location.startsWith('/treino-ativo/');
 
   return (
     <div
@@ -52,12 +53,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
           animate="animate"
           exit="exit"
           transition={pageTransition}
-          className={isInProfessionalChat ? "min-h-screen" : "page-with-nav min-h-screen"}
+          className={isInProfessionalChat || isInWorkoutMode ? "min-h-screen" : "page-with-nav min-h-screen"}
         >
           {children}
         </motion.main>
       </AnimatePresence>
-      <BottomTabBar />
+      {!isInWorkoutMode && <BottomTabBar />}
     </div>
   );
 }
