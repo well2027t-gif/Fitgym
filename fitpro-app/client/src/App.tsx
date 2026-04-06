@@ -26,6 +26,7 @@ import Share from './pages/Share';
 import Themes from './pages/Themes';
 import Diet from './pages/Diet';
 import WorkoutActive from './pages/WorkoutActive';
+import WorkoutCreate from './pages/WorkoutCreate';
 import WorkoutPlans from './pages/WorkoutPlans';
 import Workouts from './pages/Workouts';
 import Cycle from './pages/Cycle';
@@ -40,6 +41,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/treinos" component={Workouts} />
+        <Route path="/treinos/criar" component={WorkoutCreate} />
         <Route path="/dieta" component={Diet} />
         <Route path="/progresso" component={Progress} />
         <Route path="/perfil" component={Profile} />
