@@ -2,7 +2,7 @@
 <html lang="pt-BR" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#0d0d0f" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -18,9 +18,8 @@
     <!-- PWA manifest -->
     <link rel="manifest" href="/Fitgym/manifest.json" />
     <link rel="icon" type="image/svg+xml" href="/Fitgym/favicon.svg" />
-    <script type="module" crossorigin src="/Fitgym/assets/index-DFAxwEmH.js"></script>
-    <link rel="stylesheet" crossorigin href="/Fitgym/assets/index-C-CXijIM.css">
-    <script src="/__manus__/debug-collector.js" defer></script>
+    <script type="module" crossorigin src="/Fitgym/assets/index-Cipn32SP.js"></script>
+    <link rel="stylesheet" crossorigin href="/Fitgym/assets/index-D4A4vccE.css">
   </head>
   <body>
     <script id="manus-runtime">window.__MANUS_HOST_DEV__ = false;
@@ -86,7 +85,7 @@ Error generating stack: `+l.message+`
     <div id="root"></div>
     <script
       defer
-      src="https://manus-analytics.com/umami"
-      data-website-id="147ed0bc-1ebe-4334-baa2-28009fbb045d"></script>
+      src="%VITE_ANALYTICS_ENDPOINT%/umami"
+      data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
   </body>
 </html>
