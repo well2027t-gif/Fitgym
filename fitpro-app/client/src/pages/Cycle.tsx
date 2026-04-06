@@ -558,92 +558,105 @@ Consulte seu médico para análise profissional.
                 </div>
               </Card>
 
-              {/* Calendário Ultra-Premium */}
-              <Card className="p-6 border-white/5 bg-gradient-to-br from-white/[0.05] to-white/[0.02] overflow-hidden relative">
-                <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-pink-500/5 to-rose-500/5 blur-[60px] rounded-full -mr-24 -mt-24" />
-                <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-blue-500/5 to-cyan-500/5 blur-[50px] rounded-full -ml-16 -mb-16" />
-                
-                <div className="flex items-center justify-between mb-6 relative z-10">
+              {/* Calendário Glassmorphism Minimalista */}
+              <div className="space-y-6 relative z-10">
+                {/* Header do Mês */}
+                <div className="flex items-center justify-between px-2">
                   <div>
-                    <p className="text-[11px] uppercase tracking-widest text-white/40 font-bold mb-1">Seu Ciclo</p>
-                    <h2 className="text-2xl font-bold text-white capitalize" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{monthName}</h2>
+                    <p className="text-[12px] uppercase tracking-[0.15em] text-white/40 font-light mb-2">Seu Ciclo</p>
+                    <h2 className="text-4xl font-light text-white capitalize" style={{ fontFamily: 'Space Grotesk, sans-serif', letterSpacing: '-0.02em' }}>
+                      {monthName}
+                    </h2>
                   </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
+                  <div className="flex gap-3">
+                    <motion.button
                       onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
-                      className="rounded-full hover:bg-white/10 hover:border-white/20 border border-white/5 transition-all"
+                      className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                     >
-                      <ChevronLeft size={18} className="text-white/60" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
+                      <ChevronLeft size={18} />
+                    </motion.button>
+                    <motion.button
                       onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
-                      className="rounded-full hover:bg-white/10 hover:border-white/20 border border-white/5 transition-all"
+                      className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                     >
-                      <ChevronRight size={18} className="text-white/60" />
-                    </Button>
+                      <ChevronRight size={18} />
+                    </motion.button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-7 gap-2.5 mb-4 relative z-10">
+                {/* Grid de Dias da Semana */}
+                <div className="grid grid-cols-7 gap-3 px-2 mb-2">
                   {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'].map(day => (
-                    <div key={day} className="text-center text-[10px] font-bold text-white/50 uppercase tracking-wider">
-                      {day.substring(0, 1)}
+                    <div key={day} className="text-center text-[11px] font-light text-white/40 uppercase tracking-[0.1em]">
+                      {day}
                     </div>
                   ))}
                 </div>
 
-                <div className="grid grid-cols-7 gap-2.5 relative z-10">
+                {/* Grid de Dias */}
+                <div className="grid grid-cols-7 gap-3 px-2">
                   {days.map((day, idx) => {
                     const dayOfCycle = getDayOfCycle(day);
                     const dateStr = day ? `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
                     const hasEntry = day && lastCycle.dayEntries?.some(e => e.date === dateStr);
                     const isSelected = day && selectedDate === dateStr;
+                    const phase = dayOfCycle ? getCyclePhaseInfo(dayOfCycle) : null;
+
+                    if (!day) {
+                      return <div key={idx} className="aspect-square" />;
+                    }
 
                     return (
                       <motion.button
                         key={idx}
-                        onClick={() => day && handleDayClick(day)}
-                        disabled={!day}
-                        className={`aspect-square rounded-xl border transition-all backdrop-blur-sm ${
-                          day ? (
-                            isSelected 
-                              ? `ring-2 ring-pink-500 ${getColorForDay(day)} cursor-pointer` 
-                              : `${getColorForDay(day)} cursor-pointer hover:border-white/30`
-                          ) : 'cursor-default bg-transparent border-transparent'
-                        }`}
-                        whileTap={day ? { scale: 0.92 } : {}}
-                        whileHover={day ? { y: -2 } : {}}
+                        onClick={() => handleDayClick(day)}
+                        className="aspect-square relative group"
+                        whileHover={{ scale: 1.08 }}
+                        whileTap={{ scale: 0.95 }}
                       >
-                        <div className="h-full flex flex-col items-center justify-center gap-0.5">
-                          {day && (
-                            <>
-                              <span className="text-xs font-bold text-white leading-none">{day}</span>
-                              {dayOfCycle && (
-                                <span className={`text-[8px] font-semibold leading-none ${
-                                  getCyclePhaseInfo(dayOfCycle)?.color || 'text-white/60'
-                                }`}>D{dayOfCycle}</span>
-                              )}
-                              {hasEntry && (
-                                <motion.span 
-                                  className="text-[10px] text-pink-400 mt-0.5"
-                                  animate={{ scale: [1, 1.2, 1] }}
-                                  transition={{ duration: 2, repeat: Infinity }}
-                                >
-                                  ●
-                                </motion.span>
-                              )}
-                            </>
+                        {/* Background Glassmorphism */}
+                        <div className={`absolute inset-0 rounded-2xl backdrop-blur-md border transition-all duration-300 ${
+                          isSelected
+                            ? 'bg-white/15 border-white/40 shadow-lg shadow-pink-500/20'
+                            : hasEntry
+                            ? `bg-gradient-to-br ${phase?.bgColor || 'from-white/5 to-white/[0.02]'} border-white/20`
+                            : 'bg-white/5 border-white/10 group-hover:bg-white/10 group-hover:border-white/20'
+                        }`} />
+
+                        {/* Glow Effect para dias com entrada */}
+                        {hasEntry && (
+                          <div className={`absolute inset-0 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br ${phase?.bgColor || 'from-pink-500/20 to-rose-500/20'}`} />
+                        )}
+
+                        {/* Conteúdo */}
+                        <div className="relative h-full flex flex-col items-center justify-center gap-1">
+                          <span className={`text-sm font-light transition-colors ${
+                            isSelected ? 'text-white font-medium' : 'text-white/80'
+                          }`}>
+                            {day}
+                          </span>
+                          {dayOfCycle && (
+                            <span className={`text-[10px] font-light opacity-70 ${phase?.color || 'text-white/60'}`}>
+                              D{dayOfCycle}
+                            </span>
+                          )}
+                          {hasEntry && (
+                            <motion.div
+                              className={`w-1.5 h-1.5 rounded-full ${phase?.color || 'bg-pink-500'}`}
+                              animate={{ scale: [1, 1.3, 1] }}
+                              transition={{ duration: 2, repeat: Infinity }}
+                            />
                           )}
                         </div>
                       </motion.button>
                     );
                   })}
                 </div>
-              </Card>
+              </div>
 
               {/* Legenda de Fases */}
               <div className="grid grid-cols-2 gap-3">
