@@ -1,2 +1,2 @@
-export { Link, Route, Switch, useParams } from 'wouter';
-export { useHashLocation as useLocation } from 'wouter/use-hash-location';
+export { Router, Link, Route, Switch, useParams, useLocation } from 'wouter';
+export { useHashLocation } from 'wouter/use-hash-location';
