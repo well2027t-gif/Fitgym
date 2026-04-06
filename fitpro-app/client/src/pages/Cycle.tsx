@@ -718,11 +718,24 @@ Consulte seu médico para análise profissional.
                     let phaseBg = '';
                     let phaseText = 'text-white/60';
                     let phaseBorder = 'border-white/10';
+                    let pulseColor = '#ff8fab'; // Cor padrão (rosa)
                     if (dayOfCycle) {
-                      if (dayOfCycle <= 5) { phaseBg = 'bg-red-500/12'; phaseBorder = 'border-red-500/20'; phaseText = 'text-white/70'; }
-                      else if (dayOfCycle <= 13) { phaseBg = 'bg-blue-500/12'; phaseBorder = 'border-blue-500/20'; phaseText = 'text-white/70'; }
-                      else if (dayOfCycle <= 16) { phaseBg = 'bg-pink-500/12'; phaseBorder = 'border-pink-500/20'; phaseText = 'text-white/70'; }
-                      else { phaseBg = 'bg-amber-500/12'; phaseBorder = 'border-amber-500/20'; phaseText = 'text-white/70'; }
+                      if (dayOfCycle <= 5) { 
+                        phaseBg = 'bg-red-500/12'; phaseBorder = 'border-red-500/20'; phaseText = 'text-white/70';
+                        pulseColor = '#f87171'; // Vermelho (Menstruação)
+                      }
+                      else if (dayOfCycle <= 13) { 
+                        phaseBg = 'bg-blue-500/12'; phaseBorder = 'border-blue-500/20'; phaseText = 'text-white/70';
+                        pulseColor = '#60a5fa'; // Azul (Folicular)
+                      }
+                      else if (dayOfCycle <= 16) { 
+                        phaseBg = 'bg-pink-500/12'; phaseBorder = 'border-pink-500/20'; phaseText = 'text-white/70';
+                        pulseColor = '#ff8fab'; // Rosa (Ovulação)
+                      }
+                      else { 
+                        phaseBg = 'bg-amber-500/12'; phaseBorder = 'border-amber-500/20'; phaseText = 'text-white/70';
+                        pulseColor = '#fbbf24'; // Laranja (Lútea)
+                      }
                     }
 
                     if (!day) return <div key={idx} className="aspect-square" />;
@@ -735,7 +748,12 @@ Consulte seu médico para análise profissional.
                           isSelected
                             ? 'bg-white/15 border-white/40 shadow-lg shadow-white/20'
                             : isToday
-                            ? 'bg-gradient-to-br from-pink-500/30 to-rose-500/20 border-pink-500/40 shadow-lg shadow-pink-500/10'
+                            ? `border-opacity-50 shadow-lg ${
+                                dayOfCycle <= 5 ? 'bg-red-500/25 border-red-500/50 shadow-red-500/10' :
+                                dayOfCycle <= 13 ? 'bg-blue-500/25 border-blue-500/50 shadow-blue-500/10' :
+                                dayOfCycle <= 16 ? 'bg-pink-500/25 border-pink-500/50 shadow-pink-500/10' :
+                                'bg-amber-500/25 border-amber-500/50 shadow-amber-500/10'
+                              }`
                             : dayOfCycle
                             ? `${phaseBg} ${phaseBorder} hover:bg-opacity-20`
                             : 'bg-white/[0.02] border-white/5 hover:bg-white/5 hover:border-white/15'
@@ -743,7 +761,7 @@ Consulte seu médico para análise profissional.
                         whileHover={{ scale: 1.03 }}
                         whileTap={{ scale: 0.96 }}
                         animate={isToday ? { 
-                          color: ['#ffffff', '#ff8fab', '#ffffff']
+                          color: ['#ffffff', pulseColor, '#ffffff']
                         } : {}}
                         transition={isToday ? { duration: 2, repeat: Infinity } : {}}
                       >
