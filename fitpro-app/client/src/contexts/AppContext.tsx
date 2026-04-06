@@ -1,39 +1,57 @@
 /**
  * FitPro — AppContext
  * Design: Premium Dark Fitness
- * Global state management with localStorage persistence.
- * Structured for future React Native / mobile conversion.
+ * Estado global com suporte a perfil expandido, sistema completo de treinos,
+ * execução com histórico enriquecido e persistência em localStorage.
  */
 
-import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { nanoid } from 'nanoid';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import {
+  generateAutoWorkouts,
+  profileSignature,
+  type AutoPlanSummary,
+  type TrainingLocation,
+  type UserSex,
+  type WorkoutLevel,
+  type WorkoutMode,
+} from '@/lib/workoutEngine';
 
 export type Goal = 'ganhar_massa' | 'perder_gordura' | 'manter_peso' | 'definicao' | 'resistencia';
 
 export interface UserProfile {
   name: string;
   age: number;
-  height: number; // cm
-  weight: number; // kg
+  height: number;
+  weight: number;
   goal: Goal;
   calorieGoal: number;
   proteinGoal: number;
   carbGoal: number;
   fatGoal: number;
   avatarUrl?: string;
+  sex: UserSex;
+  level: WorkoutLevel;
+  trainingFrequency: number;
+  trainingLocation: TrainingLocation;
+  availableEquipment: string[];
+  limitations: string;
 }
 
 export interface Exercise {
   id: string;
   name: string;
+  muscleGroup?: string;
+  secondaryGroups?: string[];
   sets: number;
   reps: number;
-  weight: number; // kg
+  weight: number;
   restSeconds: number;
   notes?: string;
+  instructions?: string;
+  videoUrl?: string;
   completed?: boolean;
+  skipped?: boolean;
 }
 
 export interface Workout {
@@ -44,15 +62,17 @@ export interface Workout {
   createdAt: string;
   lastPerformed?: string;
   durationMinutes?: number;
+  origin?: 'auto' | 'manual';
+  dayKey?: string;
 }
 
 export interface Food {
   id: string;
   name: string;
   calories: number;
-  protein: number; // g
-  carbs: number;   // g
-  fat: number;     // g
+  protein: number;
+  carbs: number;
+  fat: number;
   quantity: number;
   unit: string;
 }
@@ -66,15 +86,15 @@ export interface Meal {
 }
 
 export interface DietDay {
-  date: string; // YYYY-MM-DD
+  date: string;
   meals: Meal[];
   notes?: string;
 }
 
 export interface WeightEntry {
   id: string;
-  date: string; // YYYY-MM-DD
-  weight: number; // kg
+  date: string;
+  weight: number;
   notes?: string;
 }
 
@@ -96,14 +116,25 @@ export interface ProgressPhoto {
   notes?: string;
 }
 
+export interface WorkoutPerformanceDetail {
+  exerciseName?: string;
+  weight: number;
+  reps: number;
+  sets: number;
+  completedSets?: number;
+  skipped?: boolean;
+}
+
 export interface WorkoutSession {
   id: string;
   workoutId: string;
   date: string;
-  completedExercises: string[]; // exercise ids
+  completedExercises: string[];
+  skippedExercises?: string[];
   durationSeconds: number;
   notes?: string;
-  exerciseDetails?: Record<string, { weight: number; reps: number; sets: number }>; // track actual performance
+  progressPercent?: number;
+  exerciseDetails?: Record<string, WorkoutPerformanceDetail>;
 }
 
 export interface WorkoutPlan {
@@ -127,13 +158,13 @@ export interface OneRMCalculation {
 }
 
 export interface StepEntry {
-  date: string; // YYYY-MM-DD
+  date: string;
   steps: number;
   updatedAt?: string;
 }
 
 export interface WaterEntry {
-  date: string; // YYYY-MM-DD
+  date: string;
   cups: number;
   updatedAt?: string;
 }
@@ -142,7 +173,7 @@ export interface NotificationReminder {
   id: string;
   type: 'workout' | 'meal' | 'water' | 'weight_check' | 'cycle_start';
   enabled: boolean;
-  time: string; // HH:MM format
+  time: string;
   frequency: 'daily' | 'weekly' | 'custom';
 }
 
@@ -155,8 +186,8 @@ export interface UserPreferences {
   stepTrackingEnabled: boolean;
   dailyStepGoal: number;
   lastSyncTime?: string;
-  waterGoalLiters: number; // meta diária de água em litros
-  cupSizeMl: number;       // tamanho do copo em ml
+  waterGoalLiters: number;
+  cupSizeMl: number;
 }
 
 export interface Badge {
@@ -170,51 +201,55 @@ export interface Badge {
 
 export interface UserStats {
   totalPoints: number;
-  currentStreak: number; // dias seguidos
+  currentStreak: number;
   longestStreak: number;
   totalWorkouts: number;
   totalDietDays: number;
   badges: Badge[];
-  personalRecords: Record<string, number>; // exerciseName -> maxWeight
+  personalRecords: Record<string, number>;
   lastWorkoutDate?: string;
   oneRMHistory: OneRMCalculation[];
-  volumeHistory: Array<{ date: string; exercise: string; volume: number }>; // weight * reps * sets
+  volumeHistory: Array<{ date: string; exercise: string; volume: number }>;
 }
 
 export interface CycleDayEntry {
   id: string;
-  date: string; // YYYY-MM-DD
+  date: string;
   flow?: 'light' | 'medium' | 'heavy';
-  symptoms?: string[]; // ex: ['cólica', 'inchaço', 'fadiga', 'acne', 'dor_de_cabeça']
-  mood?: string; // ex: 'feliz', 'triste', 'irritada', 'ansiosa', 'normal'
+  symptoms?: string[];
+  mood?: string;
   energy?: 'baixa' | 'normal' | 'alta';
   libido?: 'baixa' | 'normal' | 'alta';
-  sleep?: number; // horas de sono
-  temperature?: number; // temperatura corporal em °C
+  sleep?: number;
+  temperature?: number;
   notes?: string;
 }
 
 export interface CycleProfile {
-  cycleLengthDays: number; // duração média do ciclo (ex: 28)
-  menstruationDays: number; // duração média da menstruação (ex: 5)
-  useContraceptive: boolean; // usa anticoncepcional?
-  contraceptiveType?: string; // tipo de anticoncepcional
-  objective: 'track' | 'conceive' | 'avoid' | 'performance'; // objetivo
-  lastMenstruationDate?: string; // YYYY-MM-DD
+  cycleLengthDays: number;
+  menstruationDays: number;
+  useContraceptive: boolean;
+  contraceptiveType?: string;
+  objective: 'track' | 'conceive' | 'avoid' | 'performance';
+  lastMenstruationDate?: string;
 }
 
 export interface CycleEntry {
   id: string;
-  startDate: string; // YYYY-MM-DD
-  endDate?: string; // YYYY-MM-DD
-  cycleLengthDays?: number; // comprimento do ciclo
-  dayEntries: CycleDayEntry[]; // registros diários
+  startDate: string;
+  endDate?: string;
+  cycleLengthDays?: number;
+  dayEntries: CycleDayEntry[];
 }
 
 export interface AppState {
   profile: UserProfile;
   workouts: Workout[];
   todayWorkoutId: string | null;
+  workoutMode: WorkoutMode;
+  workoutAutoSummary: AutoPlanSummary | null;
+  lastAutoProfileSignature: string | null;
+  lastGeneratedAt?: string;
   dietDays: DietDay[];
   weightEntries: WeightEntry[];
   measurements: BodyMeasurement[];
@@ -229,205 +264,22 @@ export interface AppState {
   cycleProfile: CycleProfile | null;
 }
 
-// ─── Default State ────────────────────────────────────────────────────────────
-
-const defaultProfile: UserProfile = {
-  name: 'Atleta',
-  age: 25,
-  height: 175,
-  weight: 75,
-  goal: 'ganhar_massa',
-  calorieGoal: 2800,
-  proteinGoal: 180,
-  carbGoal: 320,
-  fatGoal: 80,
-};
-
-const defaultWorkout: Workout = {
-  id: nanoid(),
-  name: 'Treino A — Peito e Tríceps',
-  muscleGroups: ['Peito', 'Tríceps', 'Ombro'],
-  exercises: [
-    { id: nanoid(), name: 'Supino Reto', sets: 4, reps: 10, weight: 60, restSeconds: 90 },
-    { id: nanoid(), name: 'Supino Inclinado', sets: 3, reps: 12, weight: 50, restSeconds: 75 },
-    { id: nanoid(), name: 'Crucifixo', sets: 3, reps: 15, weight: 14, restSeconds: 60 },
-    { id: nanoid(), name: 'Tríceps Pulley', sets: 4, reps: 12, weight: 30, restSeconds: 60 },
-    { id: nanoid(), name: 'Tríceps Testa', sets: 3, reps: 12, weight: 20, restSeconds: 60 },
-  ],
-  createdAt: new Date().toISOString(),
-};
-
-const defaultDietDay: DietDay = {
-  date: new Date().toISOString().split('T')[0],
-  meals: [
-    {
-      id: nanoid(),
-      type: 'breakfast',
-      foods: [
-        { id: nanoid(), name: 'Ovos mexidos (3 unid)', calories: 210, protein: 18, carbs: 2, fat: 15, quantity: 3, unit: 'unid' },
-        { id: nanoid(), name: 'Pão integral', calories: 140, protein: 6, carbs: 26, fat: 2, quantity: 2, unit: 'fatias' },
-        { id: nanoid(), name: 'Whey Protein', calories: 120, protein: 25, carbs: 3, fat: 2, quantity: 1, unit: 'scoop' },
-      ],
-    },
-    {
-      id: nanoid(),
-      type: 'lunch',
-      foods: [
-        { id: nanoid(), name: 'Frango grelhado', calories: 280, protein: 52, carbs: 0, fat: 6, quantity: 200, unit: 'g' },
-        { id: nanoid(), name: 'Arroz integral', calories: 220, protein: 5, carbs: 46, fat: 2, quantity: 150, unit: 'g' },
-        { id: nanoid(), name: 'Brócolis cozido', calories: 55, protein: 4, carbs: 10, fat: 0, quantity: 100, unit: 'g' },
-      ],
-    },
-    {
-      id: nanoid(),
-      type: 'snack',
-      foods: [
-        { id: nanoid(), name: 'Banana', calories: 90, protein: 1, carbs: 23, fat: 0, quantity: 1, unit: 'unid' },
-        { id: nanoid(), name: 'Pasta de amendoim', calories: 190, protein: 8, carbs: 6, fat: 16, quantity: 2, unit: 'col. sopa' },
-      ],
-    },
-    {
-      id: nanoid(),
-      type: 'dinner',
-      foods: [
-        { id: nanoid(), name: 'Salmão grelhado', calories: 310, protein: 42, carbs: 0, fat: 15, quantity: 200, unit: 'g' },
-        { id: nanoid(), name: 'Batata doce', calories: 130, protein: 2, carbs: 30, fat: 0, quantity: 150, unit: 'g' },
-        { id: nanoid(), name: 'Salada verde', calories: 30, protein: 2, carbs: 5, fat: 0, quantity: 100, unit: 'g' },
-      ],
-    },
-  ],
-};
-
-const defaultState: AppState = {
-  profile: defaultProfile,
-  workouts: [defaultWorkout],
-  todayWorkoutId: defaultWorkout.id,
-  dietDays: [defaultDietDay],
-  weightEntries: [
-    { id: nanoid(), date: new Date(Date.now() - 6 * 86400000).toISOString().split('T')[0], weight: 76.2 },
-    { id: nanoid(), date: new Date(Date.now() - 5 * 86400000).toISOString().split('T')[0], weight: 75.8 },
-    { id: nanoid(), date: new Date(Date.now() - 4 * 86400000).toISOString().split('T')[0], weight: 75.5 },
-    { id: nanoid(), date: new Date(Date.now() - 3 * 86400000).toISOString().split('T')[0], weight: 75.3 },
-    { id: nanoid(), date: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0], weight: 75.1 },
-    { id: nanoid(), date: new Date(Date.now() - 1 * 86400000).toISOString().split('T')[0], weight: 75.0 },
-    { id: nanoid(), date: new Date().toISOString().split('T')[0], weight: 74.8 },
-  ],
-  measurements: [],
-  progressPhotos: [],
-  workoutSessions: [],
-  stats: {
-    totalPoints: 0,
-    currentStreak: 0,
-    longestStreak: 0,
-    totalWorkouts: 0,
-    totalDietDays: 0,
-    badges: [],
-    personalRecords: {},
-    oneRMHistory: [],
-    volumeHistory: [],
-  },
-  workoutPlans: [],
-  stepEntries: [
-    {
-      date: new Date().toISOString().split('T')[0],
-      steps: 0,
-      updatedAt: new Date().toISOString(),
-    },
-  ],
-  waterEntries: [
-    {
-      date: new Date().toISOString().split('T')[0],
-      cups: 0,
-      updatedAt: new Date().toISOString(),
-    },
-  ],
-  preferences: {
-    theme: 'green',
-    notifications: [
-      { id: nanoid(), type: 'workout', enabled: true, time: '06:00', frequency: 'daily' },
-      { id: nanoid(), type: 'meal', enabled: true, time: '12:00', frequency: 'daily' },
-      { id: nanoid(), type: 'water', enabled: false, time: '09:00', frequency: 'daily' },
-    ],
-    offlineMode: false,
-    stepTrackingEnabled: true,
-    dailyStepGoal: 8000,
-    waterGoalLiters: 2.5,
-    cupSizeMl: 250,
-  },
-  cycleEntries: [
-    {
-      id: nanoid(),
-      startDate: new Date(Date.now() - 25 * 86400000).toISOString().split('T')[0],
-      cycleLengthDays: 28,
-      dayEntries: [
-        // Menstruação (Dias 1-5)
-        ...Array.from({ length: 5 }, (_, i) => ({
-          id: nanoid(),
-          date: new Date(Date.now() - (25 - i) * 86400000).toISOString().split('T')[0],
-          symptoms: i < 3 ? ['colica', 'fadiga', 'inchaco'] : ['fadiga'],
-          mood: 'normal' as const,
-          energy: 'baixa' as const,
-          libido: 'baixa' as const,
-          sleep: 7.5 + Math.random() * 1,
-          temperature: 36.4 + Math.random() * 0.3,
-          notes: i === 0 ? 'Primeiro dia de menstruação' : undefined,
-        })),
-        // Folicular (Dias 6-13)
-        ...Array.from({ length: 8 }, (_, i) => ({
-          id: nanoid(),
-          date: new Date(Date.now() - (20 - i) * 86400000).toISOString().split('T')[0],
-          symptoms: [],
-          mood: 'feliz' as const,
-          energy: 'alta' as const,
-          libido: 'normal' as const,
-          sleep: 8 + Math.random() * 0.5,
-          temperature: 36.5 + Math.random() * 0.2,
-          notes: i === 7 ? 'Energia em alta!' : undefined,
-        })),
-        // Ovulatória (Dias 14-16)
-        ...Array.from({ length: 3 }, (_, i) => ({
-          id: nanoid(),
-          date: new Date(Date.now() - (12 - i) * 86400000).toISOString().split('T')[0],
-          symptoms: [],
-          mood: 'feliz' as const,
-          energy: 'alta' as const,
-          libido: 'alta' as const,
-          sleep: 7.8 + Math.random() * 0.4,
-          temperature: 36.7 + Math.random() * 0.2,
-          notes: i === 1 ? 'Dia da ovulação - pico de energia!' : undefined,
-        })),
-        // Lútea (Dias 17-25)
-        ...Array.from({ length: 9 }, (_, i) => ({
-          id: nanoid(),
-          date: new Date(Date.now() - (9 - i) * 86400000).toISOString().split('T')[0],
-          symptoms: i > 4 ? ['inchaco', 'acne'] : [],
-          mood: (i > 5 ? 'irritada' : 'normal') as const,
-          energy: (i > 5 ? 'baixa' : 'normal') as const,
-          libido: 'normal' as const,
-          sleep: 7.5 + Math.random() * 0.8,
-          temperature: 36.6 + Math.random() * 0.3,
-          notes: i === 8 ? 'Últimos dias antes da menstruação' : undefined,
-        })),
-      ],
-    },
-  ],
-  cycleProfile: {
-    cycleLengthDays: 28,
-    menstruationDays: 5,
-    useContraceptive: false,
-    objective: 'performance',
-    lastMenstruationDate: new Date(Date.now() - 25 * 86400000).toISOString().split('T')[0],
-  },
-};
-
-// ─── Context ──────────────────────────────────────────────────────────────────
+interface ReplaceWorkoutsOptions {
+  mode?: WorkoutMode;
+  sourceSignature?: string | null;
+  summary?: AutoPlanSummary | null;
+}
 
 interface AppContextValue {
   state: AppState;
+  needsWorkoutRefresh: boolean;
   updateProfile: (profile: Partial<UserProfile>) => void;
   addWorkout: (workout: Omit<Workout, 'id' | 'createdAt'>) => Workout;
   updateWorkout: (id: string, workout: Partial<Workout>) => void;
   deleteWorkout: (id: string) => void;
+  replaceWorkouts: (workouts: Workout[], options?: ReplaceWorkoutsOptions) => void;
+  updateWorkoutMode: (mode: WorkoutMode) => void;
+  generateAutoWorkoutPlan: () => Workout[];
   setTodayWorkout: (id: string | null) => void;
   addExerciseToWorkout: (workoutId: string, exercise: Omit<Exercise, 'id'>) => void;
   updateExercise: (workoutId: string, exerciseId: string, exercise: Partial<Exercise>) => void;
@@ -463,381 +315,694 @@ interface AppContextValue {
 }
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);
+const STORAGE_KEY = 'fitpro_app_state_v3';
 
-const STORAGE_KEY = 'fitpro_app_state_v2';
+const today = () => new Date().toISOString().split('T')[0];
+
+const defaultProfile: UserProfile = {
+  name: 'Atleta',
+  age: 25,
+  height: 175,
+  weight: 75,
+  goal: 'ganhar_massa',
+  calorieGoal: 2800,
+  proteinGoal: 180,
+  carbGoal: 320,
+  fatGoal: 80,
+  sex: 'masculino',
+  level: 'intermediario',
+  trainingFrequency: 4,
+  trainingLocation: 'academia',
+  availableEquipment: ['halteres', 'barra', 'banco', 'cabo', 'polia', 'leg press', 'rack'],
+  limitations: '',
+};
+
+function toWorkoutProfile(profile: UserProfile) {
+  return {
+    goal: profile.goal,
+    age: profile.age,
+    weight: profile.weight,
+    height: profile.height,
+    sex: profile.sex,
+    level: profile.level,
+    trainingFrequency: profile.trainingFrequency,
+    trainingLocation: profile.trainingLocation,
+    availableEquipment: profile.availableEquipment,
+    limitations: profile.limitations,
+  };
+}
+
+const seededAuto = generateAutoWorkouts(toWorkoutProfile(defaultProfile));
+
+const defaultDietDay: DietDay = {
+  date: today(),
+  meals: [
+    {
+      id: nanoid(),
+      type: 'breakfast',
+      foods: [
+        { id: nanoid(), name: 'Ovos mexidos (3 unid)', calories: 210, protein: 18, carbs: 2, fat: 15, quantity: 3, unit: 'unid' },
+        { id: nanoid(), name: 'Pão integral', calories: 140, protein: 6, carbs: 26, fat: 2, quantity: 2, unit: 'fatias' },
+      ],
+    },
+    {
+      id: nanoid(),
+      type: 'lunch',
+      foods: [
+        { id: nanoid(), name: 'Frango grelhado', calories: 280, protein: 52, carbs: 0, fat: 6, quantity: 200, unit: 'g' },
+        { id: nanoid(), name: 'Arroz integral', calories: 220, protein: 5, carbs: 46, fat: 2, quantity: 150, unit: 'g' },
+      ],
+    },
+    {
+      id: nanoid(),
+      type: 'snack',
+      foods: [
+        { id: nanoid(), name: 'Banana', calories: 90, protein: 1, carbs: 23, fat: 0, quantity: 1, unit: 'unid' },
+      ],
+    },
+    {
+      id: nanoid(),
+      type: 'dinner',
+      foods: [
+        { id: nanoid(), name: 'Salmão grelhado', calories: 310, protein: 42, carbs: 0, fat: 15, quantity: 200, unit: 'g' },
+        { id: nanoid(), name: 'Batata doce', calories: 130, protein: 2, carbs: 30, fat: 0, quantity: 150, unit: 'g' },
+      ],
+    },
+  ],
+};
+
+const defaultState: AppState = {
+  profile: defaultProfile,
+  workouts: seededAuto.workouts,
+  todayWorkoutId: seededAuto.workouts[0]?.id ?? null,
+  workoutMode: 'auto',
+  workoutAutoSummary: seededAuto.summary,
+  lastAutoProfileSignature: seededAuto.summary.generatedFrom,
+  lastGeneratedAt: new Date().toISOString(),
+  dietDays: [defaultDietDay],
+  weightEntries: [
+    { id: nanoid(), date: new Date(Date.now() - 6 * 86400000).toISOString().split('T')[0], weight: 76.2 },
+    { id: nanoid(), date: new Date(Date.now() - 3 * 86400000).toISOString().split('T')[0], weight: 75.3 },
+    { id: nanoid(), date: today(), weight: 74.8 },
+  ],
+  measurements: [],
+  progressPhotos: [],
+  workoutSessions: [],
+  stats: {
+    totalPoints: 200,
+    currentStreak: 0,
+    longestStreak: 0,
+    totalWorkouts: 0,
+    totalDietDays: 0,
+    badges: [
+      {
+        id: nanoid(),
+        name: 'Meta Atingida',
+        description: 'Você configurou seu objetivo principal e começou sua jornada.',
+        icon: '🎯',
+        unlockedAt: new Date().toISOString(),
+        condition: 'weight_goal',
+      },
+    ],
+    personalRecords: {},
+    oneRMHistory: [],
+    volumeHistory: [],
+  },
+  workoutPlans: [],
+  stepEntries: [{ date: today(), steps: 0, updatedAt: new Date().toISOString() }],
+  waterEntries: [{ date: today(), cups: 0, updatedAt: new Date().toISOString() }],
+  preferences: {
+    theme: 'green',
+    notifications: [
+      { id: nanoid(), type: 'workout', enabled: true, time: '06:00', frequency: 'daily' },
+      { id: nanoid(), type: 'meal', enabled: true, time: '12:00', frequency: 'daily' },
+      { id: nanoid(), type: 'water', enabled: false, time: '09:00', frequency: 'daily' },
+    ],
+    offlineMode: false,
+    stepTrackingEnabled: true,
+    dailyStepGoal: 8000,
+    waterGoalLiters: 2.5,
+    cupSizeMl: 250,
+  },
+  cycleEntries: [],
+  cycleProfile: {
+    cycleLengthDays: 28,
+    menstruationDays: 5,
+    useContraceptive: false,
+    objective: 'performance',
+  },
+};
+
+function createMealSet(): Meal[] {
+  return [
+    { id: nanoid(), type: 'breakfast', foods: [] },
+    { id: nanoid(), type: 'lunch', foods: [] },
+    { id: nanoid(), type: 'snack', foods: [] },
+    { id: nanoid(), type: 'dinner', foods: [] },
+  ];
+}
+
+function normalizeExercise(raw: Partial<Exercise> & Pick<Exercise, 'name' | 'sets' | 'reps' | 'weight' | 'restSeconds'>): Exercise {
+  return {
+    id: raw.id ?? nanoid(),
+    name: raw.name,
+    muscleGroup: raw.muscleGroup,
+    secondaryGroups: raw.secondaryGroups ?? [],
+    sets: raw.sets,
+    reps: raw.reps,
+    weight: raw.weight,
+    restSeconds: raw.restSeconds,
+    notes: raw.notes,
+    instructions: raw.instructions,
+    videoUrl: raw.videoUrl,
+    completed: raw.completed ?? false,
+    skipped: raw.skipped ?? false,
+  };
+}
+
+function normalizeWorkout(raw: Partial<Workout> & Pick<Workout, 'name' | 'muscleGroups' | 'exercises'>): Workout {
+  return {
+    id: raw.id ?? nanoid(),
+    name: raw.name,
+    muscleGroups: raw.muscleGroups ?? [],
+    exercises: raw.exercises.map(exercise => normalizeExercise(exercise)),
+    createdAt: raw.createdAt ?? new Date().toISOString(),
+    lastPerformed: raw.lastPerformed,
+    durationMinutes: raw.durationMinutes,
+    origin: raw.origin ?? 'manual',
+    dayKey: raw.dayKey ?? `custom-${Math.random().toString(36).slice(2, 8)}`,
+  };
+}
+
+function deriveStreak(dates: string[]) {
+  const uniqueDates = Array.from(new Set(dates)).sort((a, b) => b.localeCompare(a));
+  if (uniqueDates.length === 0) return 0;
+  let streak = 0;
+  let cursor = new Date();
+
+  for (let i = 0; i < uniqueDates.length; i += 1) {
+    const target = cursor.toISOString().split('T')[0];
+    if (uniqueDates.includes(target)) {
+      streak += 1;
+      cursor = new Date(cursor.getTime() - 86400000);
+      continue;
+    }
+
+    if (streak === 0) {
+      cursor = new Date(cursor.getTime() - 86400000);
+      const yesterday = cursor.toISOString().split('T')[0];
+      if (uniqueDates.includes(yesterday)) {
+        streak += 1;
+        cursor = new Date(cursor.getTime() - 86400000);
+        continue;
+      }
+    }
+    break;
+  }
+
+  return streak;
+}
+
+function normalizeLoadedState(raw: Partial<AppState>): AppState {
+  const mergedProfile: UserProfile = {
+    ...defaultProfile,
+    ...(raw.profile ?? {}),
+    availableEquipment: raw.profile?.availableEquipment ?? defaultProfile.availableEquipment,
+  };
+
+  const workouts = (raw.workouts ?? defaultState.workouts).map(workout => normalizeWorkout(workout));
+  const derivedSignature = profileSignature(toWorkoutProfile(mergedProfile));
+
+  return {
+    ...defaultState,
+    ...raw,
+    profile: mergedProfile,
+    workouts,
+    todayWorkoutId: raw.todayWorkoutId ?? workouts[0]?.id ?? null,
+    workoutMode: raw.workoutMode ?? (workouts.some(workout => workout.origin === 'auto') ? 'auto' : 'manual'),
+    workoutAutoSummary: raw.workoutAutoSummary ?? defaultState.workoutAutoSummary,
+    lastAutoProfileSignature: raw.lastAutoProfileSignature ?? derivedSignature,
+    lastGeneratedAt: raw.lastGeneratedAt ?? defaultState.lastGeneratedAt,
+    dietDays: raw.dietDays ?? defaultState.dietDays,
+    weightEntries: raw.weightEntries ?? defaultState.weightEntries,
+    measurements: raw.measurements ?? [],
+    progressPhotos: raw.progressPhotos ?? [],
+    workoutSessions: raw.workoutSessions ?? [],
+    workoutPlans: raw.workoutPlans ?? [],
+    stepEntries: raw.stepEntries ?? defaultState.stepEntries,
+    waterEntries: raw.waterEntries ?? defaultState.waterEntries,
+    preferences: {
+      ...defaultState.preferences,
+      ...(raw.preferences ?? {}),
+      notifications: raw.preferences?.notifications ?? defaultState.preferences.notifications,
+    },
+    stats: {
+      ...defaultState.stats,
+      ...(raw.stats ?? {}),
+      badges: raw.stats?.badges ?? defaultState.stats.badges,
+      personalRecords: raw.stats?.personalRecords ?? {},
+      oneRMHistory: raw.stats?.oneRMHistory ?? [],
+      volumeHistory: raw.stats?.volumeHistory ?? [],
+    },
+    cycleEntries: raw.cycleEntries ?? [],
+    cycleProfile: raw.cycleProfile ?? defaultState.cycleProfile,
+  };
+}
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AppState>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return {
-          ...defaultState,
-          ...parsed,
-          profile: { ...defaultState.profile, ...parsed.profile },
-          preferences: { ...defaultState.preferences, ...parsed.preferences },
-          cycleEntries: parsed.cycleEntries || [],
-          waterEntries: parsed.waterEntries || defaultState.waterEntries,
-        };
-      } catch (e) {
-        return defaultState;
-      }
+    if (!saved) return defaultState;
+    try {
+      return normalizeLoadedState(JSON.parse(saved) as Partial<AppState>);
+    } catch {
+      return defaultState;
     }
-    return defaultState;
   });
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
+  const needsWorkoutRefresh = useMemo(() => {
+    if (state.workoutMode !== 'auto') return false;
+    return profileSignature(toWorkoutProfile(state.profile)) !== state.lastAutoProfileSignature;
+  }, [state.profile, state.workoutMode, state.lastAutoProfileSignature]);
+
   const updateProfile = useCallback((profile: Partial<UserProfile>) => {
-    setState(s => ({ ...s, profile: { ...s.profile, ...profile } }));
+    setState(prev => ({
+      ...prev,
+      profile: {
+        ...prev.profile,
+        ...profile,
+        availableEquipment: profile.availableEquipment ?? prev.profile.availableEquipment,
+      },
+    }));
   }, []);
 
+  const replaceWorkouts = useCallback((workouts: Workout[], options?: ReplaceWorkoutsOptions) => {
+    setState(prev => ({
+      ...prev,
+      workouts: workouts.map(workout => normalizeWorkout(workout)),
+      todayWorkoutId: workouts[0]?.id ?? null,
+      workoutMode: options?.mode ?? prev.workoutMode,
+      workoutAutoSummary: options?.summary ?? prev.workoutAutoSummary,
+      lastAutoProfileSignature: options?.sourceSignature ?? prev.lastAutoProfileSignature,
+      lastGeneratedAt: options?.mode === 'auto' ? new Date().toISOString() : prev.lastGeneratedAt,
+    }));
+  }, []);
+
+  const updateWorkoutMode = useCallback((mode: WorkoutMode) => {
+    setState(prev => ({ ...prev, workoutMode: mode }));
+  }, []);
+
+  const generateAutoWorkoutPlan = useCallback(() => {
+    const generated = generateAutoWorkouts(toWorkoutProfile(state.profile));
+    setState(prev => ({
+      ...prev,
+      workouts: generated.workouts.map(workout => normalizeWorkout(workout)),
+      todayWorkoutId: generated.workouts[0]?.id ?? null,
+      workoutMode: 'auto',
+      workoutAutoSummary: generated.summary,
+      lastAutoProfileSignature: generated.summary.generatedFrom,
+      lastGeneratedAt: new Date().toISOString(),
+    }));
+    return generated.workouts;
+  }, [state.profile]);
+
   const addWorkout = useCallback((workout: Omit<Workout, 'id' | 'createdAt'>): Workout => {
-    const newWorkout: Workout = { ...workout, id: nanoid(), createdAt: new Date().toISOString() };
-    setState(s => ({ ...s, workouts: [...s.workouts, newWorkout] }));
+    const newWorkout = normalizeWorkout({
+      ...workout,
+      id: nanoid(),
+      createdAt: new Date().toISOString(),
+      origin: workout.origin ?? 'manual',
+      dayKey: workout.dayKey ?? `manual-${Date.now()}`,
+    });
+    setState(prev => ({
+      ...prev,
+      workouts: [...prev.workouts, newWorkout],
+      workoutMode: prev.workoutMode === 'unset' ? 'manual' : prev.workoutMode,
+    }));
     return newWorkout;
   }, []);
 
   const updateWorkout = useCallback((id: string, workout: Partial<Workout>) => {
-    setState(s => ({ ...s, workouts: s.workouts.map(w => w.id === id ? { ...w, ...workout } : w) }));
+    setState(prev => ({
+      ...prev,
+      workouts: prev.workouts.map(item => item.id === id ? {
+        ...item,
+        ...workout,
+        exercises: workout.exercises ? workout.exercises.map(exercise => normalizeExercise(exercise)) : item.exercises,
+      } : item),
+    }));
   }, []);
 
   const deleteWorkout = useCallback((id: string) => {
-    setState(s => ({ ...s, workouts: s.workouts.filter(w => w.id !== id) }));
+    setState(prev => {
+      const workouts = prev.workouts.filter(item => item.id !== id);
+      return {
+        ...prev,
+        workouts,
+        todayWorkoutId: prev.todayWorkoutId === id ? workouts[0]?.id ?? null : prev.todayWorkoutId,
+      };
+    });
   }, []);
 
   const setTodayWorkout = useCallback((id: string | null) => {
-    setState(s => ({ ...s, todayWorkoutId: id }));
+    setState(prev => ({ ...prev, todayWorkoutId: id }));
   }, []);
 
   const addExerciseToWorkout = useCallback((workoutId: string, exercise: Omit<Exercise, 'id'>) => {
-    setState(s => ({
-      ...s,
-      workouts: s.workouts.map(w => w.id === workoutId ? { ...w, exercises: [...w.exercises, { ...exercise, id: nanoid() }] } : w),
+    setState(prev => ({
+      ...prev,
+      workouts: prev.workouts.map(workout => workout.id === workoutId
+        ? { ...workout, exercises: [...workout.exercises, normalizeExercise({ ...exercise, id: nanoid() })] }
+        : workout),
     }));
   }, []);
 
   const updateExercise = useCallback((workoutId: string, exerciseId: string, exercise: Partial<Exercise>) => {
-    setState(s => ({
-      ...s,
-      workouts: s.workouts.map(w =>
-        w.id === workoutId
-          ? { ...w, exercises: w.exercises.map(e => e.id === exerciseId ? { ...e, ...exercise } : e) }
-          : w
-      ),
+    setState(prev => ({
+      ...prev,
+      workouts: prev.workouts.map(workout => workout.id === workoutId ? {
+        ...workout,
+        exercises: workout.exercises.map(item => item.id === exerciseId ? { ...item, ...exercise } : item),
+      } : workout),
     }));
   }, []);
 
   const deleteExercise = useCallback((workoutId: string, exerciseId: string) => {
-    setState(s => ({
-      ...s,
-      workouts: s.workouts.map(w =>
-        w.id === workoutId
-          ? { ...w, exercises: w.exercises.filter(e => e.id !== exerciseId) }
-          : w
-      ),
+    setState(prev => ({
+      ...prev,
+      workouts: prev.workouts.map(workout => workout.id === workoutId ? {
+        ...workout,
+        exercises: workout.exercises.filter(item => item.id !== exerciseId),
+      } : workout),
     }));
   }, []);
 
   const getTodayDiet = useCallback(() => {
-    const today = new Date().toISOString().split('T')[0];
-    const existing = state.dietDays.find(d => d.date === today);
-    if (existing) return existing;
-
-    const newDay: DietDay = { date: today, meals: [
-      { id: nanoid(), type: 'breakfast', foods: [] },
-      { id: nanoid(), type: 'lunch', foods: [] },
-      { id: nanoid(), type: 'snack', foods: [] },
-      { id: nanoid(), type: 'dinner', foods: [] },
-    ] };
-    return newDay;
+    const date = today();
+    const existing = state.dietDays.find(day => day.date === date);
+    return existing ?? { date, meals: createMealSet() };
   }, [state.dietDays]);
 
   const addFoodToMeal = useCallback((mealType: MealType, food: Omit<Food, 'id'>) => {
-    const today = new Date().toISOString().split('T')[0];
-    setState(s => {
-      const dietDays = [...s.dietDays];
-      let dayIndex = dietDays.findIndex(d => d.date === today);
-      if (dayIndex === -1) {
-        dietDays.push({ date: today, meals: [
-          { id: nanoid(), type: 'breakfast', foods: [] },
-          { id: nanoid(), type: 'lunch', foods: [] },
-          { id: nanoid(), type: 'snack', foods: [] },
-          { id: nanoid(), type: 'dinner', foods: [] },
-        ] });
-        dayIndex = dietDays.length - 1;
+    const date = today();
+    setState(prev => {
+      const dietDays = [...prev.dietDays];
+      let index = dietDays.findIndex(day => day.date === date);
+      if (index === -1) {
+        dietDays.push({ date, meals: createMealSet() });
+        index = dietDays.length - 1;
       }
-      const day = { ...dietDays[dayIndex] };
-      day.meals = day.meals.map(m =>
-        m.type === mealType
-          ? { ...m, foods: [...m.foods, { ...food, id: nanoid() }] }
-          : m
-      );
-      dietDays[dayIndex] = day;
-      return { ...s, dietDays };
+      dietDays[index] = {
+        ...dietDays[index],
+        meals: dietDays[index].meals.map(meal => meal.type === mealType ? {
+          ...meal,
+          foods: [...meal.foods, { ...food, id: nanoid() }],
+        } : meal),
+      };
+      return { ...prev, dietDays };
     });
   }, []);
 
   const updateFood = useCallback((mealType: MealType, foodId: string, food: Partial<Food>) => {
-    const today = new Date().toISOString().split('T')[0];
-    setState(s => ({
-      ...s,
-      dietDays: s.dietDays.map(d =>
-        d.date === today
-          ? {
-              ...d,
-              meals: d.meals.map(m =>
-                m.type === mealType
-                  ? { ...m, foods: m.foods.map(f => f.id === foodId ? { ...f, ...food } : f) }
-                  : m
-              ),
-            }
-          : d
-      ),
+    const date = today();
+    setState(prev => ({
+      ...prev,
+      dietDays: prev.dietDays.map(day => day.date === date ? {
+        ...day,
+        meals: day.meals.map(meal => meal.type === mealType ? {
+          ...meal,
+          foods: meal.foods.map(item => item.id === foodId ? { ...item, ...food } : item),
+        } : meal),
+      } : day),
     }));
   }, []);
 
   const deleteFood = useCallback((mealType: MealType, foodId: string) => {
-    const today = new Date().toISOString().split('T')[0];
-    setState(s => ({
-      ...s,
-      dietDays: s.dietDays.map(d =>
-        d.date === today
-          ? {
-              ...d,
-              meals: d.meals.map(m =>
-                m.type === mealType
-                  ? { ...m, foods: m.foods.filter(f => f.id !== foodId) }
-                  : m
-              ),
-            }
-          : d
-      ),
+    const date = today();
+    setState(prev => ({
+      ...prev,
+      dietDays: prev.dietDays.map(day => day.date === date ? {
+        ...day,
+        meals: day.meals.map(meal => meal.type === mealType ? {
+          ...meal,
+          foods: meal.foods.filter(item => item.id !== foodId),
+        } : meal),
+      } : day),
     }));
   }, []);
 
   const addWeightEntry = useCallback((entry: Omit<WeightEntry, 'id'>) => {
-    setState(s => ({
-      ...s,
-      weightEntries: [...s.weightEntries.filter(e => e.date !== entry.date), { ...entry, id: nanoid() }]
-        .sort((a, b) => a.date.localeCompare(b.date)),
+    setState(prev => ({
+      ...prev,
+      weightEntries: [...prev.weightEntries.filter(item => item.date !== entry.date), { ...entry, id: nanoid() }].sort((a, b) => a.date.localeCompare(b.date)),
     }));
   }, []);
 
   const deleteWeightEntry = useCallback((id: string) => {
-    setState(s => ({ ...s, weightEntries: s.weightEntries.filter(e => e.id !== id) }));
+    setState(prev => ({ ...prev, weightEntries: prev.weightEntries.filter(item => item.id !== id) }));
   }, []);
 
-  const addMeasurement = useCallback((m: Omit<BodyMeasurement, 'id'>) => {
-    setState(s => ({ ...s, measurements: [...s.measurements, { ...m, id: nanoid() }] }));
+  const addMeasurement = useCallback((measurement: Omit<BodyMeasurement, 'id'>) => {
+    setState(prev => ({ ...prev, measurements: [...prev.measurements, { ...measurement, id: nanoid() }] }));
   }, []);
 
   const addProgressPhoto = useCallback((photo: Omit<ProgressPhoto, 'id'>) => {
-    setState(s => ({ ...s, progressPhotos: [...s.progressPhotos, { ...photo, id: nanoid() }] }));
+    setState(prev => ({ ...prev, progressPhotos: [...prev.progressPhotos, { ...photo, id: nanoid() }] }));
   }, []);
 
   const deleteProgressPhoto = useCallback((id: string) => {
-    setState(s => ({ ...s, progressPhotos: s.progressPhotos.filter(p => p.id !== id) }));
+    setState(prev => ({ ...prev, progressPhotos: prev.progressPhotos.filter(photo => photo.id !== id) }));
   }, []);
 
   const saveWorkoutSession = useCallback((session: Omit<WorkoutSession, 'id'>) => {
-    setState(s => ({ ...s, workoutSessions: [...s.workoutSessions, { ...session, id: nanoid() }] }));
+    setState(prev => {
+      const newSession: WorkoutSession = { ...session, id: nanoid() };
+      const allSessions = [...prev.workoutSessions, newSession];
+      const performedDates = allSessions.map(item => item.date);
+      const currentStreak = deriveStreak(performedDates);
+      const longestStreak = Math.max(prev.stats.longestStreak, currentStreak);
+      const performedWorkout = prev.workouts.find(workout => workout.id === session.workoutId);
+
+      const personalRecords = { ...prev.stats.personalRecords };
+      const volumeHistory = [...prev.stats.volumeHistory];
+
+      Object.entries(session.exerciseDetails ?? {}).forEach(([exerciseId, detail]) => {
+        const exerciseName = detail.exerciseName ?? performedWorkout?.exercises.find(exercise => exercise.id === exerciseId)?.name ?? 'Exercício';
+        personalRecords[exerciseName] = Math.max(personalRecords[exerciseName] ?? 0, detail.weight ?? 0);
+        const volume = (detail.weight ?? 0) * (detail.reps ?? 0) * (detail.completedSets ?? detail.sets ?? 0);
+        if (volume > 0) {
+          volumeHistory.push({ date: session.date, exercise: exerciseName, volume });
+        }
+      });
+
+      const totalPoints = prev.stats.totalPoints + Math.max(60, (session.completedExercises.length * 15));
+
+      return {
+        ...prev,
+        workoutSessions: allSessions,
+        workouts: prev.workouts.map(workout => workout.id === session.workoutId ? { ...workout, lastPerformed: session.date } : workout),
+        stats: {
+          ...prev.stats,
+          totalPoints,
+          currentStreak,
+          longestStreak,
+          totalWorkouts: allSessions.length,
+          lastWorkoutDate: session.date,
+          personalRecords,
+          volumeHistory: volumeHistory.slice(-240),
+        },
+      };
+    });
   }, []);
 
   const getTodayCalories = useCallback(() => {
-    const today = getTodayDiet();
-    return today.meals.reduce(
-      (acc, meal) => {
-        meal.foods.forEach(f => {
-          acc.consumed += f.calories;
-          acc.protein += f.protein;
-          acc.carbs += f.carbs;
-          acc.fat += f.fat;
-        });
-        return acc;
-      },
-      { consumed: 0, protein: 0, carbs: 0, fat: 0 }
-    );
+    const currentDay = getTodayDiet();
+    return currentDay.meals.reduce((acc, meal) => {
+      meal.foods.forEach(food => {
+        acc.consumed += food.calories;
+        acc.protein += food.protein;
+        acc.carbs += food.carbs;
+        acc.fat += food.fat;
+      });
+      return acc;
+    }, { consumed: 0, protein: 0, carbs: 0, fat: 0 });
   }, [getTodayDiet]);
 
   const addWorkoutPlan = useCallback((plan: Omit<WorkoutPlan, 'id' | 'createdAt'>): WorkoutPlan => {
-    const newPlan: WorkoutPlan = { ...plan, id: nanoid(), createdAt: new Date().toISOString() };
-    setState(s => ({ ...s, workoutPlans: [...s.workoutPlans, newPlan] }));
-    return newPlan;
+    const nextPlan: WorkoutPlan = { ...plan, id: nanoid(), createdAt: new Date().toISOString() };
+    setState(prev => ({ ...prev, workoutPlans: [...prev.workoutPlans, nextPlan] }));
+    return nextPlan;
   }, []);
 
   const deleteWorkoutPlan = useCallback((id: string) => {
-    setState(s => ({ ...s, workoutPlans: s.workoutPlans.filter(p => p.id !== id) }));
+    setState(prev => ({ ...prev, workoutPlans: prev.workoutPlans.filter(plan => plan.id !== id) }));
   }, []);
 
-  const calculateOneRM = useCallback((exerciseName: string, weight: number, reps: number): number => {
-    // Epley Formula: 1RM = weight * (1 + reps/30)
+  const calculateOneRM = useCallback((exerciseName: string, weight: number, reps: number) => {
+    void exerciseName;
     return Math.round(weight * (1 + reps / 30) * 10) / 10;
   }, []);
 
   const addOneRMRecord = useCallback((record: Omit<OneRMCalculation, 'id'>) => {
-    setState(s => ({
-      ...s,
+    setState(prev => ({
+      ...prev,
       stats: {
-        ...s.stats,
-        oneRMHistory: [...s.stats.oneRMHistory, { ...record, id: nanoid() }],
+        ...prev.stats,
+        oneRMHistory: [...prev.stats.oneRMHistory, { ...record, id: nanoid() }],
       },
     }));
   }, []);
 
   const updatePreferences = useCallback((prefs: Partial<UserPreferences>) => {
-    setState(s => ({ ...s, preferences: { ...s.preferences, ...prefs } }));
+    setState(prev => ({ ...prev, preferences: { ...prev.preferences, ...prefs } }));
   }, []);
 
   const getTodaySteps = useCallback(() => {
-    const today = new Date().toISOString().split('T')[0];
-    return state.stepEntries.find(entry => entry.date === today)?.steps ?? 0;
+    const date = today();
+    return state.stepEntries.find(entry => entry.date === date)?.steps ?? 0;
   }, [state.stepEntries]);
 
   const setTodaySteps = useCallback((steps: number) => {
+    const date = today();
     const nextSteps = Math.max(0, Math.round(steps));
-    const today = new Date().toISOString().split('T')[0];
-    setState(s => {
-      const existing = s.stepEntries.find(entry => entry.date === today);
+    setState(prev => {
+      const existing = prev.stepEntries.find(entry => entry.date === date);
       const stepEntries = existing
-        ? s.stepEntries.map(entry => entry.date === today ? { ...entry, steps: nextSteps, updatedAt: new Date().toISOString() } : entry)
-        : [...s.stepEntries, { date: today, steps: nextSteps, updatedAt: new Date().toISOString() }];
-      return { ...s, stepEntries };
+        ? prev.stepEntries.map(entry => entry.date === date ? { ...entry, steps: nextSteps, updatedAt: new Date().toISOString() } : entry)
+        : [...prev.stepEntries, { date, steps: nextSteps, updatedAt: new Date().toISOString() }];
+      return { ...prev, stepEntries };
     });
   }, []);
 
   const incrementTodaySteps = useCallback((steps: number) => {
-    const today = new Date().toISOString().split('T')[0];
-    setState(s => {
-      const existing = s.stepEntries.find(entry => entry.date === today);
-      const currentSteps = existing?.steps ?? 0;
-      const nextSteps = Math.max(0, currentSteps + Math.round(steps));
+    const date = today();
+    setState(prev => {
+      const existing = prev.stepEntries.find(entry => entry.date === date);
+      const current = existing?.steps ?? 0;
+      const next = Math.max(0, current + Math.round(steps));
       const stepEntries = existing
-        ? s.stepEntries.map(entry => entry.date === today ? { ...entry, steps: nextSteps, updatedAt: new Date().toISOString() } : entry)
-        : [...s.stepEntries, { date: today, steps: nextSteps, updatedAt: new Date().toISOString() }];
-      return { ...s, stepEntries };
+        ? prev.stepEntries.map(entry => entry.date === date ? { ...entry, steps: next, updatedAt: new Date().toISOString() } : entry)
+        : [...prev.stepEntries, { date, steps: next, updatedAt: new Date().toISOString() }];
+      return { ...prev, stepEntries };
     });
   }, []);
 
   const getVolumeHistory = useCallback((exerciseName?: string, days: number = 30) => {
     const cutoffDate = new Date(Date.now() - days * 86400000).toISOString().split('T')[0];
-    let history = state.stats.volumeHistory.filter(v => v.date >= cutoffDate);
-    if (exerciseName) {
-      history = history.filter(v => v.exercise === exerciseName);
-    }
-    return history.map(v => ({ date: v.date, volume: v.volume }));
+    const history = state.stats.volumeHistory.filter(item => item.date >= cutoffDate && (!exerciseName || item.exercise === exerciseName));
+    return history.map(item => ({ date: item.date, volume: item.volume }));
   }, [state.stats.volumeHistory]);
 
   const getWorkoutHistory = useCallback((days: number = 30) => {
     const cutoffDate = new Date(Date.now() - days * 86400000).toISOString().split('T')[0];
-    return state.workoutSessions.filter(s => s.date >= cutoffDate);
+    return state.workoutSessions.filter(session => session.date >= cutoffDate);
   }, [state.workoutSessions]);
 
   const addCycleEntry = useCallback((entry: Omit<CycleEntry, 'id'>) => {
-    setState(s => ({
-      ...s,
-      cycleEntries: [...s.cycleEntries, { ...entry, id: nanoid() }].sort((a, b) => b.startDate.localeCompare(a.startDate)),
+    setState(prev => ({
+      ...prev,
+      cycleEntries: [...prev.cycleEntries, { ...entry, id: nanoid() }].sort((a, b) => b.startDate.localeCompare(a.startDate)),
     }));
   }, []);
 
   const updateCycleEntry = useCallback((id: string, entry: Partial<CycleEntry>) => {
-    setState(s => ({
-      ...s,
-      cycleEntries: s.cycleEntries.map(e => e.id === id ? { ...e, ...entry } : e),
+    setState(prev => ({
+      ...prev,
+      cycleEntries: prev.cycleEntries.map(item => item.id === id ? { ...item, ...entry } : item),
     }));
   }, []);
 
   const deleteCycleEntry = useCallback((id: string) => {
-    setState(s => ({
-      ...s,
-      cycleEntries: s.cycleEntries.filter(e => e.id !== id),
-    }));
+    setState(prev => ({ ...prev, cycleEntries: prev.cycleEntries.filter(item => item.id !== id) }));
   }, []);
 
   const updateCycleProfile = useCallback((profile: Partial<CycleProfile>) => {
-    setState(s => ({
-      ...s,
-      cycleProfile: s.cycleProfile ? { ...s.cycleProfile, ...profile } : (profile as CycleProfile),
+    setState(prev => ({
+      ...prev,
+      cycleProfile: prev.cycleProfile ? { ...prev.cycleProfile, ...profile } : (profile as CycleProfile),
     }));
   }, []);
 
-  // ─── Water / Hydration ────────────────────────────────────────────────────────
-
   const getTodayWaterCups = useCallback(() => {
-    const today = new Date().toISOString().split('T')[0];
-    return state.waterEntries.find(e => e.date === today)?.cups ?? 0;
+    const date = today();
+    return state.waterEntries.find(entry => entry.date === date)?.cups ?? 0;
   }, [state.waterEntries]);
 
   const setTodayWaterCups = useCallback((cups: number) => {
+    const date = today();
     const nextCups = Math.max(0, Math.round(cups));
-    const today = new Date().toISOString().split('T')[0];
-    setState(s => {
-      const existing = s.waterEntries.find(e => e.date === today);
+    setState(prev => {
+      const existing = prev.waterEntries.find(entry => entry.date === date);
       const waterEntries = existing
-        ? s.waterEntries.map(e => e.date === today ? { ...e, cups: nextCups, updatedAt: new Date().toISOString() } : e)
-        : [...s.waterEntries, { date: today, cups: nextCups, updatedAt: new Date().toISOString() }];
-      return { ...s, waterEntries };
+        ? prev.waterEntries.map(entry => entry.date === date ? { ...entry, cups: nextCups, updatedAt: new Date().toISOString() } : entry)
+        : [...prev.waterEntries, { date, cups: nextCups, updatedAt: new Date().toISOString() }];
+      return { ...prev, waterEntries };
     });
   }, []);
 
   const getWaterHistory = useCallback((days: number = 7) => {
     const cupSizeMl = state.preferences.cupSizeMl || 250;
-    const result: Array<{ date: string; cups: number; liters: number }> = [];
-    for (let i = days - 1; i >= 0; i--) {
-      const d = new Date(Date.now() - i * 86400000).toISOString().split('T')[0];
-      const entry = state.waterEntries.find(e => e.date === d);
-      result.push({
-        date: d,
+    return Array.from({ length: days }, (_, index) => {
+      const date = new Date(Date.now() - (days - index - 1) * 86400000).toISOString().split('T')[0];
+      const entry = state.waterEntries.find(item => item.date === date);
+      return {
+        date,
         cups: entry?.cups ?? 0,
-        liters: parseFloat(((entry?.cups ?? 0) * cupSizeMl / 1000).toFixed(2)),
-      });
-    }
-    return result;
+        liters: parseFloat((((entry?.cups ?? 0) * cupSizeMl) / 1000).toFixed(2)),
+      };
+    });
   }, [state.waterEntries, state.preferences.cupSizeMl]);
 
   return (
-    <AppContext.Provider value={{
-      state,
-      updateProfile,
-      addWorkout,
-      updateWorkout,
-      deleteWorkout,
-      setTodayWorkout,
-      addExerciseToWorkout,
-      updateExercise,
-      deleteExercise,
-      getTodayDiet,
-      addFoodToMeal,
-      updateFood,
-      deleteFood,
-      addWeightEntry,
-      deleteWeightEntry,
-      addMeasurement,
-      addProgressPhoto,
-      deleteProgressPhoto,
-      saveWorkoutSession,
-      getTodayCalories,
-      addWorkoutPlan,
-      deleteWorkoutPlan,
-      calculateOneRM,
-      addOneRMRecord,
-      updatePreferences,
-      getTodaySteps,
-      setTodaySteps,
-      incrementTodaySteps,
-      getVolumeHistory,
-      getWorkoutHistory,
-      addCycleEntry,
-      updateCycleEntry,
-      deleteCycleEntry,
-      updateCycleProfile,
-      getTodayWaterCups,
-      setTodayWaterCups,
-      getWaterHistory,
-    }}>
+    <AppContext.Provider
+      value={{
+        state,
+        needsWorkoutRefresh,
+        updateProfile,
+        addWorkout,
+        updateWorkout,
+        deleteWorkout,
+        replaceWorkouts,
+        updateWorkoutMode,
+        generateAutoWorkoutPlan,
+        setTodayWorkout,
+        addExerciseToWorkout,
+        updateExercise,
+        deleteExercise,
+        getTodayDiet,
+        addFoodToMeal,
+        updateFood,
+        deleteFood,
+        addWeightEntry,
+        deleteWeightEntry,
+        addMeasurement,
+        addProgressPhoto,
+        deleteProgressPhoto,
+        saveWorkoutSession,
+        getTodayCalories,
+        addWorkoutPlan,
+        deleteWorkoutPlan,
+        calculateOneRM,
+        addOneRMRecord,
+        updatePreferences,
+        getTodaySteps,
+        setTodaySteps,
+        incrementTodaySteps,
+        getVolumeHistory,
+        getWorkoutHistory,
+        addCycleEntry,
+        updateCycleEntry,
+        deleteCycleEntry,
+        updateCycleProfile,
+        getTodayWaterCups,
+        setTodayWaterCups,
+        getWaterHistory,
+      }}
+    >
       {children}
     </AppContext.Provider>
   );
@@ -849,12 +1014,10 @@ export function useApp() {
   return ctx;
 }
 
-// Utility: Epley Formula for 1RM
 export function calculateOneRMEpley(weight: number, reps: number): number {
   return Math.round(weight * (1 + reps / 30) * 10) / 10;
 }
 
-// Utility: Brzycki Formula for 1RM (alternative)
 export function calculateOneRMBrzycki(weight: number, reps: number): number {
   return Math.round((weight * 36) / (37 - reps) * 10) / 10;
 }

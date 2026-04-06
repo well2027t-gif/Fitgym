@@ -1,33 +1,58 @@
 /**
- * FitPro — WorkoutActive Page (Premium Redesign)
- * Design: Premium Dark Fitness
- * Modo de treino ativo com animações elaboradas e timer premium.
+ * FitPro — WorkoutActive Page
+ * Design: Premium Dark Fitness / Guided Performance Flow
+ * Execução de treino com progresso por séries, controle de carga,
+ * timer de descanso e persistência detalhada da sessão.
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { useParams, useLocation } from '@/lib/router';
-import { useApp } from '@/contexts/AppContext';
+import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowLeft, Check, Clock, Dumbbell, Play, Pause,
-  RotateCcw, ChevronRight, Trophy, X, Flame, Target
+  ArrowLeft,
+  Check,
+  ChevronRight,
+  Clock3,
+  Dumbbell,
+  Pause,
+  Play,
+  RotateCcw,
+  SkipForward,
+  Target,
+  Trophy,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLocation, useParams } from '@/lib/router';
+import { useApp } from '@/contexts/AppContext';
+
+interface ExerciseProgressState {
+  completedSets: number;
+  weight: number;
+  reps: number;
+  skipped: boolean;
+}
 
 function RestTimer({ seconds, onComplete }: { seconds: number; onComplete: () => void }) {
   const [remaining, setRemaining] = useState(seconds);
   const [running, setRunning] = useState(true);
 
   useEffect(() => {
+    setRemaining(seconds);
+    setRunning(true);
+  }, [seconds]);
+
+  useEffect(() => {
     if (!running) return;
-    if (remaining <= 0) { onComplete(); return; }
-    const t = setTimeout(() => setRemaining(r => r - 1), 1000);
-    return () => clearTimeout(t);
+    if (remaining <= 0) {
+      onComplete();
+      return;
+    }
+    const timer = window.setTimeout(() => setRemaining(value => value - 1), 1000);
+    return () => window.clearTimeout(timer);
   }, [remaining, running, onComplete]);
 
-  const pct = remaining / seconds;
-  const r = 50;
-  const circ = 2 * Math.PI * r;
+  const progress = Math.max(0, remaining / Math.max(seconds, 1));
+  const radius = 54;
+  const circumference = 2 * Math.PI * radius;
 
   return (
     <motion.div
@@ -35,88 +60,87 @@ function RestTimer({ seconds, onComplete }: { seconds: number; onComplete: () =>
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(12px)' }}
+      style={{ background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(12px)' }}
     >
       <motion.div
-        initial={{ scale: 0.8 }}
-        animate={{ scale: 1 }}
-        className="text-center"
+        initial={{ scale: 0.92, y: 16 }}
+        animate={{ scale: 1, y: 0 }}
+        className="w-[320px] rounded-[32px] border p-6 text-center"
+        style={{
+          background: 'linear-gradient(180deg, rgba(23,23,26,0.98) 0%, rgba(12,12,14,0.98) 100%)',
+          borderColor: 'rgba(255,255,255,0.08)',
+          boxShadow: '0 30px 90px rgba(0,0,0,0.45)',
+        }}
       >
-        <p className="text-sm font-medium mb-8" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Outfit' }}>
-          DESCANSO
+        <p className="text-[10px] uppercase tracking-[0.2em]" style={{ color: 'rgba(255,255,255,0.38)', fontFamily: 'Space Grotesk' }}>
+          Descanso ativo
         </p>
-        
-        {/* Animated Circle Timer */}
-        <div className="relative w-40 h-40 mx-auto mb-8">
-          <svg width="160" height="160" viewBox="0 0 160 160" className="-rotate-90">
-            <circle cx="80" cy="80" r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
-            <motion.circle
-              cx="80" cy="80" r={r}
+        <h2 className="mt-2 text-xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+          Recupere e prepare a próxima série.
+        </h2>
+
+        <div className="relative mx-auto mt-6 size-44">
+          <svg width="176" height="176" viewBox="0 0 176 176" className="-rotate-90">
+            <circle cx="88" cy="88" r={radius} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" />
+            <circle
+              cx="88"
+              cy="88"
+              r={radius}
               fill="none"
               stroke="var(--theme-accent)"
-              strokeWidth="6"
+              strokeWidth="8"
               strokeLinecap="round"
-              strokeDasharray={circ}
-              strokeDashoffset={circ * (1 - pct)}
-              style={{ filter: 'drop-shadow(0 0 12px rgba(var(--theme-accent-rgb), 0.8))' }}
+              strokeDasharray={circumference}
+              strokeDashoffset={circumference * (1 - progress)}
+              style={{ filter: 'drop-shadow(0 0 12px rgba(var(--theme-accent-rgb), 0.7))' }}
             />
           </svg>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <motion.div
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ duration: 1, repeat: Infinity }}
-            >
-              <span className="text-6xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
-                {remaining}
-              </span>
-              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Outfit' }}>segundos</p>
-            </motion.div>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <p className="text-5xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>{remaining}</p>
+            <p className="mt-1 text-xs" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'Outfit' }}>segundos</p>
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="w-48 h-1.5 rounded-full mx-auto mb-8" style={{ background: 'rgba(255,255,255,0.08)' }}>
-          <motion.div
-            className="h-full rounded-full"
-            style={{
-              background: 'linear-gradient(90deg, var(--theme-accent) 0%, #84cc16 100%)',
-              width: `${pct * 100}%`,
-              boxShadow: '0 0 12px rgba(var(--theme-accent-rgb), 0.8)',
-            }}
-          />
-        </div>
-
-        {/* Controls */}
-        <div className="flex items-center justify-center gap-3">
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setRunning(r => !r)}
-            className="w-14 h-14 rounded-full flex items-center justify-center btn-glow"
-            style={{ background: running ? 'rgba(255,255,255,0.1)' : 'rgba(var(--theme-accent-rgb), 0.2)', border: '2px solid rgba(255,255,255,0.15)' }}
+        <div className="mt-6 flex items-center justify-center gap-3">
+          <button
+            onClick={() => setRunning(value => !value)}
+            className="flex size-12 items-center justify-center rounded-2xl"
+            style={{ background: 'rgba(255,255,255,0.08)', color: 'white' }}
           >
-            {running ? <Pause size={24} style={{ color: 'white' }} /> : <Play size={24} style={{ color: 'var(--theme-accent)' }} />}
-          </motion.button>
-          
-          <motion.button
-            whileTap={{ scale: 0.95 }}
+            {running ? <Pause size={18} /> : <Play size={18} />}
+          </button>
+          <button
             onClick={onComplete}
-            className="px-8 py-3.5 rounded-xl text-sm font-bold btn-glow"
+            className="rounded-2xl px-5 py-3 text-sm font-bold"
             style={{ background: 'var(--theme-accent)', color: '#0d0d0f', fontFamily: 'Space Grotesk' }}
           >
-            Próximo
-          </motion.button>
-          
-          <motion.button
-            whileTap={{ scale: 0.9 }}
+            Próximo exercício
+          </button>
+          <button
             onClick={() => setRemaining(seconds)}
-            className="w-14 h-14 rounded-full flex items-center justify-center"
-            style={{ background: 'rgba(255,255,255,0.1)', border: '2px solid rgba(255,255,255,0.15)' }}
+            className="flex size-12 items-center justify-center rounded-2xl"
+            style={{ background: 'rgba(255,255,255,0.08)', color: 'white' }}
           >
-            <RotateCcw size={20} style={{ color: 'white' }} />
-          </motion.button>
+            <RotateCcw size={18} />
+          </button>
         </div>
       </motion.div>
     </motion.div>
+  );
+}
+
+function MiniMetric({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div
+      className="rounded-[22px] border p-3"
+      style={{
+        background: highlight ? 'rgba(var(--theme-accent-rgb), 0.12)' : 'rgba(255,255,255,0.04)',
+        borderColor: highlight ? 'rgba(var(--theme-accent-rgb), 0.22)' : 'rgba(255,255,255,0.06)',
+      }}
+    >
+      <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.34)', fontFamily: 'Space Grotesk' }}>{label}</p>
+      <p className="mt-2 text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>{value}</p>
+    </div>
   );
 }
 
@@ -125,292 +149,449 @@ export default function WorkoutActive() {
   const [, navigate] = useLocation();
   const { state, saveWorkoutSession } = useApp();
 
-  const workout = state.workouts.find(w => w.id === id);
-  const [completed, setCompleted] = useState<Set<string>>(new Set());
+  const workout = useMemo(() => state.workouts.find(item => item.id === id), [state.workouts, id]);
   const [showTimer, setShowTimer] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(60);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const [startTime] = useState(Date.now());
+  const [startedAt] = useState(Date.now());
+  const [exerciseState, setExerciseState] = useState<Record<string, ExerciseProgressState>>({});
+
+  useEffect(() => {
+    if (!workout) return;
+    setExerciseState(previous => {
+      const next: Record<string, ExerciseProgressState> = {};
+      workout.exercises.forEach(exercise => {
+        next[exercise.id] = previous[exercise.id] ?? {
+          completedSets: 0,
+          weight: exercise.weight,
+          reps: exercise.reps,
+          skipped: false,
+        };
+      });
+      return next;
+    });
+  }, [workout]);
+
+  const allExercises = workout?.exercises ?? [];
+  const activeExercise = allExercises[currentExerciseIndex];
+
+  const completedExercises = useMemo(() => {
+    if (!workout) return [];
+    return workout.exercises.filter(exercise => {
+      const progress = exerciseState[exercise.id];
+      return progress && !progress.skipped && progress.completedSets >= exercise.sets;
+    });
+  }, [workout, exerciseState]);
+
+  const skippedExercises = useMemo(() => {
+    if (!workout) return [];
+    return workout.exercises.filter(exercise => exerciseState[exercise.id]?.skipped).map(exercise => exercise.id);
+  }, [workout, exerciseState]);
+
+  const progressPercent = workout && workout.exercises.length > 0
+    ? Math.round(((completedExercises.length + skippedExercises.length) / workout.exercises.length) * 100)
+    : 0;
+
+  const goToNextPendingExercise = () => {
+    if (!workout) return;
+    const nextIndex = workout.exercises.findIndex((exercise, index) => {
+      if (index <= currentExerciseIndex) return false;
+      const progress = exerciseState[exercise.id];
+      return !progress?.skipped && (progress?.completedSets ?? 0) < exercise.sets;
+    });
+
+    if (nextIndex >= 0) {
+      setCurrentExerciseIndex(nextIndex);
+      return;
+    }
+
+    const fallbackIndex = workout.exercises.findIndex(exercise => {
+      const progress = exerciseState[exercise.id];
+      return !progress?.skipped && (progress?.completedSets ?? 0) < exercise.sets;
+    });
+
+    if (fallbackIndex >= 0) {
+      setCurrentExerciseIndex(fallbackIndex);
+    }
+  };
 
   if (!workout) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: '#0d0d0f' }}>
-        <Dumbbell size={48} style={{ color: 'rgba(255,255,255,0.15)' }} />
-        <p className="text-base font-semibold text-white" style={{ fontFamily: 'Space Grotesk' }}>Treino não encontrado</p>
-        <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Outfit' }}>Este treino pode ter sido removido.</p>
-        <motion.button
-          whileTap={{ scale: 0.95 }}
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#0d0d0f] px-6 text-center">
+        <div className="flex size-16 items-center justify-center rounded-[28px]" style={{ background: 'rgba(255,255,255,0.05)' }}>
+          <Dumbbell size={28} style={{ color: 'rgba(255,255,255,0.22)' }} />
+        </div>
+        <h1 className="text-xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>Treino não encontrado</h1>
+        <p className="max-w-xs text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.48)', fontFamily: 'Outfit' }}>
+          Este treino pode ter sido removido ou substituído por um plano novo. Volte para a área de treinos para continuar.
+        </p>
+        <button
           onClick={() => navigate('/treinos')}
-          className="mt-2 px-5 py-2.5 rounded-xl text-sm font-bold"
+          className="rounded-2xl px-5 py-3 text-sm font-bold"
           style={{ background: 'var(--theme-accent)', color: '#0d0d0f', fontFamily: 'Space Grotesk' }}
         >
-          Voltar aos Treinos
-        </motion.button>
+          Voltar aos treinos
+        </button>
       </div>
     );
   }
 
-  const currentExercise = workout.exercises[currentExerciseIndex];
-  const completedCount = completed.size;
-  const totalCount = workout.exercises.length;
-  const progress = (completedCount / totalCount) * 100;
+  const handleChangeNumber = (exerciseId: string, field: 'weight' | 'reps', delta: number) => {
+    setExerciseState(previous => {
+      const current = previous[exerciseId] ?? { completedSets: 0, weight: 0, reps: 0, skipped: false };
+      const nextValue = Math.max(0, (current[field] ?? 0) + delta);
+      return {
+        ...previous,
+        [exerciseId]: {
+          ...current,
+          [field]: nextValue,
+        },
+      };
+    });
+  };
 
-  const toggleExercise = (exId: string) => {
-    const newSet = new Set(completed);
-    if (newSet.has(exId)) {
-      newSet.delete(exId);
+  const handleCompleteSet = (exerciseId: string) => {
+    const exercise = workout.exercises.find(item => item.id === exerciseId);
+    if (!exercise) return;
+
+    setExerciseState(previous => {
+      const current = previous[exerciseId] ?? {
+        completedSets: 0,
+        weight: exercise.weight,
+        reps: exercise.reps,
+        skipped: false,
+      };
+      const nextSets = Math.min(exercise.sets, current.completedSets + 1);
+      return {
+        ...previous,
+        [exerciseId]: {
+          ...current,
+          skipped: false,
+          completedSets: nextSets,
+        },
+      };
+    });
+
+    if (exercise.restSeconds > 0) {
+      setTimerSeconds(exercise.restSeconds);
+      setShowTimer(true);
+    }
+
+    const updatedSets = (exerciseState[exerciseId]?.completedSets ?? 0) + 1;
+    if (updatedSets >= exercise.sets) {
+      toast.success(`${exercise.name} concluído.`);
+      goToNextPendingExercise();
     } else {
-      newSet.add(exId);
-    }
-    setCompleted(newSet);
-  };
-
-  const handleExerciseClick = (exId: string, idx: number) => {
-    const wasCompleted = completed.has(exId);
-    toggleExercise(exId);
-    
-    // Avançar para o próximo exercício não concluído
-    if (!wasCompleted) {
-      const nextIncomplete = workout.exercises.findIndex((ex, i) => i > idx && !completed.has(ex.id) && ex.id !== exId);
-      if (nextIncomplete !== -1) {
-        setCurrentExerciseIndex(nextIncomplete);
-      } else {
-        // Se todos após estão concluídos, manter no atual ou ir ao último
-        const anyIncomplete = workout.exercises.findIndex((ex) => !completed.has(ex.id) && ex.id !== exId);
-        if (anyIncomplete !== -1) {
-          setCurrentExerciseIndex(anyIncomplete);
-        }
-      }
+      toast.success(`Série ${updatedSets}/${exercise.sets} concluída.`);
     }
   };
 
-  const startRest = (seconds: number) => {
-    setTimerSeconds(seconds);
-    setShowTimer(true);
+  const handleSkipExercise = (exerciseId: string) => {
+    setExerciseState(previous => ({
+      ...previous,
+      [exerciseId]: {
+        ...(previous[exerciseId] ?? { completedSets: 0, weight: 0, reps: 0, skipped: false }),
+        skipped: true,
+      },
+    }));
+    toast.success('Exercício marcado como pulado.');
+    goToNextPendingExercise();
   };
 
   const finishWorkout = () => {
-    if (completed.size === 0) {
-      toast.error('Complete pelo menos 1 exercício antes de finalizar!');
+    const completedIds = workout.exercises.filter(exercise => {
+      const progress = exerciseState[exercise.id];
+      return progress && !progress.skipped && progress.completedSets > 0;
+    }).map(exercise => exercise.id);
+
+    if (completedIds.length === 0) {
+      toast.error('Complete pelo menos uma série antes de finalizar o treino.');
       return;
     }
 
-    const durationSeconds = Math.round((Date.now() - startTime) / 1000);
+    const details = Object.fromEntries(
+      workout.exercises.map(exercise => {
+        const progress = exerciseState[exercise.id] ?? {
+          completedSets: 0,
+          weight: exercise.weight,
+          reps: exercise.reps,
+          skipped: false,
+        };
+        return [exercise.id, {
+          exerciseName: exercise.name,
+          weight: progress.weight,
+          reps: progress.reps,
+          sets: exercise.sets,
+          completedSets: progress.completedSets,
+          skipped: progress.skipped,
+        }];
+      }),
+    );
+
     saveWorkoutSession({
       workoutId: workout.id,
       date: new Date().toISOString().split('T')[0],
-      completedExercises: Array.from(completed),
-      durationSeconds,
+      completedExercises: completedIds,
+      skippedExercises,
+      durationSeconds: Math.round((Date.now() - startedAt) / 1000),
+      progressPercent,
+      exerciseDetails: details,
     });
-    toast.success(`Treino concluído! ${completedCount}/${totalCount} exercícios`);
-    navigate('/treinos');
+
+    toast.success('Sessão registrada com sucesso.');
+    navigate('/historico');
   };
 
   return (
-    <div className="min-h-screen" style={{ background: '#0d0d0f' }}>
-      {/* Header */}
-      <div className="sticky top-0 z-40 px-4 pt-4 pb-3" style={{ background: 'rgba(13,13,15,0.95)', backdropFilter: 'blur(8px)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-        <div className="flex items-center justify-between mb-3">
-          <motion.button
-            whileTap={{ scale: 0.9 }}
+    <div className="min-h-screen bg-[#0d0d0f] pb-24">
+      <div
+        className="sticky top-0 z-30 border-b px-4 pb-4 pt-4"
+        style={{ background: 'rgba(13,13,15,0.94)', backdropFilter: 'blur(12px)', borderColor: 'rgba(255,255,255,0.05)' }}
+      >
+        <div className="flex items-center gap-3">
+          <button
             onClick={() => navigate('/treinos')}
-            className="w-10 h-10 rounded-lg flex items-center justify-center"
-            style={{ background: 'rgba(255,255,255,0.06)' }}
+            className="flex size-11 items-center justify-center rounded-2xl"
+            style={{ background: 'rgba(255,255,255,0.06)', color: 'white' }}
           >
-            <ArrowLeft size={20} style={{ color: 'white' }} />
-          </motion.button>
-          <h1 className="text-lg font-bold text-white flex-1 ml-3" style={{ fontFamily: 'Space Grotesk' }}>
-            {workout.name}
-          </h1>
-          <div className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: 'rgba(var(--theme-accent-rgb), 0.2)', color: 'var(--theme-accent)', fontFamily: 'Space Grotesk' }}>
-            {completedCount}/{totalCount}
+            <ArrowLeft size={18} />
+          </button>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.34)', fontFamily: 'Space Grotesk' }}>
+              Treino em execução
+            </p>
+            <h1 className="truncate text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>{workout.name}</h1>
+          </div>
+          <div
+            className="rounded-2xl px-3 py-2 text-right"
+            style={{ background: 'rgba(var(--theme-accent-rgb), 0.14)', color: 'var(--theme-accent)' }}
+          >
+            <p className="text-[10px] uppercase tracking-[0.18em]" style={{ fontFamily: 'Space Grotesk' }}>Progresso</p>
+            <p className="text-sm font-bold" style={{ fontFamily: 'Space Grotesk' }}>{progressPercent}%</p>
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="w-full h-2 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
+        <div className="mt-4 h-2 overflow-hidden rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
           <motion.div
             className="h-full rounded-full"
-            style={{
-              background: 'linear-gradient(90deg, var(--theme-accent) 0%, #84cc16 100%)',
-              boxShadow: '0 0 12px rgba(var(--theme-accent-rgb), 0.6)',
-            }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.3 }}
+            animate={{ width: `${progressPercent}%` }}
+            style={{ background: 'linear-gradient(90deg, var(--theme-accent) 0%, #84cc16 100%)', boxShadow: '0 0 14px rgba(var(--theme-accent-rgb), 0.65)' }}
           />
         </div>
       </div>
 
-      {/* Current Exercise Highlight */}
-      {currentExercise && !completed.has(currentExercise.id) && (
-        <motion.div
-          key={currentExerciseIndex}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mx-4 mt-4 p-4 rounded-2xl"
+      <div className="px-4 pt-4">
+        <section
+          className="rounded-[30px] border p-5"
           style={{
-            background: 'linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.15) 0%, rgba(var(--theme-accent-rgb), 0.05) 100%)',
-            border: '2px solid rgba(var(--theme-accent-rgb), 0.3)',
+            background: 'linear-gradient(160deg, rgba(22,22,24,0.98) 0%, rgba(11,11,13,0.98) 100%)',
+            borderColor: 'rgba(255,255,255,0.08)',
+            boxShadow: '0 26px 70px rgba(0,0,0,0.34)',
           }}
         >
-          <div className="flex items-start justify-between mb-2">
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Outfit' }}>EXERCÍCIO ATUAL</p>
-              <h2 className="text-xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
-                {currentExercise.name}
+              <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.34)', fontFamily: 'Space Grotesk' }}>
+                Exercício atual
+              </p>
+              <h2 className="mt-2 text-2xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                {activeExercise?.name ?? 'Treino concluído'}
               </h2>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.56)', fontFamily: 'Outfit' }}>
+                {activeExercise?.instructions ?? 'Todos os exercícios foram percorridos. Você já pode finalizar e salvar a sessão.'}
+              </p>
             </div>
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="w-10 h-10 rounded-full flex items-center justify-center"
-              style={{ background: 'rgba(var(--theme-accent-rgb), 0.2)' }}
-            >
-              <Dumbbell size={18} style={{ color: 'var(--theme-accent)' }} />
-            </motion.div>
-          </div>
-
-          <div className="grid grid-cols-4 gap-2 mt-3">
-            <div className="px-2 py-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.06)' }}>
-              <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Outfit' }}>Séries</p>
-              <p className="text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>{currentExercise.sets}</p>
-            </div>
-            <div className="px-2 py-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.06)' }}>
-              <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Outfit' }}>Reps</p>
-              <p className="text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>{currentExercise.reps}</p>
-            </div>
-            <div className="px-2 py-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.06)' }}>
-              <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Outfit' }}>Carga</p>
-              <p className="text-lg font-bold" style={{ color: '#f59e0b', fontFamily: 'Space Grotesk' }}>{currentExercise.weight}kg</p>
-            </div>
-            <div className="px-2 py-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.06)' }}>
-              <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Outfit' }}>Descanso</p>
-              <p className="text-lg font-bold" style={{ color: '#ef4444', fontFamily: 'Space Grotesk' }}>{currentExercise.restSeconds}s</p>
+            <div className="flex size-12 items-center justify-center rounded-2xl" style={{ background: 'rgba(var(--theme-accent-rgb), 0.15)', color: 'var(--theme-accent)' }}>
+              <Target size={20} />
             </div>
           </div>
 
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => startRest(currentExercise.restSeconds)}
-            className="w-full mt-3 py-3 rounded-xl text-sm font-bold btn-glow flex items-center justify-center gap-2"
-            style={{ background: 'var(--theme-accent)', color: '#0d0d0f', fontFamily: 'Space Grotesk' }}
-          >
-            <Play size={16} fill="#0d0d0f" /> Começar Descanso
-          </motion.button>
-        </motion.div>
-      )}
+          <div className="mt-5 grid grid-cols-3 gap-2">
+            <MiniMetric label="Exercícios" value={`${completedExercises.length}/${workout.exercises.length}`} />
+            <MiniMetric label="Pulados" value={String(skippedExercises.length)} />
+            <MiniMetric label="Tempo" value={`${Math.max(1, Math.round((Date.now() - startedAt) / 60000))} min`} highlight />
+          </div>
 
-      {/* All completed message */}
-      {completed.size === totalCount && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="mx-4 mt-4 p-5 rounded-2xl text-center"
-          style={{
-            background: 'linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.2) 0%, rgba(var(--theme-accent-rgb), 0.05) 100%)',
-            border: '2px solid rgba(var(--theme-accent-rgb), 0.4)',
-          }}
-        >
-          <Trophy size={32} style={{ color: 'var(--theme-accent)', margin: '0 auto 8px' }} />
-          <p className="text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>
-            Todos os exercícios concluídos!
-          </p>
-          <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Outfit' }}>
-            Clique em "Finalizar Treino" para salvar sua sessão
-          </p>
-        </motion.div>
-      )}
-
-      {/* Exercises List */}
-      <div className="px-4 py-4 space-y-2">
-        {workout.exercises.map((ex, idx) => {
-          const isCompleted = completed.has(ex.id);
-          const isCurrent = idx === currentExerciseIndex && !isCompleted;
-
-          return (
-            <motion.div
-              key={ex.id}
-              layout
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              whileHover={{ x: 4 }}
-              onClick={() => handleExerciseClick(ex.id, idx)}
-              className="p-4 rounded-xl cursor-pointer group transition-all"
-              style={{
-                background: isCompleted ? 'rgba(var(--theme-accent-rgb), 0.1)' : isCurrent ? 'rgba(var(--theme-accent-rgb), 0.15)' : 'rgba(255,255,255,0.04)',
-                border: isCompleted ? '1.5px solid rgba(var(--theme-accent-rgb), 0.4)' : isCurrent ? '2px solid rgba(var(--theme-accent-rgb), 0.5)' : '1px solid rgba(255,255,255,0.06)',
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <motion.div
-                  initial={false}
-                  animate={{ scale: isCompleted ? 1.1 : 1 }}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{
-                    background: isCompleted ? 'var(--theme-accent)' : 'rgba(255,255,255,0.08)',
-                  }}
-                >
-                  {isCompleted ? (
-                    <Check size={16} style={{ color: '#0d0d0f' }} />
-                  ) : (
-                    <span className="text-xs font-bold" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Grotesk' }}>
-                      {idx + 1}
-                    </span>
-                  )}
-                </motion.div>
-
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-semibold truncate ${isCompleted ? 'line-through' : ''}`} style={{ color: isCompleted ? 'rgba(255,255,255,0.4)' : 'white', fontFamily: 'Space Grotesk' }}>
-                    {ex.name}
-                  </p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xs px-2 py-0.5 rounded-md" style={{ background: 'rgba(var(--theme-accent-rgb), 0.1)', color: 'var(--theme-accent)', fontFamily: 'Outfit' }}>
-                      {ex.sets}×{ex.reps}
-                    </span>
-                    <span className="text-xs font-bold" style={{ color: '#f59e0b', fontFamily: 'Space Grotesk' }}>{ex.weight}kg</span>
+          {activeExercise && (
+            <div className="mt-5 rounded-[26px] border p-4" style={{ background: 'rgba(255,255,255,0.035)', borderColor: 'rgba(255,255,255,0.06)' }}>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.34)', fontFamily: 'Space Grotesk' }}>Carga</p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <button onClick={() => handleChangeNumber(activeExercise.id, 'weight', -2.5)} className="flex size-10 items-center justify-center rounded-2xl" style={{ background: 'rgba(255,255,255,0.06)', color: 'white' }}>
+                      <RotateCcw size={14} />
+                    </button>
+                    <div className="flex-1 rounded-2xl border px-3 py-3 text-center text-sm font-bold text-white" style={{ background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.08)', fontFamily: 'Space Grotesk' }}>
+                      {(exerciseState[activeExercise.id]?.weight ?? activeExercise.weight).toFixed(1)} kg
+                    </div>
+                    <button onClick={() => handleChangeNumber(activeExercise.id, 'weight', 2.5)} className="flex size-10 items-center justify-center rounded-2xl" style={{ background: 'rgba(255,255,255,0.06)', color: 'white' }}>
+                      <ChevronRight size={14} />
+                    </button>
                   </div>
                 </div>
 
-                <motion.div
-                  animate={{ rotate: isCurrent ? 360 : 0 }}
-                  transition={{ duration: 2, repeat: isCurrent ? Infinity : 0 }}
-                >
-                  <ChevronRight size={18} style={{ color: isCurrent ? 'var(--theme-accent)' : 'rgba(255,255,255,0.2)' }} />
-                </motion.div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.34)', fontFamily: 'Space Grotesk' }}>Repetições</p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <button onClick={() => handleChangeNumber(activeExercise.id, 'reps', -1)} className="flex size-10 items-center justify-center rounded-2xl" style={{ background: 'rgba(255,255,255,0.06)', color: 'white' }}>
+                      <RotateCcw size={14} />
+                    </button>
+                    <div className="flex-1 rounded-2xl border px-3 py-3 text-center text-sm font-bold text-white" style={{ background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.08)', fontFamily: 'Space Grotesk' }}>
+                      {exerciseState[activeExercise.id]?.reps ?? activeExercise.reps} reps
+                    </div>
+                    <button onClick={() => handleChangeNumber(activeExercise.id, 'reps', 1)} className="flex size-10 items-center justify-center rounded-2xl" style={{ background: 'rgba(255,255,255,0.06)', color: 'white' }}>
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                </div>
               </div>
-            </motion.div>
-          );
-        })}
+
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                <MiniMetric label="Séries" value={`${exerciseState[activeExercise.id]?.completedSets ?? 0}/${activeExercise.sets}`} highlight />
+                <MiniMetric label="Descanso" value={`${activeExercise.restSeconds}s`} />
+                <MiniMetric label="Músculo" value={activeExercise.muscleGroup ?? 'Geral'} />
+              </div>
+
+              {activeExercise.videoUrl && (
+                <a
+                  href={activeExercise.videoUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-4 inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold text-white"
+                  style={{ borderColor: 'rgba(255,255,255,0.1)', fontFamily: 'Outfit' }}
+                >
+                  <Play size={15} />
+                  Ver demonstração
+                </a>
+              )}
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  onClick={() => handleCompleteSet(activeExercise.id)}
+                  className="inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold"
+                  style={{ background: 'var(--theme-accent)', color: '#0d0d0f', fontFamily: 'Space Grotesk' }}
+                >
+                  <Check size={15} />
+                  Concluir série
+                </button>
+                <button
+                  onClick={() => {
+                    setTimerSeconds(activeExercise.restSeconds);
+                    setShowTimer(true);
+                  }}
+                  className="inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold text-white"
+                  style={{ borderColor: 'rgba(255,255,255,0.1)', fontFamily: 'Outfit' }}
+                >
+                  <Clock3 size={15} />
+                  Abrir descanso
+                </button>
+                <button
+                  onClick={() => handleSkipExercise(activeExercise.id)}
+                  className="inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold text-white"
+                  style={{ borderColor: 'rgba(255,255,255,0.1)', fontFamily: 'Outfit' }}
+                >
+                  <SkipForward size={15} />
+                  Pular exercício
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
+
+        <section className="mt-4 space-y-3">
+          {workout.exercises.map((exercise, index) => {
+            const progress = exerciseState[exercise.id] ?? {
+              completedSets: 0,
+              weight: exercise.weight,
+              reps: exercise.reps,
+              skipped: false,
+            };
+            const isCurrent = index === currentExerciseIndex;
+            const finished = !progress.skipped && progress.completedSets >= exercise.sets;
+
+            return (
+              <motion.button
+                key={exercise.id}
+                layout
+                onClick={() => setCurrentExerciseIndex(index)}
+                className="w-full rounded-[26px] border p-4 text-left"
+                style={{
+                  background: isCurrent
+                    ? 'linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.14) 0%, rgba(var(--theme-accent-rgb), 0.06) 100%)'
+                    : 'rgba(255,255,255,0.03)',
+                  borderColor: isCurrent ? 'rgba(var(--theme-accent-rgb), 0.24)' : 'rgba(255,255,255,0.06)',
+                }}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                      <span className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.62)', fontFamily: 'Space Grotesk' }}>
+                        {index + 1}
+                      </span>
+                      {finished && (
+                        <span className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ background: 'rgba(132,204,22,0.16)', color: '#a3e635', fontFamily: 'Space Grotesk' }}>
+                          Concluído
+                        </span>
+                      )}
+                      {progress.skipped && (
+                        <span className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ background: 'rgba(245,158,11,0.16)', color: '#fbbf24', fontFamily: 'Space Grotesk' }}>
+                          Pulado
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>{exercise.name}</p>
+                    <p className="mt-1 text-[11px]" style={{ color: 'rgba(255,255,255,0.48)', fontFamily: 'Outfit' }}>
+                      {exercise.sets} séries • {progress.reps} reps • {progress.weight.toFixed(1)} kg • descanso {exercise.restSeconds}s
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>{progress.completedSets}/{exercise.sets}</p>
+                    <p className="mt-1 text-[11px]" style={{ color: 'rgba(255,255,255,0.48)', fontFamily: 'Outfit' }}>séries</p>
+                  </div>
+                </div>
+              </motion.button>
+            );
+          })}
+        </section>
+
+        <section className="mt-4 rounded-[30px] border p-5" style={{ background: 'linear-gradient(180deg, rgba(21,21,24,0.98) 0%, rgba(12,12,14,0.98) 100%)', borderColor: 'rgba(255,255,255,0.08)' }}>
+          <div className="flex items-start gap-3">
+            <div className="flex size-12 items-center justify-center rounded-2xl" style={{ background: 'rgba(var(--theme-accent-rgb), 0.15)', color: 'var(--theme-accent)' }}>
+              <Trophy size={20} />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>Finalizar e salvar sessão</h2>
+              <p className="mt-1 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.56)', fontFamily: 'Outfit' }}>
+                O aplicativo vai registrar duração, séries concluídas, exercícios pulados, carga usada e percentual total de progresso.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 grid grid-cols-3 gap-2">
+            <MiniMetric label="Completos" value={String(completedExercises.length)} highlight />
+            <MiniMetric label="Pulados" value={String(skippedExercises.length)} />
+            <MiniMetric label="Duração" value={`${Math.max(1, Math.round((Date.now() - startedAt) / 60000))} min`} />
+          </div>
+
+          <button
+            onClick={finishWorkout}
+            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-4 text-sm font-bold"
+            style={{ background: 'var(--theme-accent)', color: '#0d0d0f', fontFamily: 'Space Grotesk' }}
+          >
+            <Check size={16} />
+            Salvar treino concluído
+          </button>
+        </section>
       </div>
 
-      {/* Finish Button */}
-      <div className="px-4 pb-6 pt-2">
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={finishWorkout}
-          className="w-full py-4 rounded-xl text-base font-bold flex items-center justify-center gap-2"
-          style={{
-            background: completed.size > 0 ? 'var(--theme-accent)' : 'rgba(255,255,255,0.08)',
-            color: completed.size > 0 ? '#0d0d0f' : 'rgba(255,255,255,0.3)',
-            fontFamily: 'Space Grotesk',
-            boxShadow: completed.size > 0 ? '0 0 20px rgba(var(--theme-accent-rgb), 0.3)' : 'none',
-          }}
-        >
-          <Trophy size={20} fill={completed.size > 0 ? '#0d0d0f' : 'rgba(255,255,255,0.3)'} /> Finalizar Treino
-        </motion.button>
-        {completed.size === 0 && (
-          <p className="text-center text-xs mt-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Outfit' }}>
-            Complete pelo menos 1 exercício para finalizar
-          </p>
-        )}
-      </div>
-
-      {/* Rest Timer Modal */}
       <AnimatePresence>
         {showTimer && (
           <RestTimer
             seconds={timerSeconds}
-            onComplete={() => setShowTimer(false)}
+            onComplete={() => {
+              setShowTimer(false);
+              goToNextPendingExercise();
+            }}
           />
         )}
       </AnimatePresence>
