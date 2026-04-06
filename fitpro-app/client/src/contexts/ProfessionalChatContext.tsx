@@ -68,7 +68,8 @@ export function ProfessionalChatProvider({ children }: { children: ReactNode }) 
     sessions,
     currentSessionId,
     getCurrentSession() {
-      return currentSessionId ? sessions[currentSessionId] ?? null : null;
+      if (!currentSessionId) return null;
+      return sessions[currentSessionId] ?? null;
     },
     startChat(professional) {
       setSessions(prev => {

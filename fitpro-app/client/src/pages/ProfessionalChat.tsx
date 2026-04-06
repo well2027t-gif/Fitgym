@@ -4,7 +4,7 @@
  * Chat com profissionais específicos (Personal Trainers, Nutricionistas, etc.)
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, Trash2, MessageSquareText } from 'lucide-react';
 import { useLocation, useParams } from '@/lib/router';
@@ -17,17 +17,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 export default function ProfessionalChat() {
   const { id: professionalId } = useParams<{ id: string }>();
   const [, navigate] = useLocation();
-  const { sessions, currentSessionId, setCurrentSession, getCurrentSession, clearChat } = useProfessionalChat();
+  const { sessions, setCurrentSession, getCurrentSession, clearChat } = useProfessionalChat();
   const [isLoading, setIsLoading] = useState(false);
 
   // Set current session when component mounts or professionalId changes
-  useMemo(() => {
-    if (professionalId && professionalId !== currentSessionId) {
+  useEffect(() => {
+    if (professionalId) {
       setCurrentSession(professionalId);
     }
-  }, [professionalId, currentSessionId, setCurrentSession]);
+  }, [professionalId, setCurrentSession]);
 
-  const session = getCurrentSession();
+  // Lê a sessão diretamente do mapa de sessões para garantir reatividade imediata
+  const session = professionalId ? (sessions[professionalId] ?? null) : null;
 
   if (!session || !session.professional) {
     return (
