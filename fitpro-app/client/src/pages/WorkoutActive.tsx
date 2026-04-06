@@ -222,21 +222,23 @@ export default function WorkoutActive() {
           background: 'linear-gradient(135deg, rgba(20,20,25,0.9) 0%, rgba(30,30,35,0.7) 100%)',
           border: '1px solid rgba(255,255,255,0.08)',
         }}>
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+            src={activeExercise.videoUrl}
+            style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}
+          />
           <div className="absolute top-2 left-2 z-10 px-2 py-1 rounded-md text-[10px] font-semibold flex items-center gap-1"
             style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(74,222,128,0.3)', color: '#4ade80', fontFamily: font }}>
             <Lightbulb size={10} /> Técnica
-          </div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center"
-              style={{ background: 'rgba(255,255,255,0.15)', border: '2px solid rgba(255,255,255,0.25)' }}>
-              <Play size={22} style={{ color: 'rgba(255,255,255,0.9)', marginLeft: '2px' }} fill="rgba(255,255,255,0.9)" />
-            </div>
           </div>
           <button className="absolute bottom-2 right-2 w-7 h-7 rounded-md flex items-center justify-center"
             style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)' }}>
             <Maximize2 size={13} />
           </button>
-          <div className="absolute inset-0 -z-10" style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }} />
         </div>
 
         {/* DICA DE TÉCNICA */}
