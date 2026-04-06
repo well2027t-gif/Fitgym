@@ -323,6 +323,7 @@ export default function Workouts() {
   const todayWorkout = workouts.find(workout => workout.id === todayWorkoutId) ?? null;
 
   const [showWorkoutForm, setShowWorkoutForm] = useState(false);
+  const [checkingIn, setCheckingIn] = useState<string | null>(null);
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
   const [workoutName, setWorkoutName] = useState('');
   const [selectedMuscles, setSelectedMuscles] = useState<string[]>([]);
@@ -414,6 +415,34 @@ export default function Workouts() {
 
   const toggleMuscle = (m: string) => {
     setSelectedMuscles(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]);
+  };
+
+  const handleStartWithCheckIn = (workoutId: string) => {
+    setCheckingIn(workoutId);
+    toast.info("Solicitando localização para check-in...", { duration: 2000 });
+
+    if (!navigator.geolocation) {
+      toast.error("Geolocalização não suportada.");
+      navigate(`/treino-ativo/${workoutId}`);
+      setCheckingIn(null);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      () => {
+        toast.success("Check-in realizado! Bom treino!", { icon: '📍' });
+        setTimeout(() => {
+          navigate(`/treino-ativo/${workoutId}`);
+          setCheckingIn(null);
+        }, 1200);
+      },
+      () => {
+        toast.error("Não foi possível validar localização. Iniciando treino...");
+        navigate(`/treino-ativo/${workoutId}`);
+        setCheckingIn(null);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   };
 
   const addExerciseRow = () => setExercises(prev => [...prev, { ...defaultExercise }]);
@@ -559,7 +588,7 @@ export default function Workouts() {
                 }}
                 onEdit={() => openEditWorkout(w)}
                 onDelete={() => { deleteWorkout(w.id); toast.success('Treino excluído'); }}
-                onStart={() => navigate(`/treino-ativo/${w.id}`)}
+                onStart={() => handleStartWithCheckIn(w.id)}
                 onEditExercise={(ex) => openEditExercise(w.id, ex)}
                 onDeleteExercise={handleDeleteExercise}
               />
@@ -567,6 +596,33 @@ export default function Workouts() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Check-in Overlay */}
+      <AnimatePresence>
+        {checkingIn && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-6"
+            style={{ background: 'rgba(13,13,15,0.9)', backdropFilter: 'blur(10px)' }}
+          >
+            <div className="text-center">
+              <motion.div
+                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="w-20 h-20 rounded-full bg-theme-accent/20 flex items-center justify-center mx-auto mb-6 border border-theme-accent/30"
+              >
+                <Play size={32} className="text-theme-accent ml-1" />
+              </motion.div>
+              <h2 className="text-xl font-bold text-white mb-2" style={{ fontFamily: 'Space Grotesk' }}>Validando Presença</h2>
+              <p className="text-sm text-white/50 max-w-[240px] mx-auto" style={{ fontFamily: 'Outfit' }}>
+                Verificando localização em tempo real para o check-in na academia.
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Workout Form Modal */}
       <AnimatePresence>

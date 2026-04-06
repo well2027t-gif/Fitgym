@@ -110,9 +110,9 @@ export default function Home() {
 
   // Ciclo menstrual — fase atual
   const cycleProfile = state.cycleProfile;
-  const lastCycleStart = cycleProfile?.lastPeriodStart ? new Date(cycleProfile.lastPeriodStart + 'T12:00:00') : null;
-  const cycleLength = cycleProfile?.cycleLength || 28;
-  const periodLength = cycleProfile?.periodLength || 5;
+  const lastCycleStart = cycleProfile?.lastMenstruationDate ? new Date(cycleProfile.lastMenstruationDate + 'T12:00:00') : null;
+  const cycleLength = cycleProfile?.cycleLengthDays || 28;
+  const periodLength = cycleProfile?.menstruationDays || 5;
   let currentCycleDay = 0;
   if (lastCycleStart) {
     const today = new Date();
@@ -543,7 +543,7 @@ export default function Home() {
 
           {/* Copos interativos */}
           <div className="flex gap-2 flex-wrap">
-            {Array.from({ length: Math.min(WATER_GOAL, 12) }).map((_, i) => (
+            {Array.from({ length: Math.min(WATER_GOAL, 24) }).map((_, i) => (
               <motion.button
                 key={i}
                 onClick={() => setTodayWaterCups(i < waterCups ? i : i + 1)}
@@ -965,13 +965,13 @@ export default function Home() {
                         <motion.button whileTap={{ scale: 0.9 }} onClick={() => setConfigGoalLiters(v => Math.max(0.5, parseFloat((v - 0.25).toFixed(2))))} className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.06)' }}>
                           <Minus size={16} style={{ color: 'rgba(255,255,255,0.7)' }} />
                         </motion.button>
-                        <motion.button whileTap={{ scale: 0.9 }} onClick={() => setConfigGoalLiters(v => parseFloat((v + 0.25).toFixed(2)))} className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(56,189,248,0.2)' }}>
+                        <motion.button whileTap={{ scale: 0.9 }} onClick={() => setConfigGoalLiters(v => Math.min(15, parseFloat((v + 0.25).toFixed(2))))} className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(56,189,248,0.2)' }}>
                           <Plus size={16} style={{ color: '#38bdf8' }} />
                         </motion.button>
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      {[1.5, 2.0, 2.5, 3.0, 3.5].map(v => (
+                      {[2.0, 3.0, 5.0, 8.0, 10.0].map(v => (
                         <motion.button key={v} whileTap={{ scale: 0.9 }} onClick={() => setConfigGoalLiters(v)} className="flex-1 py-1.5 rounded-lg text-xs font-semibold" style={{ background: configGoalLiters === v ? 'rgba(56,189,248,0.25)' : 'rgba(255,255,255,0.06)', color: configGoalLiters === v ? '#38bdf8' : 'rgba(255,255,255,0.5)', border: configGoalLiters === v ? '1px solid rgba(56,189,248,0.4)' : '1px solid transparent', fontFamily: 'Space Grotesk' }}>
                           {v}L
                         </motion.button>

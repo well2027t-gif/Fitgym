@@ -65,6 +65,7 @@ export default function Hydration() {
     { label: `+${cupSizeMl * 2}ml`, cups: 2, ml: cupSizeMl * 2 },
     { label: '+500ml', cups: Math.round(500 / cupSizeMl), ml: 500 },
     { label: '+1L', cups: Math.round(1000 / cupSizeMl), ml: 1000 },
+    { label: '+2L', cups: Math.round(2000 / cupSizeMl), ml: 2000 },
   ];
 
   return (
@@ -157,7 +158,7 @@ export default function Hydration() {
 
           {/* Copos interativos */}
           <div className="flex gap-1.5 flex-wrap mb-3">
-            {Array.from({ length: Math.min(WATER_GOAL, 16) }).map((_, i) => (
+            {Array.from({ length: Math.min(WATER_GOAL, 40) }).map((_, i) => (
               <motion.button
                 key={i}
                 onClick={() => setTodayWaterCups(i < waterCups ? i : i + 1)}
@@ -357,7 +358,7 @@ export default function Hydration() {
                         </motion.button>
                         <motion.button
                           whileTap={{ scale: 0.9 }}
-                          onClick={() => setConfigGoalLiters(v => parseFloat((v + 0.25).toFixed(2)))}
+                          onClick={() => setConfigGoalLiters(v => Math.min(15, parseFloat((v + 0.25).toFixed(2))))}
                           className="w-10 h-10 rounded-xl flex items-center justify-center"
                           style={{ background: 'rgba(56,189,248,0.2)' }}
                         >
@@ -366,7 +367,7 @@ export default function Hydration() {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      {[1.5, 2.0, 2.5, 3.0, 3.5].map(v => (
+                      {[2.0, 3.0, 5.0, 8.0, 10.0].map(v => (
                         <motion.button
                           key={v}
                           whileTap={{ scale: 0.9 }}
