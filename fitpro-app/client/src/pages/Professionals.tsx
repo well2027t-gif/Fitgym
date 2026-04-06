@@ -213,7 +213,6 @@ export default function Professionals() {
                   onClick={() => {
                     startChat(prof as Professional);
                     navigate(`/profissionais/chat/${prof.id}`);
-                    toast.success(`Chat iniciado com ${prof.name}!`);
                   }}
                   className="w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all"
                   style={{
