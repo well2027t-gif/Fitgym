@@ -558,103 +558,105 @@ Consulte seu médico para análise profissional.
                 </div>
               </Card>
 
-              {/* Calendário Glassmorphism Minimalista */}
-              <div className="space-y-6 relative z-10">
-                {/* Header do Mês */}
-                <div className="flex items-center justify-between px-2">
+              {/* Calendário de Linha do Tempo Horizontal (Timeline) */}
+              <div className="space-y-8 relative z-10">
+                {/* Título e Controles */}
+                <div className="flex items-end justify-between px-4">
                   <div>
-                    <p className="text-[12px] uppercase tracking-[0.15em] text-white/40 font-light mb-2">Seu Ciclo</p>
-                    <h2 className="text-4xl font-light text-white capitalize" style={{ fontFamily: 'Space Grotesk, sans-serif', letterSpacing: '-0.02em' }}>
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-white/30 font-light mb-3">Sua Jornada</p>
+                    <h2 className="text-5xl font-extralight text-white" style={{ letterSpacing: '-0.03em' }}>
                       {monthName}
                     </h2>
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex gap-4">
                     <motion.button
                       onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
-                      className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      className="text-white/40 hover:text-white transition-colors"
+                      whileHover={{ x: -4 }}
                     >
-                      <ChevronLeft size={18} />
+                      <ChevronLeft size={24} strokeWidth={1.5} />
                     </motion.button>
                     <motion.button
                       onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
-                      className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      className="text-white/40 hover:text-white transition-colors"
+                      whileHover={{ x: 4 }}
                     >
-                      <ChevronRight size={18} />
+                      <ChevronRight size={24} strokeWidth={1.5} />
                     </motion.button>
                   </div>
                 </div>
 
-                {/* Grid de Dias da Semana */}
-                <div className="grid grid-cols-7 gap-3 px-2 mb-2">
-                  {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'].map(day => (
-                    <div key={day} className="text-center text-[11px] font-light text-white/40 uppercase tracking-[0.1em]">
-                      {day}
-                    </div>
-                  ))}
-                </div>
+                {/* Linha do Tempo Horizontal */}
+                <div className="relative overflow-x-auto scrollbar-hide">
+                  {/* Linha Central */}
+                  <div className="absolute left-0 right-0 top-1/2 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent transform -translate-y-1/2" />
+                  
+                  {/* Container dos Dias */}
+                  <div className="flex gap-8 px-4 pb-4 min-w-max">
+                    {Array.from({ length: 35 }).map((_, idx) => {
+                      const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), idx + 1);
+                      const day = date.getMonth() === currentMonth.getMonth() ? date.getDate() : null;
+                      
+                      if (!day) return null;
+                      
+                      const dayOfCycle = getDayOfCycle(day);
+                      const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                      const hasEntry = lastCycle.dayEntries?.some(e => e.date === dateStr);
+                      const isSelected = selectedDate === dateStr;
+                      const phase = dayOfCycle ? getCyclePhaseInfo(dayOfCycle) : null;
+                      const dayName = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'][date.getDay()];
 
-                {/* Grid de Dias */}
-                <div className="grid grid-cols-7 gap-3 px-2">
-                  {days.map((day, idx) => {
-                    const dayOfCycle = getDayOfCycle(day);
-                    const dateStr = day ? `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
-                    const hasEntry = day && lastCycle.dayEntries?.some(e => e.date === dateStr);
-                    const isSelected = day && selectedDate === dateStr;
-                    const phase = dayOfCycle ? getCyclePhaseInfo(dayOfCycle) : null;
-
-                    if (!day) {
-                      return <div key={idx} className="aspect-square" />;
-                    }
-
-                    return (
-                      <motion.button
-                        key={idx}
-                        onClick={() => handleDayClick(day)}
-                        className="aspect-square relative group"
-                        whileHover={{ scale: 1.08 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        {/* Background Glassmorphism */}
-                        <div className={`absolute inset-0 rounded-2xl backdrop-blur-md border transition-all duration-300 ${
-                          isSelected
-                            ? 'bg-white/15 border-white/40 shadow-lg shadow-pink-500/20'
-                            : hasEntry
-                            ? `bg-gradient-to-br ${phase?.bgColor || 'from-white/5 to-white/[0.02]'} border-white/20`
-                            : 'bg-white/5 border-white/10 group-hover:bg-white/10 group-hover:border-white/20'
-                        }`} />
-
-                        {/* Glow Effect para dias com entrada */}
-                        {hasEntry && (
-                          <div className={`absolute inset-0 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br ${phase?.bgColor || 'from-pink-500/20 to-rose-500/20'}`} />
-                        )}
-
-                        {/* Conteúdo */}
-                        <div className="relative h-full flex flex-col items-center justify-center gap-1">
-                          <span className={`text-sm font-light transition-colors ${
-                            isSelected ? 'text-white font-medium' : 'text-white/80'
-                          }`}>
-                            {day}
-                          </span>
-                          {dayOfCycle && (
-                            <span className={`text-[10px] font-light opacity-70 ${phase?.color || 'text-white/60'}`}>
-                              D{dayOfCycle}
-                            </span>
-                          )}
+                      return (
+                        <motion.button
+                          key={idx}
+                          onClick={() => handleDayClick(day)}
+                          className="flex flex-col items-center gap-4 group cursor-pointer flex-shrink-0"
+                          whileHover={{ y: -8 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          {/* Indicador de Evento (Acima) */}
                           {hasEntry && (
                             <motion.div
-                              className={`w-1.5 h-1.5 rounded-full ${phase?.color || 'bg-pink-500'}`}
-                              animate={{ scale: [1, 1.3, 1] }}
+                              className={`w-2 h-2 rounded-full ${phase?.color || 'bg-pink-500'}`}
+                              animate={{ y: [0, -4, 0] }}
                               transition={{ duration: 2, repeat: Infinity }}
                             />
                           )}
-                        </div>
-                      </motion.button>
-                    );
-                  })}
+                          {!hasEntry && <div className="w-2 h-2" />}
+
+                          {/* Dia */}
+                          <div className="flex flex-col items-center">
+                            <span className={`text-2xl font-light transition-all ${
+                              isSelected ? 'text-white' : 'text-white/60 group-hover:text-white'
+                            }`}>
+                              {day}
+                            </span>
+                            <span className={`text-[10px] uppercase tracking-[0.1em] font-light transition-colors ${
+                              isSelected ? `${phase?.color || 'text-pink-500'}` : 'text-white/30 group-hover:text-white/50'
+                            }`}>
+                              {dayName}
+                            </span>
+                          </div>
+
+                          {/* Ciclo */}
+                          {dayOfCycle && (
+                            <span className={`text-[9px] font-light opacity-50 ${phase?.color || 'text-white/60'}`}>
+                              D{dayOfCycle}
+                            </span>
+                          )}
+
+                          {/* Ponto de Seleção */}
+                          {isSelected && (
+                            <motion.div
+                              className={`w-3 h-3 rounded-full border-2 ${phase?.color || 'border-pink-500'}`}
+                              layoutId="selectedDay"
+                              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                            />
+                          )}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
