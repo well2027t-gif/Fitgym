@@ -10,7 +10,7 @@ import { useLocation } from '@/lib/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, Dumbbell, ChevronRight, Trash2, Edit3, Play,
-  Check, X, Clock, RotateCcw, Star, ChevronDown, ChevronUp, Flame
+  Check, X, Clock, RotateCcw, Star, ChevronDown, ChevronUp, Flame, MapPin
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { nanoid } from 'nanoid';
@@ -324,6 +324,10 @@ export default function Workouts() {
 
   const [showWorkoutForm, setShowWorkoutForm] = useState(false);
   const [checkingIn, setCheckingIn] = useState<string | null>(null);
+  const [showCheckInForm, setShowCheckInForm] = useState(false);
+  const [checkInLocation, setCheckInLocation] = useState<{ lat: number; lng: number; address?: string } | null>(null);
+  const [gymName, setGymName] = useState('');
+  const [isLocating, setIsLocating] = useState(false);
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
   const [workoutName, setWorkoutName] = useState('');
   const [selectedMuscles, setSelectedMuscles] = useState<string[]>([]);
@@ -419,41 +423,59 @@ export default function Workouts() {
 
   const handleStartWithCheckIn = (workoutId: string) => {
     setCheckingIn(workoutId);
-    toast.info("Solicitando localização para check-in...", { duration: 2000 });
-
+    setIsLocating(true);
+    
     if (!navigator.geolocation) {
-      toast.error("Geolocalização não suportada.");
-      navigate(`/treino-ativo/${workoutId}`);
+      toast.error("Geolocalização não suportada neste dispositivo.");
       setCheckingIn(null);
+      setIsLocating(false);
       return;
     }
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        // Simulação de validação: em um cenário real, compararíamos position.coords com as coordenadas da academia
-        console.log("Localização obtida:", position.coords.latitude, position.coords.longitude);
+      async (position) => {
+        const { latitude, longitude } = position.coords;
         
-        toast.success("Academia localizada! Check-in confirmado.", { 
-          icon: '🏢',
-          duration: 3000
-        });
+        // Simulação de busca de endereço (reversa)
+        // Em produção, usaríamos uma API como Google Maps ou OpenStreetMap
+        const mockAddress = "Rua das Acácias, 450 - Centro"; 
         
-        setTimeout(() => {
-          navigate(`/treino-ativo/${workoutId}`);
-          setCheckingIn(null);
-        }, 1500);
+        setCheckInLocation({ lat: latitude, lng: longitude, address: mockAddress });
+        setIsLocating(false);
+        setShowCheckInForm(true);
       },
       (error) => {
-        console.error("Erro de geolocalização:", error);
-        toast.error("Sinal de GPS fraco. Por favor, tente novamente ou inicie manualmente.");
-        // Permitimos iniciar mesmo com erro para não travar o usuário, mas avisamos
-        setTimeout(() => {
-          navigate(`/treino-ativo/${workoutId}`);
-          setCheckingIn(null);
-        }, 2000);
+        console.error("Erro ao obter localização:", error);
+        toast.error("Não conseguimos validar sua localização. O check-in é obrigatório para treinar.");
+        setCheckingIn(null);
+        setIsLocating(false);
       },
-      { enableHighAccuracy: true, timeout: 15000 }
+      { enableHighAccuracy: true, timeout: 10000 }
     );
+  };
+
+  const confirmCheckIn = () => {
+    if (!gymName.trim()) {
+      toast.error("O nome da academia é obrigatório.");
+      return;
+    }
+
+    // Salvar no histórico de check-ins (simulado no estado global futuramente)
+    console.log("Check-in realizado:", {
+      workoutId: checkingIn,
+      gym: gymName,
+      location: checkInLocation,
+      timestamp: new Date().toISOString()
+    });
+
+    toast.success(`Check-in em "${gymName}" realizado!`, { icon: '📍' });
+    
+    setTimeout(() => {
+      navigate(`/treino-ativo/${checkingIn}`);
+      setCheckingIn(null);
+      setShowCheckInForm(false);
+      setGymName('');
+    }, 1000);
   };
 
   const addExerciseRow = () => setExercises(prev => [...prev, { ...defaultExercise }]);
@@ -608,7 +630,7 @@ export default function Workouts() {
         </AnimatePresence>
       </div>
 
-      {/* Check-in Overlay */}
+      {/* Check-in Overlay & Form */}
       <AnimatePresence>
         {checkingIn && (
           <motion.div
@@ -616,21 +638,81 @@ export default function Workouts() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] flex items-center justify-center p-6"
-            style={{ background: 'rgba(13,13,15,0.9)', backdropFilter: 'blur(10px)' }}
+            style={{ background: 'rgba(13,13,15,0.95)', backdropFilter: 'blur(12px)' }}
           >
-            <div className="text-center">
-              <motion.div
-                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="w-20 h-20 rounded-full bg-theme-accent/20 flex items-center justify-center mx-auto mb-6 border border-theme-accent/30"
+            {isLocating ? (
+              <div className="text-center">
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="w-20 h-20 rounded-full bg-theme-accent/20 flex items-center justify-center mx-auto mb-6 border border-theme-accent/30"
+                >
+                  <MapPin size={32} className="text-theme-accent" />
+                </motion.div>
+                <h2 className="text-xl font-bold text-white mb-2" style={{ fontFamily: 'Space Grotesk' }}>Localizando Academia</h2>
+                <p className="text-sm text-white/50 max-w-[240px] mx-auto" style={{ fontFamily: 'Outfit' }}>
+                  Buscando seu endereço em tempo real para validar o treino.
+                </p>
+              </div>
+            ) : showCheckInForm && (
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="w-full max-w-sm bg-[#161618] rounded-[32px] p-6 border border-white/10 shadow-2xl"
               >
-                <Play size={32} className="text-theme-accent ml-1" />
+                <div className="flex justify-center mb-6">
+                  <div className="w-16 h-16 rounded-2xl bg-theme-accent/10 flex items-center justify-center border border-theme-accent/20">
+                    <Dumbbell size={28} className="text-theme-accent" />
+                  </div>
+                </div>
+                
+                <h2 className="text-xl font-bold text-white text-center mb-1" style={{ fontFamily: 'Space Grotesk' }}>Check-in Obrigatório</h2>
+                <p className="text-xs text-white/40 text-center mb-6" style={{ fontFamily: 'Outfit' }}>
+                  Para contabilizar seu treino, confirme onde você está treinando hoje.
+                </p>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-2 block ml-1">Endereço Detectado</label>
+                    <div className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
+                      <MapPin size={16} className="text-theme-accent/60" />
+                      <span className="text-sm text-white/70 truncate" style={{ fontFamily: 'Outfit' }}>
+                        {checkInLocation?.address || "Localização obtida"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-2 block ml-1">Nome da Academia</label>
+                    <input 
+                      autoFocus
+                      value={gymName}
+                      onChange={e => setGymName(e.target.value)}
+                      placeholder="Ex: Bluefit, Smart Fit..."
+                      className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:border-theme-accent/50 transition-colors"
+                      style={{ fontFamily: 'Outfit' }}
+                    />
+                  </div>
+
+                  <div className="pt-2 flex gap-3">
+                    <button 
+                      onClick={() => { setCheckingIn(null); setShowCheckInForm(false); }}
+                      className="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white/50 bg-white/5 border border-white/5"
+                      style={{ fontFamily: 'Space Grotesk' }}
+                    >
+                      Cancelar
+                    </button>
+                    <button 
+                      onClick={confirmCheckIn}
+                      className="flex-[2] py-3.5 rounded-2xl text-sm font-bold text-black bg-theme-accent shadow-lg shadow-theme-accent/20"
+                      style={{ fontFamily: 'Space Grotesk' }}
+                    >
+                      Confirmar e Treinar
+                    </button>
+                  </div>
+                </div>
               </motion.div>
-              <h2 className="text-xl font-bold text-white mb-2" style={{ fontFamily: 'Space Grotesk' }}>Validando Presença</h2>
-              <p className="text-sm text-white/50 max-w-[240px] mx-auto" style={{ fontFamily: 'Outfit' }}>
-                Verificando localização em tempo real para o check-in na academia.
-              </p>
-            </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
