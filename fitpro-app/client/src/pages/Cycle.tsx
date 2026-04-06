@@ -460,38 +460,114 @@ Consulte seu médico para análise profissional.
           {/* TAB: VISÃO GERAL */}
           {activeTab === 'overview' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-              {/* Roda de Ciclo */}
-              <Card className="p-8 border-white/5 bg-gradient-to-br from-pink-500/10 via-white/[0.03] to-purple-500/10 overflow-hidden relative">
-                <div className="absolute top-0 right-0 w-48 h-48 bg-pink-500/20 blur-[80px] rounded-full -mr-24 -mt-24" />
-                <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-500/15 blur-[60px] rounded-full -ml-20 -mb-20" />
-                
+              {/* Roda de Ciclo Ultra-Premium */}
+              <div className="relative overflow-hidden rounded-3xl p-6" style={{
+                background: 'linear-gradient(135deg, rgba(15,10,25,0.95) 0%, rgba(25,10,40,0.95) 100%)',
+                border: '1px solid rgba(255,255,255,0.06)',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)'
+              }}>
+                {/* Orbs de fundo */}
+                <div className="absolute top-0 right-0 w-56 h-56 rounded-full" style={{ background: 'radial-gradient(circle, rgba(236,72,153,0.15) 0%, transparent 70%)', filter: 'blur(30px)' }} />
+                <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full" style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)', filter: 'blur(30px)' }} />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full" style={{ background: 'radial-gradient(circle, rgba(244,114,182,0.06) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+
                 <div className="relative z-10 flex flex-col items-center">
-                  <div className="w-48 h-48 rounded-full border-4 border-white/10 flex items-center justify-center relative mb-6">
-                    <svg className="w-full h-full" viewBox="0 0 200 200">
-                      <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(239, 68, 68, 0.3)" strokeWidth="20" strokeDasharray="47.1 282.6" strokeDashoffset="0" />
-                      <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(59, 130, 246, 0.3)" strokeWidth="20" strokeDasharray="62.8 282.6" strokeDashoffset="-47.1" />
-                      <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(236, 72, 153, 0.3)" strokeWidth="20" strokeDasharray="47.1 282.6" strokeDashoffset="-109.9" />
-                      <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(217, 119, 6, 0.3)" strokeWidth="20" strokeDasharray="125.6 282.6" strokeDashoffset="-157" />
+                  {/* SVG da Roda */}
+                  <div className="relative w-52 h-52 mb-6">
+                    {/* Glow externo */}
+                    <div className="absolute inset-0 rounded-full" style={{
+                      background: `radial-gradient(circle, ${currentPhaseInfo ? currentPhaseInfo.color.replace('text-', '').replace('-500','') === 'red' ? 'rgba(239,68,68,0.15)' : currentPhaseInfo.color.includes('blue') ? 'rgba(96,165,250,0.15)' : currentPhaseInfo.color.includes('pink') ? 'rgba(244,114,182,0.15)' : 'rgba(251,191,36,0.15)' : 'rgba(244,114,182,0.1)'} 0%, transparent 70%)`,
+                      filter: 'blur(20px)',
+                      transform: 'scale(1.2)'
+                    }} />
+
+                    <svg className="w-full h-full -rotate-90" viewBox="0 0 200 200">
+                      <defs>
+                        <filter id="glow-red"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                        <filter id="glow-blue"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                        <filter id="glow-pink"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                        <filter id="glow-amber"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                        <linearGradient id="grad-red" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#ff6b6b" /><stop offset="100%" stopColor="#ee5a24" />
+                        </linearGradient>
+                        <linearGradient id="grad-blue" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#74b9ff" /><stop offset="100%" stopColor="#0984e3" />
+                        </linearGradient>
+                        <linearGradient id="grad-pink" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#fd79a8" /><stop offset="100%" stopColor="#e84393" />
+                        </linearGradient>
+                        <linearGradient id="grad-amber" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#fdcb6e" /><stop offset="100%" stopColor="#e17055" />
+                        </linearGradient>
+                      </defs>
+
+                      {/* Trilha de fundo */}
+                      <circle cx="100" cy="100" r="80" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="18" />
+
+                      {/* Menstruação (Dias 1-5) */}
+                      <circle cx="100" cy="100" r="80" fill="none" stroke="url(#grad-red)" strokeWidth="18"
+                        strokeDasharray="44.6 457.1" strokeDashoffset="0"
+                        strokeLinecap="round" opacity={currentPhaseInfo?.phase === 'Menstruação' ? 1 : 0.35}
+                        filter={currentPhaseInfo?.phase === 'Menstruação' ? 'url(#glow-red)' : undefined} />
+
+                      {/* Folicular (Dias 6-13) */}
+                      <circle cx="100" cy="100" r="80" fill="none" stroke="url(#grad-blue)" strokeWidth="18"
+                        strokeDasharray="71.4 457.1" strokeDashoffset="-44.6"
+                        strokeLinecap="round" opacity={currentPhaseInfo?.phase === 'Folicular' ? 1 : 0.35}
+                        filter={currentPhaseInfo?.phase === 'Folicular' ? 'url(#glow-blue)' : undefined} />
+
+                      {/* Ovulação (Dias 14-16) */}
+                      <circle cx="100" cy="100" r="80" fill="none" stroke="url(#grad-pink)" strokeWidth="18"
+                        strokeDasharray="26.7 457.1" strokeDashoffset="-116"
+                        strokeLinecap="round" opacity={currentPhaseInfo?.phase === 'Ovulatória' ? 1 : 0.35}
+                        filter={currentPhaseInfo?.phase === 'Ovulatória' ? 'url(#glow-pink)' : undefined} />
+
+                      {/* Lútea (Dias 17-28) */}
+                      <circle cx="100" cy="100" r="80" fill="none" stroke="url(#grad-amber)" strokeWidth="18"
+                        strokeDasharray="107.1 457.1" strokeDashoffset="-142.7"
+                        strokeLinecap="round" opacity={currentPhaseInfo?.phase === 'Lútea' ? 1 : 0.35}
+                        filter={currentPhaseInfo?.phase === 'Lútea' ? 'url(#glow-amber)' : undefined} />
                     </svg>
-                    
+
+                    {/* Centro da Roda */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Fase Atual</p>
-                      <p className={`text-2xl font-bold mt-2 ${currentPhaseInfo?.color || 'text-pink-500'}`} style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                      <p className="text-[9px] uppercase tracking-[0.2em] font-medium mb-1" style={{ color: 'rgba(255,255,255,0.35)' }}>Fase Atual</p>
+                      <p className="text-xl font-bold text-white leading-tight text-center px-2" style={{ fontFamily: 'Space Grotesk, sans-serif', textShadow: '0 0 20px rgba(244,114,182,0.6)' }}>
                         {currentPhaseInfo?.phase || 'Lútea'}
                       </p>
+                      {currentPhaseInfo && (
+                        <p className="text-[10px] mt-1 font-medium" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                          {currentPhaseInfo.dayRange}
+                        </p>
+                      )}
                     </div>
                   </div>
 
+                  {/* Descrição da fase */}
                   {currentPhaseInfo && (
-                    <div className="text-center">
-                      <p className="text-sm text-white/70 mb-3">{currentPhaseInfo.description}</p>
-                      <div className="inline-block px-4 py-2 rounded-full bg-white/5 border border-white/10">
-                        <p className="text-[11px] text-white/60">{currentPhaseInfo.dayRange}</p>
+                    <div className="text-center w-full">
+                      <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.65)', fontFamily: 'Outfit, sans-serif' }}>
+                        {currentPhaseInfo.description}
+                      </p>
+
+                      {/* Legenda das fases */}
+                      <div className="flex items-center justify-center gap-4 mt-5 flex-wrap">
+                        {[
+                          { label: 'Mens.', color: '#ff6b6b', active: currentPhaseInfo.phase === 'Menstruação' },
+                          { label: 'Folicular', color: '#74b9ff', active: currentPhaseInfo.phase === 'Folicular' },
+                          { label: 'Ovulação', color: '#fd79a8', active: currentPhaseInfo.phase === 'Ovulatória' },
+                          { label: 'Lútea', color: '#fdcb6e', active: currentPhaseInfo.phase === 'Lútea' },
+                        ].map(p => (
+                          <div key={p.label} className="flex items-center gap-1.5">
+                            <div className="w-2 h-2 rounded-full" style={{ background: p.color, opacity: p.active ? 1 : 0.4, boxShadow: p.active ? `0 0 6px ${p.color}` : 'none' }} />
+                            <span className="text-[10px] font-medium" style={{ color: p.active ? p.color : 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>{p.label}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
                 </div>
-              </Card>
+              </div>
 
               {/* Insights de Treino e Nutrição */}
               {currentPhaseInfo && (
