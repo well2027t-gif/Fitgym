@@ -1,7 +1,6 @@
 /**
- * FitPro — WorkoutActive Page (Fidelity to Reference Design 44C3F156)
- * Design: Exatamente como a nova imagem de referência
- * Com selo técnica, ícone de anatomia, timer tracejado e rodapé
+ * FitPro — WorkoutActive Page (Ultra Premium Design)
+ * Refinamento estético profundo com design cinematográfico
  */
 
 import { useEffect, useMemo, useState } from 'react';
@@ -36,6 +35,7 @@ export default function WorkoutActive() {
   const [startedAt] = useState(Date.now());
   const [exerciseState, setExerciseState] = useState<Record<string, ExerciseProgressState>>({});
   const [restTimeRemaining, setRestTimeRemaining] = useState<number | null>(null);
+  const [seriesStarted, setSeriesStarted] = useState(false);
 
   useEffect(() => {
     if (!workout) return;
@@ -53,7 +53,6 @@ export default function WorkoutActive() {
     });
   }, [workout]);
 
-  // Timer de descanso corrigido
   useEffect(() => {
     if (restTimeRemaining === null || restTimeRemaining <= 0) return;
     
@@ -101,6 +100,7 @@ export default function WorkoutActive() {
 
     if (nextIndex >= 0) {
       setCurrentExerciseIndex(nextIndex);
+      setSeriesStarted(false);
       return;
     }
 
@@ -111,6 +111,7 @@ export default function WorkoutActive() {
 
     if (fallbackIndex >= 0) {
       setCurrentExerciseIndex(fallbackIndex);
+      setSeriesStarted(false);
     }
   };
 
@@ -146,6 +147,10 @@ export default function WorkoutActive() {
     });
   };
 
+  const handleStartSeries = (exerciseId: string) => {
+    setSeriesStarted(true);
+  };
+
   const handleCompleteSet = (exerciseId: string) => {
     const exercise = workout.exercises.find(item => item.id === exerciseId);
     if (!exercise) return;
@@ -175,6 +180,7 @@ export default function WorkoutActive() {
       toast.success(`${exercise.name} concluído!`);
       setTimeout(() => {
         setRestTimeRemaining(null);
+        setSeriesStarted(false);
         goToNextPendingExercise();
       }, 300);
     } else {
@@ -194,6 +200,7 @@ export default function WorkoutActive() {
     }));
     toast.success('Exercício pulado.');
     setRestTimeRemaining(null);
+    setSeriesStarted(false);
     goToNextPendingExercise();
   };
 
@@ -253,8 +260,8 @@ export default function WorkoutActive() {
         key={i}
         className="h-1.5 rounded-full transition-all"
         style={{
-          width: '24px',
-          background: isCurrent ? '#4ade80' : isCompleted ? '#4ade80' : 'rgba(255,255,255,0.15)',
+          width: '20px',
+          background: isCurrent ? '#4ade80' : isCompleted ? '#4ade80' : 'rgba(255,255,255,0.1)',
         }}
       />
     );
@@ -274,47 +281,47 @@ export default function WorkoutActive() {
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-[#0d0d0f]" style={{ height: '100dvh', overflow: 'hidden' }}>
-      {/* CABEÇALHO COMPACTO */}
-      <div className="flex-shrink-0 px-4 py-2">
-        <div className="flex items-center justify-between gap-3 mb-2">
+      {/* CABEÇALHO MINIMALISTA */}
+      <div className="flex-shrink-0 px-3 py-2.5">
+        <div className="flex items-center justify-between gap-2 mb-2">
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/treinos')}
-            className="flex size-9 items-center justify-center rounded-2xl"
+            className="flex size-8 items-center justify-center rounded-lg"
             style={{
-              background: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.12)',
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.1)',
               color: 'white',
             }}
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft size={14} />
           </motion.button>
           
           <div className="flex-1 text-center">
-            <h1 className="text-lg font-bold text-white leading-tight" style={{ fontFamily: 'Space Grotesk' }}>
+            <h1 className="text-base font-bold text-white leading-tight" style={{ fontFamily: 'Space Grotesk' }}>
               {activeExercise?.name ?? 'Treino concluído'}
             </h1>
-            <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.48)', fontFamily: 'Space Grotesk' }}>
-              {currentExerciseIndex + 1} de {allExercises.length} exercícios
+            <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Grotesk' }}>
+              {currentExerciseIndex + 1} de {allExercises.length}
             </p>
           </div>
 
           <div
-            className="flex size-9 items-center justify-center rounded-2xl flex-shrink-0"
+            className="flex size-8 items-center justify-center rounded-lg flex-shrink-0"
             style={{
-              background: 'rgba(74, 222, 128, 0.15)',
-              border: '1px solid rgba(74, 222, 128, 0.3)',
+              background: 'rgba(74, 222, 128, 0.12)',
+              border: '1px solid rgba(74, 222, 128, 0.25)',
             }}
           >
-            <p className="text-[10px] font-bold" style={{ color: '#4ade80', fontFamily: 'Space Grotesk' }}>
+            <p className="text-[9px] font-bold" style={{ color: '#4ade80', fontFamily: 'Space Grotesk' }}>
               {timeDisplay}
             </p>
           </div>
         </div>
 
-        {/* PROGRESSO COM BOLINHAS */}
-        <div className="flex gap-1 justify-center">
+        {/* PROGRESSO */}
+        <div className="flex gap-0.5 justify-center">
           {progressDots}
         </div>
       </div>
@@ -328,27 +335,34 @@ export default function WorkoutActive() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="flex-1 flex flex-col overflow-hidden px-4 py-2"
+            className="flex-1 flex flex-col overflow-hidden px-3 py-2"
           >
-            {/* VÍDEO COMPACTO */}
-            <div className="relative rounded-[16px] overflow-hidden bg-black aspect-video border mb-2" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-              <div className="absolute top-2 left-2 z-10 flex items-center gap-1 rounded-full px-2 py-1" style={{ background: 'rgba(74, 222, 128, 0.15)', border: '1px solid rgba(74, 222, 128, 0.3)' }}>
-                <Lightbulb size={12} style={{ color: '#4ade80' }} />
-                <span className="text-[10px] font-semibold" style={{ fontFamily: 'Space Grotesk', color: '#4ade80' }}>Técnica</span>
+            {/* VÍDEO CINEMATOGRÁFICO */}
+            <div className="relative rounded-[14px] overflow-hidden bg-black aspect-video border mb-2" style={{ borderColor: 'rgba(74, 222, 128, 0.15)', boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6)' }}>
+              {/* SELO TÉCNICA */}
+              <div className="absolute top-2 left-2 z-10 flex items-center gap-1 rounded-lg px-2 py-1" style={{ background: 'rgba(74, 222, 128, 0.1)', border: '1px solid rgba(74, 222, 128, 0.2)', backdropFilter: 'blur(8px)' }}>
+                <Lightbulb size={11} style={{ color: '#4ade80' }} />
+                <span className="text-[8px] font-semibold" style={{ fontFamily: 'Space Grotesk', color: '#4ade80' }}>Técnica</span>
               </div>
 
-              <div className="absolute bottom-2 right-2 z-10 flex size-7 items-center justify-center rounded-full" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+              {/* BOTÃO EXPANDIR */}
+              <div className="absolute bottom-2 right-2 z-10 flex size-6 items-center justify-center rounded-lg" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)' }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
                   <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
                 </svg>
               </div>
 
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40 flex items-center justify-center">
-                <div className="flex size-12 items-center justify-center rounded-full border-2 border-white">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+              {/* PLAY BUTTON */}
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/50 flex items-center justify-center">
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="flex size-10 items-center justify-center rounded-full border-2 border-white"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
                     <path d="M8 5v14l11-7z" />
                   </svg>
-                </div>
+                </motion.div>
               </div>
 
               {activeExercise.videoUrl && (
@@ -360,124 +374,136 @@ export default function WorkoutActive() {
               )}
             </div>
 
-            {/* CAIXA DE DICAS COMPACTA */}
-            <div className="rounded-[16px] border p-3 flex gap-2.5 mb-2" style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.08)' }}>
-              <div className="flex-shrink-0 flex size-7 items-center justify-center rounded-lg" style={{ background: 'rgba(74, 222, 128, 0.2)' }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2">
+            {/* CAIXA DE DICAS ELEGANTE */}
+            <div className="rounded-[12px] border p-2.5 flex gap-2 mb-2" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.06)' }}>
+              <div className="flex-shrink-0 flex size-6 items-center justify-center rounded-md" style={{ background: 'rgba(74, 222, 128, 0.15)' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2">
                   <circle cx="12" cy="4" r="1.5" />
                   <path d="M9 8h6M7 10v6a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-6M9 16h6M10 10v6M14 10v6" />
                 </svg>
               </div>
-              <p className="text-xs leading-snug text-white" style={{ fontFamily: 'Outfit' }}>
-                {activeExercise.instructions || 'Execute o exercício com controle e técnica adequada.'}
+              <p className="text-[11px] leading-snug text-white" style={{ fontFamily: 'Outfit' }}>
+                {activeExercise.instructions || 'Execute com controle e técnica.'}
               </p>
             </div>
 
-            {/* 4 CARDS DE MÉTRICAS COMPACTOS */}
-            <div className="grid grid-cols-4 gap-1.5 mb-2">
-              <div className="rounded-[16px] border p-2 text-center" style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.08)' }}>
+            {/* 4 CARDS REFINADOS */}
+            <div className="grid grid-cols-4 gap-1 mb-2">
+              <div className="rounded-[12px] border p-2 text-center" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.06)' }}>
                 <div className="flex justify-center mb-1">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2">
                     <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M3 21v-5h5" />
                   </svg>
                 </div>
-                <p className="text-[8px] uppercase tracking-[0.1em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Série</p>
-                <p className="text-sm font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>{currentProgress}/{activeExercise.sets}</p>
-                <div className="mt-1 h-0.5 rounded-full" style={{ background: 'rgba(74, 222, 128, 0.2)' }}>
+                <p className="text-[7px] uppercase tracking-[0.08em]" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Space Grotesk' }}>Série</p>
+                <p className="text-xs font-bold text-white mt-0.5" style={{ fontFamily: 'Space Grotesk' }}>{currentProgress}/{activeExercise.sets}</p>
+                <div className="mt-1 h-0.5 rounded-full" style={{ background: 'rgba(74, 222, 128, 0.15)' }}>
                   <div className="h-full rounded-full transition-all" style={{ width: `${(currentProgress / activeExercise.sets) * 100}%`, background: '#4ade80' }} />
                 </div>
               </div>
 
-              <div className="rounded-[16px] border p-2 text-center" style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.08)' }}>
+              <div className="rounded-[12px] border p-2 text-center" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.06)' }}>
                 <div className="flex justify-center mb-1">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2">
                     <path d="M6 9h12M6 15h12M3 3h18v18H3z" />
                   </svg>
                 </div>
-                <p className="text-[8px] uppercase tracking-[0.1em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Reps</p>
-                <p className="text-sm font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>{exerciseState[activeExercise.id]?.reps ?? activeExercise.reps}</p>
+                <p className="text-[7px] uppercase tracking-[0.08em]" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Space Grotesk' }}>Reps</p>
+                <p className="text-xs font-bold text-white mt-0.5" style={{ fontFamily: 'Space Grotesk' }}>{exerciseState[activeExercise.id]?.reps ?? activeExercise.reps}</p>
               </div>
 
-              <div className="rounded-[16px] border p-2 text-center" style={{ background: 'rgba(74, 222, 128, 0.12)', borderColor: 'rgba(74, 222, 128, 0.25)' }}>
+              <div className="rounded-[12px] border p-2 text-center" style={{ background: 'rgba(74, 222, 128, 0.1)', borderColor: 'rgba(74, 222, 128, 0.2)' }}>
                 <div className="flex justify-center mb-1">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2">
                     <circle cx="12" cy="12" r="8" /><path d="M12 8v8M8 12h8" />
                   </svg>
                 </div>
-                <p className="text-[8px] uppercase tracking-[0.1em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Carga</p>
-                <p className="text-sm font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>{(exerciseState[activeExercise.id]?.weight ?? activeExercise.weight).toFixed(0)}</p>
+                <p className="text-[7px] uppercase tracking-[0.08em]" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Space Grotesk' }}>Carga</p>
+                <p className="text-xs font-bold text-white mt-0.5" style={{ fontFamily: 'Space Grotesk' }}>{(exerciseState[activeExercise.id]?.weight ?? activeExercise.weight).toFixed(0)}</p>
                 <div className="mt-1 flex gap-0.5">
-                  <button onClick={() => handleChangeNumber(activeExercise.id, 'weight', -2.5)} className="flex-1 rounded-md py-0.5 bg-white/10 text-[10px] font-bold text-white">-</button>
-                  <button onClick={() => handleChangeNumber(activeExercise.id, 'weight', 2.5)} className="flex-1 rounded-md py-0.5 bg-white/10 text-[10px] font-bold text-white">+</button>
+                  <button onClick={() => handleChangeNumber(activeExercise.id, 'weight', -2.5)} className="flex-1 rounded-md py-0.5 bg-white/8 text-[9px] font-bold text-white">−</button>
+                  <button onClick={() => handleChangeNumber(activeExercise.id, 'weight', 2.5)} className="flex-1 rounded-md py-0.5 bg-white/8 text-[9px] font-bold text-white">+</button>
                 </div>
               </div>
 
-              <div className="rounded-[16px] border p-2 text-center" style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.08)' }}>
+              <div className="rounded-[12px] border p-2 text-center" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.06)' }}>
                 <div className="flex justify-center mb-1">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2">
                     <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
                   </svg>
                 </div>
-                <p className="text-[8px] uppercase tracking-[0.1em]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Space Grotesk' }}>Descanso</p>
-                <p className="text-sm font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>{activeExercise.restSeconds}s</p>
+                <p className="text-[7px] uppercase tracking-[0.08em]" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Space Grotesk' }}>Descanso</p>
+                <p className="text-xs font-bold text-white mt-0.5" style={{ fontFamily: 'Space Grotesk' }}>{activeExercise.restSeconds}s</p>
               </div>
             </div>
 
-            {/* BOTÃO PRINCIPAL */}
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              onClick={() => handleCompleteSet(activeExercise.id)}
-              className="w-full rounded-xl px-4 py-3.5 text-base font-bold flex items-center justify-center gap-2 mb-1"
-              style={{ background: 'linear-gradient(135deg, #4ade80 0%, #22c55e 100%)', color: '#0d0d0f', fontFamily: 'Space Grotesk', boxShadow: '0 4px 12px rgba(74, 222, 128, 0.2)' }}
-            >
-              <Check size={18} /> Concluir série
-            </motion.button>
-            <p className="text-[10px] text-center mb-2" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Outfit' }}>Ao concluir, o descanso será iniciado.</p>
+            {/* BOTÃO INICIAR/CONCLUIR SÉRIE */}
+            {!seriesStarted ? (
+              <motion.button
+                whileTap={{ scale: 0.96 }}
+                onClick={() => handleStartSeries(activeExercise.id)}
+                className="w-full rounded-lg px-4 py-2.5 text-sm font-bold flex items-center justify-center gap-2 mb-1"
+                style={{ background: 'linear-gradient(135deg, #4ade80 0%, #22c55e 100%)', color: '#0d0d0f', fontFamily: 'Space Grotesk', boxShadow: '0 4px 12px rgba(74, 222, 128, 0.25)' }}
+              >
+                <Check size={16} /> Iniciar série
+              </motion.button>
+            ) : (
+              <motion.button
+                whileTap={{ scale: 0.96 }}
+                onClick={() => handleCompleteSet(activeExercise.id)}
+                className="w-full rounded-lg px-4 py-2.5 text-sm font-bold flex items-center justify-center gap-2 mb-1"
+                style={{ background: 'linear-gradient(135deg, #4ade80 0%, #22c55e 100%)', color: '#0d0d0f', fontFamily: 'Space Grotesk', boxShadow: '0 4px 12px rgba(74, 222, 128, 0.25)' }}
+              >
+                <Check size={16} /> Concluir série
+              </motion.button>
+            )}
 
-            {/* TIMER DE DESCANSO INFERIOR COMPACTO */}
+            <p className="text-[9px] text-center mb-1.5" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Outfit' }}>Ao concluir, o descanso será iniciado.</p>
+
+            {/* TIMER DE DESCANSO COMPACTO */}
             <AnimatePresence>
               {restTimeRemaining !== null && restTimeRemaining > 0 && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="rounded-[16px] border p-3 mb-2"
-                  style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.08)' }}
+                  exit={{ opacity: 0, y: 8 }}
+                  className="rounded-[12px] border p-2.5 mb-1"
+                  style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.06)' }}
                 >
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center justify-between gap-2">
                     <div>
-                      <p className="text-2xl font-bold text-[#4ade80]" style={{ fontFamily: 'Space Grotesk' }}>{restDisplay}</p>
-                      <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'Outfit' }}>Tempo restante</p>
+                      <p className="text-xl font-bold text-[#4ade80]" style={{ fontFamily: 'Space Grotesk' }}>{restDisplay}</p>
+                      <p className="text-[8px]" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Outfit' }}>Tempo restante</p>
                     </div>
-                    <div className="relative size-16">
-                      <svg width="64" height="64" viewBox="0 0 64 64" className="-rotate-90">
-                        <circle cx="32" cy="32" r="28" fill="none" stroke="rgba(74, 222, 128, 0.1)" strokeWidth="4" strokeDasharray="6 3" />
-                        <motion.circle cx="32" cy="32" r="28" fill="none" stroke="#4ade80" strokeWidth="4" strokeLinecap="round" strokeDasharray={2 * Math.PI * 28} strokeDashoffset={2 * Math.PI * 28 * (1 - restProgress)} />
+                    <div className="relative size-12">
+                      <svg width="48" height="48" viewBox="0 0 48 48" className="-rotate-90">
+                        <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(74, 222, 128, 0.1)" strokeWidth="3" strokeDasharray="4 2" />
+                        <motion.circle cx="24" cy="24" r="20" fill="none" stroke="#4ade80" strokeWidth="3" strokeLinecap="round" strokeDasharray={2 * Math.PI * 20} strokeDashoffset={2 * Math.PI * 20 * (1 - restProgress)} />
                       </svg>
                     </div>
-                    <button onClick={() => setRestTimeRemaining(null)} className="rounded-xl border px-3 py-2 text-[10px] font-bold text-white bg-white/5 border-white/10">⏭ Pular descanso</button>
+                    <button onClick={() => setRestTimeRemaining(null)} className="rounded-lg border px-2 py-1 text-[8px] font-bold text-white bg-white/5 border-white/10" style={{ fontFamily: 'Space Grotesk' }}>⏭ Pular</button>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
 
             {/* BOTÃO PULAR EXERCÍCIO */}
-            <button onClick={() => handleSkipExercise(activeExercise.id)} className="w-full rounded-xl border px-4 py-2.5 text-xs font-semibold text-white bg-white/5 border-white/10" style={{ fontFamily: 'Space Grotesk' }}>
-              <SkipForward size={14} className="inline mr-2" /> Pular exercício
+            <button onClick={() => handleSkipExercise(activeExercise.id)} className="w-full rounded-lg border px-4 py-2 text-xs font-semibold text-white bg-white/5 border-white/10" style={{ fontFamily: 'Space Grotesk' }}>
+              <SkipForward size={12} className="inline mr-1.5" /> Pular exercício
             </button>
           </motion.div>
         ) : isWorkoutComplete ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-4 px-4 text-center">
-            <div className="flex size-16 items-center justify-center rounded-full bg-[#4ade80]/10 text-[#4ade80]"><Check size={32} /></div>
-            <h2 className="text-xl font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>Treino concluído!</h2>
-            <button onClick={finishWorkout} className="w-full rounded-xl px-4 py-3.5 text-base font-bold bg-[#4ade80] text-[#0d0d0f]" style={{ fontFamily: 'Space Grotesk' }}>Salvar e finalizar</button>
+          <div className="flex-1 flex flex-col items-center justify-center gap-3 px-4 text-center">
+            <div className="flex size-14 items-center justify-center rounded-full bg-[#4ade80]/10 text-[#4ade80]"><Check size={28} /></div>
+            <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'Space Grotesk' }}>Treino concluído!</h2>
+            <button onClick={finishWorkout} className="w-full rounded-lg px-4 py-2.5 text-sm font-bold bg-[#4ade80] text-[#0d0d0f]" style={{ fontFamily: 'Space Grotesk' }}>Salvar e finalizar</button>
           </div>
         ) : null}
       </AnimatePresence>
 
       {/* RODAPÉ */}
-      <div className="flex-shrink-0 text-center py-2 border-t border-white/5">
-        <p className="text-[9px] uppercase tracking-[0.2em]" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Space Grotesk' }}>FOCO • EXECUÇÃO • EVOLUÇÃO</p>
+      <div className="flex-shrink-0 text-center py-1.5 border-t border-white/5">
+        <p className="text-[8px] uppercase tracking-[0.15em]" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Space Grotesk' }}>FOCO • EXECUÇÃO • EVOLUÇÃO</p>
       </div>
     </div>
   );
