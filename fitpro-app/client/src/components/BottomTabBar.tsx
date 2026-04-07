@@ -1,10 +1,9 @@
 /**
- * FitPro — PremiumBottomNavBar v4
+ * FitPro — PremiumBottomNavBar v5
  *
  * Design atualizado:
- * - Menu lateral (drawer) que abre da direita para a esquerda.
- * - Design premium dark com desfoque de fundo.
- * - Itens de menu com ícones e descrições conforme a imagem.
+ * - Menu lateral que cabe em uma única tela sem rolagem
+ * - Layout compacto seguindo o design da imagem
  */
 
 import { useState, useEffect } from 'react';
@@ -29,7 +28,7 @@ import { X, ChevronRight } from 'lucide-react';
 ───────────────────────────────────────────── */
 const C = {
   bg:         '#0A0E18',
-  active:     '#22C55E', // Verde FitPro
+  active:     '#22C55E',
   inactive:   '#8B95A5',
   green:      '#22C55E',
   gradTop:    '#22C55E',
@@ -37,8 +36,6 @@ const C = {
   border:     'rgba(255,255,255,0.08)',
   glow:       'rgba(34,197,94,0.3)',
 };
-
-const AVATAR_IMG = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663504064608/7iSBZeqBuCLymJT9LA3WkR/fitpro-avatar-default-XyLKS9rGNvzKQXnsNnmMUd.webp';
 
 /* ─────────────────────────────────────────────
    Ícones SVG customizados
@@ -213,7 +210,7 @@ export default function BottomTabBar() {
               }}
             />
 
-            {/* Drawer Panel */}
+            {/* Drawer Panel - Otimizado para caber em uma tela */}
             <motion.aside
               key="drawer"
               initial={{ x: '100%' }}
@@ -232,17 +229,18 @@ export default function BottomTabBar() {
                 borderLeft: `1px solid ${C.border}`,
                 display: 'flex',
                 flexDirection: 'column',
-                padding: '24px 20px',
-                overflowY: 'auto',
+                padding: '16px 16px',
+                overflowY: 'hidden',
+                height: '100vh',
               }}
             >
-              {/* Header do Menu */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
+              {/* Header com botão de fechar */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
                 <button
                   onClick={() => setMenuOpen(false)}
                   style={{
-                    width: 44,
-                    height: 44,
+                    width: 40,
+                    height: 40,
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
@@ -252,14 +250,15 @@ export default function BottomTabBar() {
                     cursor: 'pointer',
                   }}
                 >
-                  <X size={20} color="#fff" />
+                  <X size={18} color="#fff" />
                 </button>
               </div>
 
-              <div style={{ marginBottom: 32 }}>
-                <p style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', marginBottom: 8, fontWeight: 600 }}>FITPRO</p>
-                <h2 style={{ fontSize: 24, fontWeight: 700, color: '#fff', margin: 0, fontFamily: 'Space Grotesk' }}>Menu lateral</h2>
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>Tudo em uma tela, sem rolagem.</p>
+              {/* Título do Menu */}
+              <div style={{ marginBottom: 16 }}>
+                <p style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', marginBottom: 4, fontWeight: 600 }}>FITPRO</p>
+                <h2 style={{ fontSize: 20, fontWeight: 700, color: '#fff', margin: 0, fontFamily: 'Space Grotesk' }}>Menu lateral</h2>
+                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>Tudo em uma tela, sem rolagem.</p>
               </div>
 
               {/* Item de Perfil Destacado */}
@@ -269,63 +268,63 @@ export default function BottomTabBar() {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 16,
-                  padding: '16px 20px',
-                  borderRadius: 24,
+                  gap: 12,
+                  padding: '12px 14px',
+                  borderRadius: 20,
                   background: 'rgba(34,197,94,0.1)',
                   border: '1px solid rgba(34,197,94,0.2)',
-                  marginBottom: 24,
+                  marginBottom: 14,
                   textAlign: 'left',
                   cursor: 'pointer',
                 }}
               >
-                <div style={{ width: 48, height: 48, borderRadius: 16, overflow: 'hidden', border: '2px solid rgba(34,197,94,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)' }}>
-                  <IdentificationBadge size={24} color="#22C55E" weight="fill" />
+                <div style={{ width: 40, height: 40, borderRadius: 12, overflow: 'hidden', border: '2px solid rgba(34,197,94,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', flexShrink: 0 }}>
+                  <IdentificationBadge size={20} color="#22C55E" weight="fill" />
                 </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 15, fontWeight: 700, color: '#fff', margin: 0 }}>Perfil e ajustes</p>
-                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', margin: '2px 0 0' }}>Configurações, metas e preferências</p>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: '#fff', margin: 0 }}>Perfil e ajustes</p>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', margin: '1px 0 0', lineHeight: 1.2 }}>Configurações, metas e preferências</p>
                 </div>
-                <ChevronRight size={18} color="#22C55E" />
+                <ChevronRight size={16} color="#22C55E" style={{ flexShrink: 0 }} />
               </motion.button>
 
-              {/* Lista de Itens Rápidos */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {/* Lista de Itens Rápidos - Compacta */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1, overflowY: 'auto', paddingRight: 4 }}>
                 {QUICK_ITEMS.map(({ path, Icon, label, description }, idx) => (
                   <motion.button
                     key={path}
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.05 + 0.1 }}
+                    transition={{ delay: idx * 0.04 + 0.1 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => handleMenuNavigate(path)}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 16,
-                      padding: '16px 20px',
-                      borderRadius: 20,
+                      gap: 12,
+                      padding: '12px 14px',
+                      borderRadius: 16,
                       background: 'rgba(255,255,255,0.03)',
                       border: '1px solid rgba(255,255,255,0.05)',
                       textAlign: 'left',
                       cursor: 'pointer',
                     }}
                   >
-                    <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)' }}>
-                      <Icon size={20} color="rgba(255,255,255,0.7)" />
+                    <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', flexShrink: 0 }}>
+                      <Icon size={18} color="rgba(255,255,255,0.7)" />
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: 14, fontWeight: 600, color: '#fff', margin: 0 }}>{label}</p>
-                      <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: '2px 0 0' }}>{description}</p>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: '#fff', margin: 0 }}>{label}</p>
+                      <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: '1px 0 0', lineHeight: 1.2 }}>{description}</p>
                     </div>
-                    <ChevronRight size={16} color="rgba(255,255,255,0.2)" />
+                    <ChevronRight size={14} color="rgba(255,255,255,0.2)" style={{ flexShrink: 0 }} />
                   </motion.button>
                 ))}
               </div>
 
               {/* Footer do Menu */}
-              <div style={{ marginTop: 'auto', paddingTop: 40, textAlign: 'center' }}>
-                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.02em' }}>Toque em qualquer opção para navegar.</p>
+              <div style={{ paddingTop: 8, textAlign: 'center' }}>
+                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.02em', margin: 0 }}>Toque em qualquer opção para navegar.</p>
               </div>
             </motion.aside>
           </>
