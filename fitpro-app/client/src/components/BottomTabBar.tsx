@@ -1,10 +1,11 @@
 /**
- * FitPro — PremiumBottomNavBar v7
+ * FitPro — PremiumBottomNavBar v8
  *
  * Design Premium Refinado:
  * - Glassmorphism elegante com desfoque e transparências
  * - Glow sutil nos elementos interativos
  * - Animações fluidas e refinadas
+ * - Menu lateral completo com todas as funções
  * - Layout luxuoso e moderno
  */
 
@@ -22,6 +23,8 @@ import {
   Rocket,
   Notebook,
   User,
+  Calculator,
+  Share,
 } from '@phosphor-icons/react';
 import { X, ChevronRight } from 'lucide-react';
 
@@ -71,13 +74,17 @@ function ProfessionalIcon({ active, size = 32 }: { active?: boolean; size?: numb
 }
 
 /* ─────────────────────────────────────────────
-   Itens do Menu Lateral
+   Itens do Menu Lateral - Completo
 ───────────────────────────────────────────── */
 const QUICK_ITEMS = [
-  { path: '/progresso',    Icon: Heartbeat,           label: 'Progresso',       description: 'Evolução e resultados' },
-  { path: '/ciclo',        Icon: Sparkle,             label: 'Saúde Feminina',  description: 'Acompanhamento de ciclo menstrual' },
-  { path: '/historico',    Icon: Pulse,               label: 'Histórico',       description: 'Ver registros e evolução' },
-  { path: '/planos',       Icon: Notebook,            label: 'Planos',          description: 'Gerenciar planos de treino' },
+  { path: '/progresso',    Icon: Heartbeat,           label: 'Progresso',           description: 'Evolução e resultados' },
+  { path: '/ciclo',        Icon: Sparkle,             label: 'Saúde Feminina',      description: 'Acompanhamento de ciclo menstrual' },
+  { path: '/historico',    Icon: Pulse,               label: 'Histórico',           description: 'Ver registros e evolução' },
+  { path: '/planos',       Icon: Notebook,            label: 'Planos',              description: 'Gerenciar planos de treino' },
+  { path: '/1rm',          Icon: Calculator,          label: 'Calculadora 1RM',     description: 'Estimativa de carga máxima' },
+  { path: '/compartilhar', Icon: Share,               label: 'Compartilhar',        description: 'Enviar resultados e progresso' },
+  { path: '/hidratacao',   Icon: Target,              label: 'Hidratação',          description: 'Acompanhar ingestão de água' },
+  { path: '/passos',       Icon: Rocket,              label: 'Passos',              description: 'Monitorar atividade diária' },
 ];
 
 /* ─────────────────────────────────────────────
@@ -229,7 +236,7 @@ export default function BottomTabBar() {
                 borderLeft: `1px solid rgba(34,197,94,0.15)`,
                 display: 'flex',
                 flexDirection: 'column',
-                padding: '20px 20px',
+                padding: '16px 16px',
                 overflowY: 'hidden',
                 height: '100vh',
                 backdropFilter: 'blur(20px)',
@@ -238,14 +245,14 @@ export default function BottomTabBar() {
               }}
             >
               {/* Header com botão de fechar */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 14 }}>
                 <motion.button
                   whileHover={{ scale: 1.08, background: 'rgba(255,255,255,0.08)' }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setMenuOpen(false)}
                   style={{
-                    width: 44,
-                    height: 44,
+                    width: 40,
+                    height: 40,
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
@@ -256,17 +263,17 @@ export default function BottomTabBar() {
                     transition: 'all 0.3s ease',
                   }}
                 >
-                  <X size={20} color="#fff" />
+                  <X size={18} color="#fff" />
                 </motion.button>
               </div>
 
               {/* Título do Menu com Gradient */}
-              <div style={{ marginBottom: 24 }}>
+              <div style={{ marginBottom: 16 }}>
                 <motion.p
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'rgba(34,197,94,0.6)', marginBottom: 6, fontWeight: 700, fontFamily: 'Space Grotesk' }}
+                  style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'rgba(34,197,94,0.6)', marginBottom: 4, fontWeight: 700, fontFamily: 'Space Grotesk' }}
                 >
                   FITPRO
                 </motion.p>
@@ -274,7 +281,7 @@ export default function BottomTabBar() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
-                  style={{ fontSize: 24, fontWeight: 800, background: 'linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.9) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0, fontFamily: 'Space Grotesk', lineHeight: 1.2 }}
+                  style={{ fontSize: 20, fontWeight: 800, background: 'linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.9) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0, fontFamily: 'Space Grotesk', lineHeight: 1.2 }}
                 >
                   Menu lateral
                 </motion.h2>
@@ -282,7 +289,7 @@ export default function BottomTabBar() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  style={{ fontSize: 13, color: 'rgba(255,255,255,0.52)', marginTop: 6, fontFamily: 'Outfit' }}
+                  style={{ fontSize: 11, color: 'rgba(255,255,255,0.52)', marginTop: 4, fontFamily: 'Outfit' }}
                 >
                   Tudo em uma tela, sem rolagem.
                 </motion.p>
@@ -299,12 +306,12 @@ export default function BottomTabBar() {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 14,
-                  padding: '16px 18px',
-                  borderRadius: 24,
+                  gap: 12,
+                  padding: '12px 14px',
+                  borderRadius: 20,
                   background: 'linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.08) 100%)',
                   border: '1.5px solid rgba(34,197,94,0.3)',
-                  marginBottom: 18,
+                  marginBottom: 12,
                   textAlign: 'left',
                   cursor: 'pointer',
                   backdropFilter: 'blur(10px)',
@@ -314,36 +321,36 @@ export default function BottomTabBar() {
                 }}
               >
                 <motion.div
-                  style={{ width: 44, height: 44, borderRadius: 14, overflow: 'hidden', border: '2px solid rgba(34,197,94,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, rgba(34,197,94,0.12) 0%, rgba(34,197,94,0.05) 100%)', flexShrink: 0, boxShadow: '0 0 16px rgba(34,197,94,0.2)' }}
+                  style={{ width: 38, height: 38, borderRadius: 12, overflow: 'hidden', border: '2px solid rgba(34,197,94,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, rgba(34,197,94,0.12) 0%, rgba(34,197,94,0.05) 100%)', flexShrink: 0, boxShadow: '0 0 16px rgba(34,197,94,0.2)' }}
                 >
-                  <User size={22} color="#22C55E" weight="fill" />
+                  <User size={18} color="#22C55E" weight="fill" />
                 </motion.div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: '#fff', margin: 0, fontFamily: 'Space Grotesk' }}>Perfil e ajustes</p>
-                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.52)', margin: '2px 0 0', lineHeight: 1.3, fontFamily: 'Outfit' }}>Configurações, metas e preferências</p>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: '#fff', margin: 0, fontFamily: 'Space Grotesk' }}>Perfil e ajustes</p>
+                  <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.52)', margin: '1px 0 0', lineHeight: 1.2, fontFamily: 'Outfit' }}>Configurações, metas e preferências</p>
                 </div>
                 <motion.div whileHover={{ x: 4 }}>
-                  <ChevronRight size={18} color="#22C55E" style={{ flexShrink: 0 }} />
+                  <ChevronRight size={16} color="#22C55E" style={{ flexShrink: 0 }} />
                 </motion.div>
               </motion.button>
 
               {/* Lista de Itens Rápidos com Animações Refinadas */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1, overflowY: 'auto', paddingRight: 2 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 7, flex: 1, overflowY: 'auto', paddingRight: 2 }}>
                 {QUICK_ITEMS.map(({ path, Icon, label, description }, idx) => (
                   <motion.button
                     key={path}
                     initial={{ opacity: 0, x: 20, y: 10 }}
                     animate={{ opacity: 1, x: 0, y: 0 }}
-                    transition={{ delay: 0.3 + idx * 0.06, type: 'spring', stiffness: 200, damping: 20 }}
+                    transition={{ delay: 0.3 + idx * 0.04, type: 'spring', stiffness: 200, damping: 20 }}
                     whileHover={{ scale: 1.02, boxShadow: '0 0 16px rgba(34,197,94,0.15), inset 0 0 12px rgba(34,197,94,0.05)' }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => handleMenuNavigate(path)}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 14,
-                      padding: '14px 16px',
-                      borderRadius: 18,
+                      gap: 12,
+                      padding: '11px 13px',
+                      borderRadius: 16,
                       background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
                       border: '1px solid rgba(255,255,255,0.08)',
                       textAlign: 'left',
@@ -355,16 +362,16 @@ export default function BottomTabBar() {
                     }}
                   >
                     <motion.div
-                      style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(34,197,94,0.03) 100%)', flexShrink: 0, border: '1px solid rgba(34,197,94,0.15)', boxShadow: '0 0 12px rgba(34,197,94,0.1)' }}
+                      style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(34,197,94,0.03) 100%)', flexShrink: 0, border: '1px solid rgba(34,197,94,0.15)', boxShadow: '0 0 12px rgba(34,197,94,0.1)' }}
                     >
-                      <Icon size={20} color="rgba(255,255,255,0.75)" weight="regular" />
+                      <Icon size={18} color="rgba(255,255,255,0.75)" weight="regular" />
                     </motion.div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 14, fontWeight: 600, color: '#fff', margin: 0, fontFamily: 'Space Grotesk' }}>{label}</p>
-                      <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.48)', margin: '2px 0 0', lineHeight: 1.3, fontFamily: 'Outfit' }}>{description}</p>
+                      <p style={{ fontSize: 12, fontWeight: 600, color: '#fff', margin: 0, fontFamily: 'Space Grotesk' }}>{label}</p>
+                      <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.48)', margin: '1px 0 0', lineHeight: 1.2, fontFamily: 'Outfit' }}>{description}</p>
                     </div>
                     <motion.div whileHover={{ x: 4 }}>
-                      <ChevronRight size={16} color="rgba(255,255,255,0.25)" style={{ flexShrink: 0 }} />
+                      <ChevronRight size={14} color="rgba(255,255,255,0.25)" style={{ flexShrink: 0 }} />
                     </motion.div>
                   </motion.button>
                 ))}
@@ -375,9 +382,9 @@ export default function BottomTabBar() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
-                style={{ paddingTop: 12, textAlign: 'center' }}
+                style={{ paddingTop: 8, textAlign: 'center' }}
               >
-                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.02em', margin: 0, fontFamily: 'Outfit' }}>Toque em qualquer opção para navegar.</p>
+                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.02em', margin: 0, fontFamily: 'Outfit' }}>Toque em qualquer opção para navegar.</p>
               </motion.div>
             </motion.aside>
           </>
