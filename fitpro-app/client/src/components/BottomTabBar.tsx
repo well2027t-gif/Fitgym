@@ -245,7 +245,7 @@ export default function BottomTabBar() {
               }}
             >
               {/* Header com botão de fechar */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
                 <motion.button
                   whileHover={{ scale: 1.08, background: 'rgba(255,255,255,0.08)' }}
                   whileTap={{ scale: 0.95 }}
@@ -268,12 +268,12 @@ export default function BottomTabBar() {
               </div>
 
               {/* Título do Menu com Gradient */}
-              <div style={{ marginBottom: 16 }}>
+              <div style={{ marginBottom: 10 }}>
                 <motion.p
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'rgba(34,197,94,0.6)', marginBottom: 4, fontWeight: 700, fontFamily: 'Space Grotesk' }}
+                  style={{ fontSize: 8, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'rgba(34,197,94,0.6)', marginBottom: 2, fontWeight: 700, fontFamily: 'Space Grotesk' }}
                 >
                   FITPRO
                 </motion.p>
@@ -281,7 +281,7 @@ export default function BottomTabBar() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
-                  style={{ fontSize: 20, fontWeight: 800, background: 'linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.9) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0, fontFamily: 'Space Grotesk', lineHeight: 1.2 }}
+                  style={{ fontSize: 18, fontWeight: 800, background: 'linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.9) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0, fontFamily: 'Space Grotesk', lineHeight: 1.1 }}
                 >
                   Menu lateral
                 </motion.h2>
@@ -289,7 +289,7 @@ export default function BottomTabBar() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  style={{ fontSize: 11, color: 'rgba(255,255,255,0.52)', marginTop: 4, fontFamily: 'Outfit' }}
+                  style={{ fontSize: 10, color: 'rgba(255,255,255,0.52)', marginTop: 2, fontFamily: 'Outfit' }}
                 >
                   Tudo em uma tela, sem rolagem.
                 </motion.p>
@@ -307,11 +307,11 @@ export default function BottomTabBar() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 12,
-                  padding: '12px 14px',
-                  borderRadius: 20,
+                  padding: '10px 12px',
+                  borderRadius: 18,
                   background: 'linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.08) 100%)',
                   border: '1.5px solid rgba(34,197,94,0.3)',
-                  marginBottom: 12,
+                  marginBottom: 8,
                   textAlign: 'left',
                   cursor: 'pointer',
                   backdropFilter: 'blur(10px)',
@@ -335,7 +335,7 @@ export default function BottomTabBar() {
               </motion.button>
 
               {/* Lista de Itens Rápidos com Animações Refinadas */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 7, flex: 1, overflowY: 'auto', paddingRight: 2 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5, flex: 1, overflowY: 'hidden', paddingRight: 2 }}>
                 {QUICK_ITEMS.map(({ path, Icon, label, description }, idx) => (
                   <motion.button
                     key={path}
@@ -349,8 +349,8 @@ export default function BottomTabBar() {
                       display: 'flex',
                       alignItems: 'center',
                       gap: 12,
-                      padding: '11px 13px',
-                      borderRadius: 16,
+                    padding: '9px 11px',
+                    borderRadius: 14,
                       background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
                       border: '1px solid rgba(255,255,255,0.08)',
                       textAlign: 'left',
@@ -367,8 +367,8 @@ export default function BottomTabBar() {
                       <Icon size={18} color="rgba(255,255,255,0.75)" weight="regular" />
                     </motion.div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 12, fontWeight: 600, color: '#fff', margin: 0, fontFamily: 'Space Grotesk' }}>{label}</p>
-                      <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.48)', margin: '1px 0 0', lineHeight: 1.2, fontFamily: 'Outfit' }}>{description}</p>
+                      <p style={{ fontSize: 11, fontWeight: 600, color: '#fff', margin: 0, fontFamily: 'Space Grotesk' }}>{label}</p>
+                      <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.48)', margin: '0px 0 0', lineHeight: 1.15, fontFamily: 'Outfit' }}>{description}</p>
                     </div>
                     <motion.div whileHover={{ x: 4 }}>
                       <ChevronRight size={14} color="rgba(255,255,255,0.25)" style={{ flexShrink: 0 }} />
@@ -382,9 +382,9 @@ export default function BottomTabBar() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
-                style={{ paddingTop: 8, textAlign: 'center' }}
+                style={{ paddingTop: 4, textAlign: 'center' }}
               >
-                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.02em', margin: 0, fontFamily: 'Outfit' }}>Toque em qualquer opção para navegar.</p>
+                <p style={{ fontSize: 8, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.02em', margin: 0, fontFamily: 'Outfit' }}>Toque em qualquer opção para navegar.</p>
               </motion.div>
             </motion.aside>
           </>
